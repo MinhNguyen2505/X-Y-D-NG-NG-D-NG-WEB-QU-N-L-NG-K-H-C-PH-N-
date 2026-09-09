@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Trang chủ — Giảng viên</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="layout">
+  <div th:insert="~{fragments/sidebar :: gv('gv-home')}"></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Trang chủ</div>
+      <div class="topbar-user">
+        <div class="topbar-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">G</div>
+        <span class="topbar-name" th:text="${giangVien?.hoTen ?: #authentication.name}">GV</span>
+      </div>
+    </header>
+    <div class="content">
+      <div style="background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:10px;
+                  padding:20px 24px;color:#fff;display:flex;align-items:center;
+                  justify-content:space-between;margin-bottom:18px;">
+        <div>
+          <div style="font-size:13px;opacity:.8;">Xin chào giảng viên,</div>
+          <div style="font-size:22px;font-weight:800;" th:text="${giangVien?.hoTen ?: 'Giảng viên'}">GV</div>
+          <div style="font-size:12px;opacity:.7;margin-top:4px;"
+               th:text="'Mã GV: ' + ${giangVien?.maGv} + ' | ' + ${giangVien?.khoaBoMon}"></div>
+        </div>
+        <div style="font-size:48px;">👨‍🏫</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Danh sách học kỳ</span>
+          <a th:href="@{/giang-vien/danh-sach-lop}" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-eye"></i> Xem lớp của tôi
+          </a>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="table">
+            <thead><tr><th>Học kỳ</th><th>Năm học</th><th>Bắt đầu học</th><th>Kết thúc học</th><th></th></tr></thead>
+            <tbody>
+              <tr th:each="hk : ${danhSachHocKy}">
+                <td th:text="${hk.tenHocKy}"></td>
+                <td th:text="${hk.namHoc}"></td>
+                <td th:text="${#temporals.format(hk.ngayBatDauHoc,'dd/MM/yyyy')}"></td>
+                <td th:text="${#temporals.format(hk.ngayKetThucHoc,'dd/MM/yyyy')}"></td>
+                <td>
+                  <a th:href="@{/giang-vien/danh-sach-lop(hocKyId=${hk.id})}" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-list"></i> Xem lớp
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

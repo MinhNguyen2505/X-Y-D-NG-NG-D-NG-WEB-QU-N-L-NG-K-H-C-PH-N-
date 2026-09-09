@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Học kỳ</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/></head>
+<body><div class="layout">
+  <div th:insert="~{fragments/sidebar :: admin('admin-hk')}"></div>
+  <div class="main">
+    <header class="topbar"><div class="topbar-title">Quản lý Học kỳ</div></header>
+    <div class="content">
+      <div th:if="${successMsg}" class="flash flash-success"><i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span></div>
+      <div th:if="${errorMsg}"   class="flash flash-danger"><i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span></div>
+      <div class="page-hd">
+        <div class="page-hd-title">Học kỳ</div>
+        <a th:href="@{/admin/hoc-ky/them}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Tạo học kỳ</a>
+      </div>
+      <div class="card"><div class="card-body" style="padding:0;">
+        <table class="table">
+          <thead><tr><th>Tên học kỳ</th><th>Năm học</th><th>Bắt đầu ĐK</th><th>Kết thúc ĐK</th><th>TC min</th><th>TC max</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="hk : ${danhSach}">
+              <td th:text="${hk.tenHocKy}"></td><td th:text="${hk.namHoc}"></td>
+              <td th:text="${#temporals.format(hk.ngayBatDauDk,'dd/MM/yyyy')}"></td>
+              <td th:text="${#temporals.format(hk.ngayKetThucDk,'dd/MM/yyyy')}"></td>
+              <td th:text="${hk.tinChiToiThieu}"></td><td th:text="${hk.tinChiToiDa}"></td>
+              <td><a th:href="@{/admin/hoc-ky/sua/{id}(id=${hk.id})}" class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i> Sửa</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div></div>
+    </div>
+  </div>
+</div></body></html>

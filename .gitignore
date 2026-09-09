@@ -1,0 +1,27 @@
+# Maven build output
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Spring Boot - KHÔNG đẩy file chứa thông tin nhạy cảm
+# application.properties chứa DB password - có thể giữ lại nếu dùng password rỗng
+# hoặc tạo application-local.properties riêng
+
+# Logs
+*.log
+logs/
+
+# Kiro
+.kiro/

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Thời khoá biểu</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="layout">
+
+  <div th:insert="~{fragments/sidebar :: sv('sv-tkb')}"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Thời khoá biểu</div>
+      <div class="topbar-user">
+        <div class="topbar-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
+        <span class="topbar-name" th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
+      </div>
+    </header>
+    <div class="content">
+
+      <!-- Chọn học kỳ -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Chọn học kỳ</span></div>
+        <div class="card-body">
+          <div class="flex-wrap">
+            <a th:each="hk : ${danhSachHocKy}"
+               th:href="@{/sinh-vien/thoi-khoa-bieu(hocKyId=${hk.id})}"
+               th:text="${hk.tenHocKy} + ' (' + ${hk.namHoc} + ')'"
+               th:class="${hocKyChon?.id == hk.id} ? 'btn btn-primary' : 'btn btn-outline'">
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bảng TKB -->
+      <div th:if="${hocKyChon != null}" class="card">
+        <div class="card-header">
+          <span class="card-title">
+            TKB — <span th:text="${hocKyChon.tenHocKy} + ' ' + ${hocKyChon.namHoc}"></span>
+          </span>
+          <span th:if="${danhSachDangKy != null}" style="font-size:12px;color:var(--gray-500);">
+            <span th:text="${danhSachDangKy.size()}"></span> môn đã đăng ký
+          </span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${danhSachDangKy == null or danhSachDangKy.empty}" class="empty-state">
+            <i class="fa-solid fa-calendar-xmark"></i>Chưa đăng ký học phần nào trong học kỳ này.
+          </div>
+          <table th:if="${danhSachDangKy != null and !danhSachDangKy.empty}" class="table">
+            <thead>
+              <tr><th>Môn học</th><th>Mã lớp</th><th>TC</th><th>Giảng viên</th><th>Thứ</th><th>Tiết</th><th>Phòng</th></tr>
+            </thead>
+            <tbody>
+              <th:block th:each="dk : ${danhSachDangKy}">
+                <!-- Nếu không có lịch học -->
+                <tr th:if="${dk.lopHocPhan.lichHocs.empty}">
+                  <td th:text="${dk.lopHocPhan.monHoc.tenMon}"></td>
+                  <td><code th:text="${dk.lopHocPhan.maLopHp}"></code></td>
+                  <td th:text="${dk.lopHocPhan.monHoc.soTinChi}"></td>
+                  <td th:text="${dk.lopHocPhan.giangVien?.hoTen ?: '—'}"></td>
+                  <td colspan="3" class="text-muted">Chưa có lịch học</td>
+                </tr>
+                <!-- Mỗi buổi học 1 dòng -->
+                <tr th:each="lh, lhStat : ${dk.lopHocPhan.lichHocs}">
+                  <td th:if="${lhStat.first}" th:rowspan="${dk.lopHocPhan.lichHocs.size()}"
+                      th:text="${dk.lopHocPhan.monHoc.tenMon}"></td>
+                  <td th:if="${lhStat.first}" th:rowspan="${dk.lopHocPhan.lichHocs.size()}">
+                    <code th:text="${dk.lopHocPhan.maLopHp}"></code>
+                  </td>
+                  <td th:if="${lhStat.first}" th:rowspan="${dk.lopHocPhan.lichHocs.size()}"
+                      th:text="${dk.lopHocPhan.monHoc.soTinChi}"></td>
+                  <td th:if="${lhStat.first}" th:rowspan="${dk.lopHocPhan.lichHocs.size()}"
+                      th:text="${dk.lopHocPhan.giangVien?.hoTen ?: '—'}"></td>
+                  <td th:text="'Thứ ' + ${lh.thu}"></td>
+                  <td th:text="${lh.tietBatDau} + ' - ' + ${lh.tietKetThuc}"></td>
+                  <td th:text="${lh.phong ?: '—'}"></td>
+                </tr>
+              </th:block>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Đăng nhập — Quản lý học phần</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(145deg,#071663 0%,#0c2494 40%,#1344b4 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .login-box {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 40px 36px;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.45);
+    }
+    .login-logo {
+      text-align: center; margin-bottom: 24px;
+    }
+    .login-logo-icon {
+      width: 64px; height: 64px; border-radius: 16px;
+      background: linear-gradient(135deg,var(--primary),var(--primary-dark));
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 30px; color: var(--white);
+      box-shadow: 0 8px 24px rgba(26,86,219,.45);
+      margin-bottom: 12px;
+    }
+    .login-title { font-size: 22px; font-weight: 800; color: var(--navy); text-align: center; margin-bottom: 6px; }
+    .login-sub   { font-size: 13px; color: var(--gray-500); text-align: center; margin-bottom: 28px; }
+    .form-group  { margin-bottom: 16px; }
+    .form-label  { display: block; font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; }
+    .input-wrap  { position: relative; }
+    .input-wrap .inp-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-300); font-size: 14px; }
+    .form-control {
+      width: 100%; padding: 11px 12px 11px 38px;
+      border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 14px; color: var(--gray-900);
+      background: var(--gray-50); outline: none; transition: var(--transition);
+    }
+    .form-control:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 3px rgba(26,86,219,.12); }
+    .btn-block {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg,var(--primary),var(--primary-dark));
+      color: var(--white); border: none; border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: var(--transition);
+      box-shadow: 0 6px 18px rgba(26,86,219,.4);
+      margin-top: 8px;
+    }
+    .btn-block:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(26,86,219,.5); }
+    .login-hint {
+      margin-top: 20px; padding: 12px 14px;
+      background: var(--gray-50); border-radius: var(--radius-sm);
+      border: 1px solid var(--gray-200); font-size: 12px; color: var(--gray-500);
+    }
+    .login-hint b { color: var(--navy); }
+  </style>
+</head>
+<body>
+<div class="login-box">
+  <div class="login-logo">
+    <div class="login-logo-icon">🎓</div>
+    <div class="login-title">Đăng Nhập</div>
+    <div class="login-sub">Hệ thống Quản lý Đăng ký Học phần</div>
+  </div>
+
+  <!-- Thông báo lỗi / thành công -->
+  <div th:if="${errorMsg}" class="alert alert-danger" style="margin-bottom:16px;">
+    <i class="fa-solid fa-circle-exclamation"></i>
+    <span th:text="${errorMsg}"></span>
+  </div>
+  <div th:if="${logoutMsg}" class="alert alert-success" style="margin-bottom:16px;">
+    <i class="fa-solid fa-circle-check"></i>
+    <span th:text="${logoutMsg}"></span>
+  </div>
+
+  <form action="/login" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <div class="form-group">
+      <label class="form-label" for="username">Email</label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-envelope inp-icon"></i>
+        <input type="email" id="username" name="username" class="form-control"
+               placeholder="Nhập email đăng nhập" required autocomplete="email"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="password">Mật khẩu</label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-lock inp-icon"></i>
+        <input type="password" id="password" name="password" class="form-control"
+               placeholder="Nhập mật khẩu" required autocomplete="current-password"/>
+      </div>
+    </div>
+    <button type="submit" class="btn-block">
+      <i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP
+    </button>
+  </form>
+
+  <div class="login-hint">
+    <b>Tài khoản mẫu:</b><br/>
+    Admin: <b>admin@email.com</b> / 123456<br/>
+    Sinh viên: <b>sv001@email.com</b> / 123456<br/>
+    Giảng viên: <b>gv001@email.com</b> / 123456
+  </div>
+</div>
+</body>
+</html>

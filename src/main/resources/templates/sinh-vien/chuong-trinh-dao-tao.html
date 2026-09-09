@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Chương trình đào tạo</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="layout">
+
+  <div th:insert="~{fragments/sidebar :: sv('sv-ctdt')}"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Chương trình đào tạo</div>
+      <div class="topbar-user">
+        <div class="topbar-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
+        <span class="topbar-name" th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
+      </div>
+    </header>
+    <div class="content">
+
+      <!-- Info ngành -->
+      <div style="background:var(--white);border-radius:10px;padding:14px 18px;margin-bottom:18px;
+                  border:1px solid var(--gray-200);display:flex;align-items:center;gap:12px;">
+        <div style="font-size:32px;">🎓</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--navy);"
+               th:text="${sinhVien?.nganh?.tenNganh ?: 'Chưa xác định ngành'}">Ngành học</div>
+          <div style="font-size:13px;color:var(--gray-500);"
+               th:text="'MSSV: ' + ${sinhVien?.mssv} + ' | Khoá: ' + ${sinhVien?.khoaHoc}">MSSV</div>
+        </div>
+      </div>
+
+      <div th:if="${error}" class="flash flash-danger"><i class="fa-solid fa-circle-exclamation"></i><span th:text="${error}"></span></div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title"><i class="fa-solid fa-book-open" style="color:var(--primary);margin-right:6px;"></i>Danh sách môn học theo chương trình</span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${danhSachCTDT == null or danhSachCTDT.empty}" class="empty-state">
+            <i class="fa-solid fa-folder-open"></i>Chưa có dữ liệu chương trình đào tạo.
+          </div>
+          <table th:if="${danhSachCTDT != null and !danhSachCTDT.empty}" class="table">
+            <thead>
+              <tr><th>HK</th><th>Mã môn</th><th>Tên môn học</th><th>TC</th><th>LT</th><th>TH</th><th>Loại</th></tr>
+            </thead>
+            <tbody>
+              <tr th:each="ctdt : ${danhSachCTDT}">
+                <td th:text="'HK' + ${ctdt.hocKyThu}"></td>
+                <td><code th:text="${ctdt.monHoc.maMon}"></code></td>
+                <td th:text="${ctdt.monHoc.tenMon}"></td>
+                <td th:text="${ctdt.monHoc.soTinChi}"></td>
+                <td th:text="${ctdt.monHoc.soTietLyThuyet}"></td>
+                <td th:text="${ctdt.monHoc.soTietThucHanh}"></td>
+                <td>
+                  <span th:if="${ctdt.batBuoc}"  class="badge badge-primary">Bắt buộc</span>
+                  <span th:if="${!ctdt.batBuoc}" class="badge badge-secondary">Tự chọn</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

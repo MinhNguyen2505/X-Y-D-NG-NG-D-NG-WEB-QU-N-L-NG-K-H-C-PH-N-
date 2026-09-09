@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Sinh viên</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/></head>
+<body><div class="layout">
+  <div th:insert="~{fragments/sidebar :: admin('admin-sv')}"></div>
+  <div class="main">
+    <header class="topbar"><div class="topbar-title">Quản lý Sinh viên</div></header>
+    <div class="content">
+      <div th:if="${successMsg}" class="flash flash-success"><i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span></div>
+      <div th:if="${errorMsg}"   class="flash flash-danger"><i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span></div>
+      <div class="page-hd">
+        <div><div class="page-hd-title">Sinh viên</div><div class="page-hd-sub" th:text="${danhSach?.size()} + ' sinh viên'"></div></div>
+        <a th:href="@{/admin/sinh-vien/them}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm</a>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:0;">
+          <table class="table">
+            <thead><tr><th>MSSV</th><th>Họ tên</th><th>Email</th><th>Lớp</th><th>Ngành</th><th>Trạng thái</th><th></th></tr></thead>
+            <tbody>
+              <tr th:each="sv : ${danhSach}">
+                <td th:text="${sv.mssv}"></td><td th:text="${sv.hoTen}"></td>
+                <td th:text="${sv.email}"></td><td th:text="${sv.lopSinhHoat}"></td>
+                <td th:text="${sv.nganh?.tenNganh ?: '—'}"></td>
+                <td><span class="badge badge-success" th:text="${sv.trangThai}"></span></td>
+                <td class="flex">
+                  <a th:href="@{/admin/sinh-vien/sua/{id}(id=${sv.id})}" class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></a>
+                  <form th:action="@{/admin/sinh-vien/xoa/{id}(id=${sv.id})}" method="post" style="margin:0" onsubmit="return confirm('Xóa?')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></body></html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(
+          pageTitle     = 'Quản lý Môn học',
+          activePage    = 'admin-mh',
+          content       = ~{::pageContent}
+      )}">
+<head><title>Quản lý Môn học</title></head>
+<body>
+
+<th:block th:fragment="pageContent">
+  <div class="greeting-banner" style="background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%); margin-bottom: 24px;">
+    <div>
+      <div class="greeting-name" style="font-size: 20px;">Quản lý Môn học</div>
+      <div class="greeting-date">Quản lý danh sách môn học trong toàn trường</div>
+    </div>
+    <div class="greeting-icon">📚</div>
+  </div>
+
+  <div class="news-section">
+    <div class="news-header">
+      <div class="news-title">Danh sách môn học</div>
+      <a href="#" class="news-more" style="background:var(--primary); color:white; padding:6px 12px; border-radius:6px; text-decoration:none;">
+        <i class="fa-solid fa-plus" style="margin-right:4px;"></i> Thêm môn học
+      </a>
+    </div>
+    
+    <div style="padding: 16px;">
+      <table style="width:100%; border-collapse: collapse; font-size:13px; text-align:left;">
+        <thead>
+          <tr style="background:var(--gray-50); border-bottom: 2px solid var(--gray-200);">
+            <th style="padding:12px 16px; color:var(--gray-500);">Mã môn</th>
+            <th style="padding:12px 16px; color:var(--gray-500);">Tên môn học</th>
+            <th style="padding:12px 16px; color:var(--gray-500);">TC</th>
+            <th style="padding:12px 16px; color:var(--gray-500);">Lý thuyết</th>
+            <th style="padding:12px 16px; color:var(--gray-500);">Thực hành</th>
+            <th style="padding:12px 16px; color:var(--gray-500); text-align:center;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="mh : ${monHocList}" style="border-bottom: 1px solid var(--gray-100);">
+            <td style="padding:12px 16px; font-weight:600; color:var(--navy);" th:text="${mh.maMon}">INT101</td>
+            <td style="padding:12px 16px;" th:text="${mh.tenMon}">Tin học đại cương</td>
+            <td style="padding:12px 16px;" th:text="${mh.soTinChi}">3</td>
+            <td style="padding:12px 16px;" th:text="${mh.soTietLyThuyet}">30</td>
+            <td style="padding:12px 16px;" th:text="${mh.soTietThucHanh}">15</td>
+            <td style="padding:12px 16px; text-align:center;">
+              <a href="#" style="color:var(--primary); margin-right:12px;"><i class="fa-solid fa-pen-to-square"></i></a>
+              <a href="#" style="color:var(--danger);"><i class="fa-solid fa-trash-can"></i></a>
+            </td>
+          </tr>
+          <tr th:if="${monHocList == null or #lists.isEmpty(monHocList)}">
+            <td colspan="6" style="padding:24px; text-align:center; color:var(--gray-400);">Chưa có dữ liệu môn học.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</th:block>
+
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Form Lớp học phần</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/></head>
+<body><div class="layout">
+  <div th:insert="~{fragments/sidebar :: admin('admin-lhp')}"></div>
+  <div class="main">
+    <header class="topbar"><div class="topbar-title" th:text="${lopHocPhan.id == null} ? 'Mở lớp học phần' : 'Sửa lớp học phần'">Form</div></header>
+    <div class="content">
+      <div class="page-hd">
+        <div class="page-hd-title" th:text="${lopHocPhan.id == null} ? 'Mở lớp học phần' : 'Sửa lớp học phần'">Form</div>
+        <a th:href="@{/admin/lop-hoc-phan}" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+      </div>
+      <div class="card" style="max-width:600px;"><div class="card-body">
+        <form th:action="${lopHocPhan.id == null} ? @{/admin/lop-hoc-phan/them} : @{/admin/lop-hoc-phan/sua/{id}(id=${lopHocPhan.id})}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input type="hidden" name="version"       th:value="${lopHocPhan.version ?: 0}"/>
+          <input type="hidden" name="siSoHienTai"   th:value="${lopHocPhan.siSoHienTai ?: 0}"/>
+          <div class="form-group"><label class="form-label">Mã lớp HP *</label>
+            <input type="text" name="maLopHp" class="form-control" th:value="${lopHocPhan.maLopHp}" required placeholder="VD: MATH101-01"/></div>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Môn học *</label>
+              <select name="monHoc.id" class="form-control" required>
+                <option value="">-- Chọn môn học --</option>
+                <option th:each="mh : ${danhSachMonHoc}" th:value="${mh.id}"
+                        th:text="${mh.maMon} + ' — ' + ${mh.tenMon}"
+                        th:selected="${lopHocPhan.monHoc?.id == mh.id}"></option>
+              </select></div>
+            <div class="form-group"><label class="form-label">Học kỳ *</label>
+              <select name="hocKy.id" class="form-control" required>
+                <option value="">-- Chọn học kỳ --</option>
+                <option th:each="hk : ${danhSachHocKy}" th:value="${hk.id}"
+                        th:text="${hk.tenHocKy} + ' (' + ${hk.namHoc} + ')'"
+                        th:selected="${lopHocPhan.hocKy?.id == hk.id}"></option>
+              </select></div>
+            <div class="form-group"><label class="form-label">Giảng viên</label>
+              <select name="giangVien.id" class="form-control">
+                <option value="">-- Chưa phân công --</option>
+                <option th:each="gv : ${danhSachGiangVien}" th:value="${gv.id}"
+                        th:text="${gv.hoTen} + ' (' + ${gv.maGv} + ')'"
+                        th:selected="${lopHocPhan.giangVien?.id == gv.id}"></option>
+              </select></div>
+            <div class="form-group"><label class="form-label">Sĩ số tối đa *</label>
+              <input type="number" name="siSoToiDa" class="form-control"
+                     th:value="${lopHocPhan.siSoToiDa ?: 50}" min="1" required/></div>
+          </div>
+          <div class="flex mt-2">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
+            <a th:href="@{/admin/lop-hoc-phan}" class="btn btn-outline">Hủy</a>
+          </div>
+        </form>
+      </div></div>
+    </div>
+  </div>
+</div></body></html>

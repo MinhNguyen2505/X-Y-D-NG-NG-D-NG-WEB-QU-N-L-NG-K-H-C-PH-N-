@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Form Học kỳ</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/></head>
+<body><div class="layout">
+  <div th:insert="~{fragments/sidebar :: admin('admin-hk')}"></div>
+  <div class="main">
+    <header class="topbar"><div class="topbar-title" th:text="${hocKy.id == null} ? 'Tạo học kỳ' : 'Sửa học kỳ'">Form</div></header>
+    <div class="content">
+      <div class="page-hd">
+        <div class="page-hd-title" th:text="${hocKy.id == null} ? 'Tạo học kỳ' : 'Sửa học kỳ'">Form</div>
+        <a th:href="@{/admin/hoc-ky}" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+      </div>
+      <div class="card" style="max-width:600px;"><div class="card-body">
+        <form th:action="${hocKy.id == null} ? @{/admin/hoc-ky/them} : @{/admin/hoc-ky/sua/{id}(id=${hocKy.id})}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <div class="form-group"><label class="form-label">Tên học kỳ *</label>
+            <input type="text" name="tenHocKy" class="form-control" th:value="${hocKy.tenHocKy}" required placeholder="VD: Học kỳ 1 năm 2026-2027"/></div>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Năm học *</label>
+              <input type="text" name="namHoc" class="form-control" th:value="${hocKy.namHoc}" required placeholder="VD: 2026-2027"/></div>
+            <div class="form-group"><label class="form-label">Học kỳ thứ *</label>
+              <input type="number" name="hocKyThu" class="form-control" th:value="${hocKy.hocKyThu}" min="1" max="3" required/></div>
+            <div class="form-group"><label class="form-label">Bắt đầu đăng ký *</label>
+              <input type="date" name="ngayBatDauDk" class="form-control" th:value="${hocKy.ngayBatDauDk}" required/></div>
+            <div class="form-group"><label class="form-label">Kết thúc đăng ký *</label>
+              <input type="date" name="ngayKetThucDk" class="form-control" th:value="${hocKy.ngayKetThucDk}" required/></div>
+            <div class="form-group"><label class="form-label">Bắt đầu học *</label>
+              <input type="date" name="ngayBatDauHoc" class="form-control" th:value="${hocKy.ngayBatDauHoc}" required/></div>
+            <div class="form-group"><label class="form-label">Kết thúc học *</label>
+              <input type="date" name="ngayKetThucHoc" class="form-control" th:value="${hocKy.ngayKetThucHoc}" required/></div>
+            <div class="form-group"><label class="form-label">TC tối thiểu</label>
+              <input type="number" name="tinChiToiThieu" class="form-control" th:value="${hocKy.tinChiToiThieu}" min="0"/></div>
+            <div class="form-group"><label class="form-label">TC tối đa</label>
+              <input type="number" name="tinChiToiDa" class="form-control" th:value="${hocKy.tinChiToiDa}" min="1"/></div>
+          </div>
+          <div class="flex mt-2">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
+            <a th:href="@{/admin/hoc-ky}" class="btn btn-outline">Hủy</a>
+          </div>
+        </form>
+      </div></div>
+    </div>
+  </div>
+</div></body></html>

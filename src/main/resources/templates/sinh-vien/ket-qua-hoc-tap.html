@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Kết quả học tập</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="layout">
+
+  <div th:insert="~{fragments/sidebar :: sv('sv-kqht')}"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Kết quả học tập</div>
+      <div class="topbar-user">
+        <div class="topbar-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
+        <span class="topbar-name" th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
+      </div>
+    </header>
+    <div class="content">
+
+      <!-- GPA banner -->
+      <div style="background:linear-gradient(135deg,#15803d,#166534);border-radius:10px;
+                  padding:18px 24px;color:#fff;display:flex;align-items:center;gap:18px;
+                  margin-bottom:18px;box-shadow:0 4px 16px rgba(21,128,61,.3);">
+        <div style="font-size:44px;">🏆</div>
+        <div>
+          <div style="font-size:12px;opacity:.8;">Điểm trung bình tổng kết</div>
+          <div style="font-size:34px;font-weight:800;" th:text="${gpa}">0.00</div>
+          <div style="font-size:12px;opacity:.7;">Tính trên các môn có điểm tổng kết</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title"><i class="fa-solid fa-table" style="color:var(--primary);margin-right:6px;"></i>Lịch sử học tập</span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${lichSu == null or lichSu.empty}" class="empty-state">
+            <i class="fa-solid fa-inbox"></i>Chưa có dữ liệu học tập.
+          </div>
+          <table th:if="${lichSu != null and !lichSu.empty}" class="table">
+            <thead>
+              <tr><th>Học kỳ</th><th>Môn học</th><th>TC</th><th>Điểm GK</th><th>Điểm CK</th><th>Điểm TK</th><th>Kết quả</th></tr>
+            </thead>
+            <tbody>
+              <tr th:each="dk : ${lichSu}" th:if="${dk.trangThai.name() != 'DA_HUY'}">
+                <td style="white-space:nowrap;" th:text="${dk.lopHocPhan.hocKy.tenHocKy}"></td>
+                <td th:text="${dk.lopHocPhan.monHoc.tenMon}"></td>
+                <td th:text="${dk.lopHocPhan.monHoc.soTinChi}"></td>
+                <td th:text="${dk.diemGiuaKy != null ? dk.diemGiuaKy : '—'}"></td>
+                <td th:text="${dk.diemCuoiKy != null ? dk.diemCuoiKy : '—'}"></td>
+                <td>
+                  <b th:text="${dk.diemTongKet != null ? dk.diemTongKet : '—'}"
+                     th:style="${dk.diemTongKet != null and dk.diemTongKet < 5} ? 'color:var(--danger);' :
+                                (dk.diemTongKet != null ? 'color:var(--success);' : '')"></b>
+                </td>
+                <td>
+                  <span th:if="${dk.diemTongKet == null}"              class="badge badge-secondary">Chưa có điểm</span>
+                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet >= 5}" class="badge badge-success">Đạt</span>
+                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet < 5}"  class="badge badge-danger">Không đạt</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

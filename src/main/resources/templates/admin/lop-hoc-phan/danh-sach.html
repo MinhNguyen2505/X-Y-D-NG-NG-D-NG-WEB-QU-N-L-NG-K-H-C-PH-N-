@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Lớp học phần</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/></head>
+<body><div class="layout">
+  <div th:insert="~{fragments/sidebar :: admin('admin-lhp')}"></div>
+  <div class="main">
+    <header class="topbar"><div class="topbar-title">Quản lý Lớp học phần</div></header>
+    <div class="content">
+      <div th:if="${successMsg}" class="flash flash-success"><i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span></div>
+      <div th:if="${errorMsg}"   class="flash flash-danger"><i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span></div>
+      <div class="page-hd">
+        <div class="page-hd-title">Lớp học phần</div>
+        <a th:href="@{/admin/lop-hoc-phan/them}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Mở lớp</a>
+      </div>
+      <div class="card" style="margin-bottom:14px;"><div class="card-body">
+        <div class="flex-wrap">
+          <a th:each="hk : ${danhSachHocKy}"
+             th:href="@{/admin/lop-hoc-phan(hocKyId=${hk.id})}"
+             th:text="${hk.tenHocKy} + ' (' + ${hk.namHoc} + ')'"
+             th:class="${hocKyChon?.id == hk.id} ? 'btn btn-primary' : 'btn btn-outline'"></a>
+        </div>
+      </div></div>
+      <div th:if="${hocKyChon != null}" class="card"><div class="card-body" style="padding:0;">
+        <div th:if="${danhSachLop == null or danhSachLop.empty}" class="empty-state">
+          <i class="fa-solid fa-folder-open"></i>Chưa có lớp học phần nào.
+        </div>
+        <table th:if="${danhSachLop != null and !danhSachLop.empty}" class="table">
+          <thead><tr><th>Mã lớp</th><th>Môn học</th><th>Giảng viên</th><th>Sĩ số</th><th>Trạng thái</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="lhp : ${danhSachLop}">
+              <td><code th:text="${lhp.maLopHp}"></code></td>
+              <td th:text="${lhp.monHoc.tenMon}"></td>
+              <td th:text="${lhp.giangVien?.hoTen ?: '—'}"></td>
+              <td th:text="${lhp.siSoHienTai} + '/' + ${lhp.siSoToiDa}"></td>
+              <td><span class="badge" th:classappend="${lhp.trangThai.name()=='MO'}?' badge-success':' badge-secondary'" th:text="${lhp.trangThai}"></span></td>
+              <td><a th:href="@{/admin/lop-hoc-phan/sua/{id}(id=${lhp.id})}" class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i> Sửa</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div></div>
+    </div>
+  </div>
+</div></body></html>

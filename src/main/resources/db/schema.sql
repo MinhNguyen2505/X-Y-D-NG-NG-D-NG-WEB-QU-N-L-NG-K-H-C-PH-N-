@@ -1,0 +1,195 @@
+﻿-- =============================================================
+-- Schema: Quan ly dang ky hoc phan theo tin chi
+-- Database: MySQL >= 8.0.16 (de dung CHECK constraint)
+-- Thu tu tao bang: cha truoc, con sau (tranh loi FK)
+-- =============================================================
+
+CREATE DATABASE IF NOT EXISTS quan_ly_hoc_phan
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE quan_ly_hoc_phan;
+
+-- =============================================================
+-- 1. NGANH
+-- =============================================================
+CREATE TABLE IF NOT EXISTS nganh (
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ma_nganh   VARCHAR(20)  NOT NULL,
+    ten_nganh  VARCHAR(255) NOT NULL,
+    CONSTRAINT uq_nganh_ma_nganh UNIQUE (ma_nganh)
+);
+
+-- =============================================================
+-- 2. SINH_VIEN
+-- =============================================================
+CREATE TABLE IF NOT EXISTS sinh_vien (
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+    mssv           VARCHAR(20)  NOT NULL,
+    ho_ten         VARCHAR(255) NOT NULL,
+    email          VARCHAR(255) NOT NULL,
+    mat_khau       VARCHAR(255) NOT NULL,
+    ngay_sinh      DATE,
+    lop_sinh_hoat  VARCHAR(50),
+    khoa_hoc       VARCHAR(20),
+    nganh_id       BIGINT,
+    trang_thai     VARCHAR(30)  NOT NULL DEFAULT 'DANG_HOC',
+    CONSTRAINT uq_sv_mssv  UNIQUE (mssv),
+    CONSTRAINT uq_sv_email UNIQUE (email),
+    CONSTRAINT fk_sv_nganh FOREIGN KEY (nganh_id) REFERENCES nganh (id)
+);
+
+-- =============================================================
+-- 3. GIANG_VIEN
+-- =============================================================
+CREATE TABLE IF NOT EXISTS giang_vien (
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ma_gv        VARCHAR(20)  NOT NULL,
+    ho_ten       VARCHAR(255) NOT NULL,
+    email        VARCHAR(255) NOT NULL,
+    mat_khau     VARCHAR(255) NOT NULL,
+    khoa_bo_mon  VARCHAR(255),
+    CONSTRAINT uq_gv_ma_gv UNIQUE (ma_gv),
+    CONSTRAINT uq_gv_email UNIQUE (email)
+);
+
+-- =============================================================
+-- 4. MON_HOC
+-- =============================================================
+CREATE TABLE IF NOT EXISTS mon_hoc (
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ma_mon              VARCHAR(20)  NOT NULL,
+    ten_mon             VARCHAR(255) NOT NULL,
+    so_tin_chi          INT          NOT NULL,
+    so_tiet_ly_thuyet   INT          NOT NULL DEFAULT 0,
+    so_tiet_thuc_hanh   INT          NOT NULL DEFAULT 0,
+    mo_ta               TEXT,
+    CONSTRAINT uq_mh_ma_mon UNIQUE (ma_mon),
+    CONSTRAINT chk_mh_tin_chi CHECK (so_tin_chi > 0)
+);
+
+-- =============================================================
+-- 5. MON_TIEN_QUYET
+-- CHECK: mon_hoc_id <> mon_tien_quyet_id (khong tu tien quyet chinh minh)
+-- =============================================================
+CREATE TABLE IF NOT EXISTS mon_tien_quyet (
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    mon_hoc_id          BIGINT NOT NULL,
+    mon_tien_quyet_id   BIGINT NOT NULL,
+    CONSTRAINT uq_mtq UNIQUE (mon_hoc_id, mon_tien_quyet_id),
+    CONSTRAINT chk_mtq_no_self CHECK (mon_hoc_id <> mon_tien_quyet_id),
+    CONSTRAINT fk_mtq_mon_hoc    FOREIGN KEY (mon_hoc_id)        REFERENCES mon_hoc (id),
+    CONSTRAINT fk_mtq_tien_quyet FOREIGN KEY (mon_tien_quyet_id) REFERENCES mon_hoc (id)
+);
+
+-- =============================================================
+-- 6. CHUONG_TRINH_DAO_TAO
+-- =============================================================
+CREATE TABLE IF NOT EXISTS chuong_trinh_dao_tao (
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    nganh_id     BIGINT  NOT NULL,
+    mon_hoc_id   BIGINT  NOT NULL,
+    hoc_ky_thu   INT     NOT NULL,
+    bat_buoc     BOOLEAN NOT NULL DEFAULT TRUE,
+    CONSTRAINT uq_ctdt UNIQUE (nganh_id, mon_hoc_id),
+    CONSTRAINT fk_ctdt_nganh   FOREIGN KEY (nganh_id)   REFERENCES nganh   (id),
+    CONSTRAINT fk_ctdt_mon_hoc FOREIGN KEY (mon_hoc_id) REFERENCES mon_hoc (id)
+);
+
+-- =============================================================
+-- 7. HOC_KY
+-- =============================================================
+CREATE TABLE IF NOT EXISTS hoc_ky (
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ten_hoc_ky          VARCHAR(100) NOT NULL,
+    nam_hoc             VARCHAR(20)  NOT NULL,
+    hoc_ky_thu          INT          NOT NULL,
+    ngay_bat_dau_dk     DATE         NOT NULL,
+    ngay_ket_thuc_dk    DATE         NOT NULL,
+    ngay_bat_dau_hoc    DATE         NOT NULL,
+    ngay_ket_thuc_hoc   DATE         NOT NULL,
+    tin_chi_toi_thieu   INT          NOT NULL DEFAULT 0,
+    tin_chi_toi_da      INT          NOT NULL DEFAULT 25,
+    CONSTRAINT uq_hk UNIQUE (nam_hoc, hoc_ky_thu),
+    CONSTRAINT chk_hk_dk  CHECK (ngay_ket_thuc_dk  >= ngay_bat_dau_dk),
+    CONSTRAINT chk_hk_hoc CHECK (ngay_ket_thuc_hoc >= ngay_bat_dau_hoc),
+    CONSTRAINT chk_hk_tc  CHECK (tin_chi_toi_da >= tin_chi_toi_thieu)
+);
+
+-- =============================================================
+-- 8. LOP_HOC_PHAN
+-- KHONG co cot phong - phong chi nam o lich_hoc.phong
+-- version: dung cho Optimistic Locking (@Version trong JPA)
+-- =============================================================
+CREATE TABLE IF NOT EXISTS lop_hoc_phan (
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ma_lop_hp        VARCHAR(50)  NOT NULL,
+    mon_hoc_id       BIGINT       NOT NULL,
+    hoc_ky_id        BIGINT       NOT NULL,
+    giang_vien_id    BIGINT,
+    si_so_toi_da     INT          NOT NULL DEFAULT 50,
+    si_so_hien_tai   INT          NOT NULL DEFAULT 0,
+    trang_thai       VARCHAR(30)  NOT NULL DEFAULT 'MO',
+    version          BIGINT       NOT NULL DEFAULT 0,
+    CONSTRAINT uq_lhp_ma_lop_hp UNIQUE (ma_lop_hp),
+    CONSTRAINT chk_lhp_si_so CHECK (si_so_hien_tai >= 0 AND si_so_hien_tai <= si_so_toi_da),
+    CONSTRAINT fk_lhp_mon_hoc    FOREIGN KEY (mon_hoc_id)    REFERENCES mon_hoc   (id),
+    CONSTRAINT fk_lhp_hoc_ky     FOREIGN KEY (hoc_ky_id)     REFERENCES hoc_ky    (id),
+    CONSTRAINT fk_lhp_giang_vien FOREIGN KEY (giang_vien_id) REFERENCES giang_vien(id)
+);
+
+-- =============================================================
+-- 9. LICH_HOC
+-- phong nam o day (khong phai lop_hoc_phan) vi 1 lop co the
+-- hoc nhieu buoi o nhieu phong khac nhau
+-- thu: 2-8 (Thu Hai=2 ... Chu Nhat=8)
+-- =============================================================
+CREATE TABLE IF NOT EXISTS lich_hoc (
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    lop_hoc_phan_id  BIGINT      NOT NULL,
+    thu              INT         NOT NULL,
+    tiet_bat_dau     INT         NOT NULL,
+    tiet_ket_thuc    INT         NOT NULL,
+    phong            VARCHAR(50),
+    CONSTRAINT chk_lh_thu  CHECK (thu BETWEEN 2 AND 8),
+    CONSTRAINT chk_lh_tiet CHECK (tiet_bat_dau >= 1 AND tiet_ket_thuc >= tiet_bat_dau),
+    CONSTRAINT fk_lh_lop_hoc_phan FOREIGN KEY (lop_hoc_phan_id) REFERENCES lop_hoc_phan (id)
+);
+
+-- =============================================================
+-- 10. DANG_KY_HOC_PHAN
+-- KHONG co hoc_ky_id - hoc ky suy ra qua lop_hoc_phan.hoc_ky_id
+-- trang_thai: DA_DANG_KY / DA_HUY / HOAN_THANH
+-- =============================================================
+CREATE TABLE IF NOT EXISTS dang_ky_hoc_phan (
+    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    sinh_vien_id      BIGINT      NOT NULL,
+    lop_hoc_phan_id   BIGINT      NOT NULL,
+    ngay_dang_ky      DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    trang_thai        VARCHAR(30) NOT NULL DEFAULT 'DA_DANG_KY',
+    diem_giua_ky      DECIMAL(4,2),
+    diem_cuoi_ky      DECIMAL(4,2),
+    diem_tong_ket     DECIMAL(4,2),
+    CONSTRAINT uq_dkhp UNIQUE (sinh_vien_id, lop_hoc_phan_id),
+    CONSTRAINT chk_dkhp_diem_gk CHECK (diem_giua_ky  IS NULL OR (diem_giua_ky  BETWEEN 0 AND 10)),
+    CONSTRAINT chk_dkhp_diem_ck CHECK (diem_cuoi_ky  IS NULL OR (diem_cuoi_ky  BETWEEN 0 AND 10)),
+    CONSTRAINT chk_dkhp_diem_tk CHECK (diem_tong_ket IS NULL OR (diem_tong_ket BETWEEN 0 AND 10)),
+    CONSTRAINT fk_dkhp_sinh_vien     FOREIGN KEY (sinh_vien_id)    REFERENCES sinh_vien    (id),
+    CONSTRAINT fk_dkhp_lop_hoc_phan  FOREIGN KEY (lop_hoc_phan_id) REFERENCES lop_hoc_phan (id)
+);
+
+-- =============================================================
+-- INDEX bo sung (tang toc cac query nghiep vu thuong dung)
+-- =============================================================
+
+-- Tim lich hoc theo lop (check trung lich)
+CREATE INDEX idx_lh_thu_tiet ON lich_hoc (lop_hoc_phan_id, thu, tiet_bat_dau, tiet_ket_thuc);
+
+-- Tim dang ky cua SV (xem thoi khoa bieu, kiem tra trung lop)
+CREATE INDEX idx_dkhp_sv ON dang_ky_hoc_phan (sinh_vien_id, trang_thai);
+
+-- Tim dang ky theo lop (dem si so, nhap diem GV)
+CREATE INDEX idx_dkhp_lhp ON dang_ky_hoc_phan (lop_hoc_phan_id, trang_thai);
+
+-- Tim lop hoc phan theo hoc ky
+CREATE INDEX idx_lhp_hk ON lop_hoc_phan (hoc_ky_id, trang_thai);

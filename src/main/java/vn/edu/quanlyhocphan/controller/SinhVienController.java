@@ -1,0 +1,242 @@
+package vn.edu.quanlyhocphan.controller;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import vn.edu.quanlyhocphan.entity.*;
+import vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan;
+import vn.edu.quanlyhocphan.exception.*;
+import vn.edu.quanlyhocphan.repository.ChuongTrinhDaoTaoRepository;
+import vn.edu.quanlyhocphan.repository.DangKyHocPhanRepository;
+import vn.edu.quanlyhocphan.service.*;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * Controller cho role SINH_VIEN.
+ * Tat ca URL bat dau bang /sinh-vien/**
+ * Chuc nang: xem CTDT, dang ky, huy, xem TKB, xem ket qua.
+ */
+@Controller
+@RequestMapping("/sinh-vien")
+@RequiredArgsConstructor
+@Slf4j
+public class SinhVienController {
+
+    private final SinhVienService sinhVienService;
+    private final DangKyHocPhanService dangKyService;
+    private final DangKyHocPhanRepository dangKyRepo;
+    private final HocKyService hocKyService;
+    private final LopHocPhanService lopHocPhanService;
+    private final ChuongTrinhDaoTaoRepository chuongTrinhDaoTaoRepo;
+
+    // -----------------------------------------------------------------
+    // Helper: lay SinhVien tu Principal (email la username)
+    // -----------------------------------------------------------------
+    private SinhVien laySinhVienHienTai(UserDetails principal) {
+        return sinhVienService.findByEmail(principal.getUsername());
+    }
+
+    // =================================================================
+    // DASHBOARD
+    // =================================================================
+
+    @GetMapping("/dashboard")
+    public String dashboard(@AuthenticationPrincipal UserDetails principal, Model model) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        List<HocKy> hocKyDangMo = hocKyService.findHocKyDangMoDangKy();
+
+        // Loi chao theo gio trong ngay
+        int hour = java.time.LocalTime.now().getHour();
+        String greeting = hour < 12 ? "Chào buổi sáng,"
+                        : hour < 18 ? "Chào buổi chiều,"
+                        : "Chào buổi tối,";
+
+        // Hoc ky dang mo dang ky (lay cai dau tien neu co)
+        HocKy hocKyHienTai = hocKyDangMo.isEmpty() ? null : hocKyDangMo.get(0);
+
+        // Tong tin chi da dang ky trong hoc ky hien tai
+        int tinChiDaDangKy = 0;
+        if (hocKyHienTai != null) {
+            tinChiDaDangKy = dangKyRepo.tinhTongTinChiDaDangKy(sv.getId(), hocKyHienTai.getId());
+        }
+
+        // Dang ky gan day (tat ca hoc ky, lay 5 ban ghi moi nhat)
+        List<DangKyHocPhan> dangKyGanDay = dangKyService.layLichSuDangKy(sv.getId());
+
+        model.addAttribute("sinhVien", sv);
+        model.addAttribute("hocKyDangMo", hocKyDangMo);
+        model.addAttribute("hocKyHienTai", hocKyHienTai);
+        model.addAttribute("tinChiDaDangKy", tinChiDaDangKy);
+        model.addAttribute("dangKyGanDay", dangKyGanDay);
+        model.addAttribute("greeting", greeting);
+        return "sinh-vien/dashboard";
+    }
+
+    // =================================================================
+    // CHUONG TRINH DAO TAO
+    // =================================================================
+
+    @GetMapping("/chuong-trinh-dao-tao")
+    public String xemChuongTrinhDaoTao(
+            @AuthenticationPrincipal UserDetails principal, Model model) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        model.addAttribute("sinhVien", sv);
+
+        if (sv.getNganh() == null) {
+            model.addAttribute("error", "Ban chua duoc gan nganh hoc.");
+            return "sinh-vien/chuong-trinh-dao-tao";
+        }
+
+        List<ChuongTrinhDaoTao> ctdt =
+            chuongTrinhDaoTaoRepo.findByNganhIdWithMonHoc(sv.getNganh().getId());
+        model.addAttribute("danhSachCTDT", ctdt);
+        return "sinh-vien/chuong-trinh-dao-tao";
+    }
+
+    // =================================================================
+    // DANG KY HOC PHAN
+    // =================================================================
+
+    /** Trang chon hoc ky va xem danh sach lop mo dang ky */
+    @GetMapping("/dang-ky")
+    public String trangDangKy(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam(required = false) Long hocKyId,
+            Model model) {
+
+        SinhVien sv = laySinhVienHienTai(principal);
+        List<HocKy> danhSachHocKy = hocKyService.findHocKyDangMoDangKy();
+        model.addAttribute("sinhVien", sv);
+        model.addAttribute("danhSachHocKy", danhSachHocKy);
+
+        if (hocKyId != null) {
+            HocKy hocKy = hocKyService.findById(hocKyId);
+            List<LopHocPhan> danhSachLop =
+                lopHocPhanService.findByHocKyId(hocKyId, TrangThaiLopHocPhan.MO);
+            List<DangKyHocPhan> daDangKy =
+                dangKyService.layDangKyHienTai(sv.getId(), hocKyId);
+
+            // Set id cac lop da dang ky (de template kiem tra nhanh)
+            Set<Long> daDangKyLopIds = daDangKy.stream()
+                .map(dk -> dk.getLopHocPhan().getId())
+                .collect(Collectors.toSet());
+
+            model.addAttribute("hocKyChon", hocKy);
+            model.addAttribute("danhSachLop", danhSachLop);
+            model.addAttribute("daDangKy", daDangKy);
+            model.addAttribute("daDangKyLopIds", daDangKyLopIds);
+        }
+        return "sinh-vien/dang-ky";
+    }
+
+    /** Thuc hien dang ky hoc phan — bat tat ca 6 exception rieng biet */
+    @PostMapping("/dang-ky")
+    public String thucHienDangKy(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam Long lopHocPhanId,
+            @RequestParam Long hocKyId,
+            RedirectAttributes redirectAttributes) {
+
+        SinhVien sv = laySinhVienHienTai(principal);
+        try {
+            dangKyService.dangKy(sv.getId(), lopHocPhanId);
+            redirectAttributes.addFlashAttribute("successMsg", "Dang ky hoc phan thanh cong!");
+
+        } catch (HetChoException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        } catch (TrungLichException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        } catch (ThieuTienQuyetException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        } catch (VuotTinChiException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        } catch (TrungLopException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        } catch (NgoaiThoiGianDangKyException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        } catch (Exception e) {
+            log.error("Loi khong xac dinh khi dang ky LHP [{}]", lopHocPhanId, e);
+            redirectAttributes.addFlashAttribute("errorMsg", "Co loi xay ra. Vui long thu lai sau.");
+        }
+        return "redirect:/sinh-vien/dang-ky?hocKyId=" + hocKyId;
+    }
+
+    /** Huy dang ky hoc phan */
+    @PostMapping("/huy-dang-ky")
+    public String huyDangKy(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam Long lopHocPhanId,
+            @RequestParam Long hocKyId,
+            RedirectAttributes redirectAttributes) {
+
+        SinhVien sv = laySinhVienHienTai(principal);
+        try {
+            dangKyService.huyDangKy(sv.getId(), lopHocPhanId);
+            redirectAttributes.addFlashAttribute("successMsg", "Huy dang ky thanh cong.");
+        } catch (NgoaiThoiGianDangKyException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        } catch (Exception e) {
+            log.error("Loi khi huy dang ky LHP [{}]", lopHocPhanId, e);
+            redirectAttributes.addFlashAttribute("errorMsg", "Co loi xay ra khi huy dang ky.");
+        }
+        return "redirect:/sinh-vien/dang-ky?hocKyId=" + hocKyId;
+    }
+
+    // =================================================================
+    // THOI KHOA BIEU
+    // =================================================================
+
+    @GetMapping("/thoi-khoa-bieu")
+    public String xemThoiKhoaBieu(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam(required = false) Long hocKyId,
+            Model model) {
+
+        SinhVien sv = laySinhVienHienTai(principal);
+        List<HocKy> danhSachHocKy = hocKyService.findAll();
+        model.addAttribute("sinhVien", sv);
+        model.addAttribute("danhSachHocKy", danhSachHocKy);
+
+        if (hocKyId != null) {
+            HocKy hocKy = hocKyService.findById(hocKyId);
+            // DangKyHocPhan da fetch kem LopHocPhan + LichHoc (JOIN FETCH trong repo)
+            List<DangKyHocPhan> danhSachDangKy =
+                dangKyService.layDangKyHienTai(sv.getId(), hocKyId);
+            model.addAttribute("hocKyChon", hocKy);
+            model.addAttribute("danhSachDangKy", danhSachDangKy);
+        }
+        return "sinh-vien/thoi-khoa-bieu";
+    }
+
+    // =================================================================
+    // KET QUA HOC TAP
+    // =================================================================
+
+    @GetMapping("/ket-qua-hoc-tap")
+    public String xemKetQuaHocTap(
+            @AuthenticationPrincipal UserDetails principal, Model model) {
+
+        SinhVien sv = laySinhVienHienTai(principal);
+        List<DangKyHocPhan> lichSu = dangKyService.layLichSuDangKy(sv.getId());
+
+        // Tinh GPA trung binh diem tong ket cac mon co diem
+        double gpa = lichSu.stream()
+            .filter(dk -> dk.getDiemTongKet() != null)
+            .mapToDouble(dk -> dk.getDiemTongKet().doubleValue())
+            .average()
+            .orElse(0.0);
+
+        model.addAttribute("sinhVien", sv);
+        model.addAttribute("lichSu", lichSu);
+        model.addAttribute("gpa", String.format("%.2f", gpa));
+        return "sinh-vien/ket-qua-hoc-tap";
+    }
+}
