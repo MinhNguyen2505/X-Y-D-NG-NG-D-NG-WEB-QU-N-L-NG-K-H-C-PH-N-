@@ -7,14 +7,14 @@ import vn.edu.quanlyhocphan.dto.TinChiKhoiDto;
 import vn.edu.quanlyhocphan.dto.TinChiKhoiDto.MonTrongKhoiDto;
 import vn.edu.quanlyhocphan.entity.ChuongTrinhDaoTao;
 import vn.edu.quanlyhocphan.entity.DangKyHocPhan;
+import vn.edu.quanlyhocphan.entity.KhoiKienThuc;
 import vn.edu.quanlyhocphan.repository.ChuongTrinhDaoTaoRepository;
 import vn.edu.quanlyhocphan.repository.DangKyHocPhanRepository;
+import vn.edu.quanlyhocphan.repository.KhoiKienThucRepository;
 import vn.edu.quanlyhocphan.service.TinChiTichLuyService;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,113 +23,124 @@ public class TinChiTichLuyServiceImpl implements TinChiTichLuyService {
 
     private final ChuongTrinhDaoTaoRepository ctdtRepo;
     private final DangKyHocPhanRepository     dkhpRepo;
+    private final KhoiKienThucRepository      khoiRepo;
 
     @Override
     public List<TinChiKhoiDto> tinhTinChiTheoKhoi(Long sinhVienId, Long nganhId) {
-        // 1. Lay toan bo CTDT cua nganh (kem khoi)
-        List<ChuongTrinhDaoTao> ctdt = ctdtRepo.findByNganhIdWithMonHocAndKhoi(nganhId);
 
-        // 2. Lay toan bo lich su dang ky cua SV (tat ca hoc ky)
+        // Query 1: toan bo CTDT cua nganh (JOIN FETCH MonHoc + KhoiKienThuc)
+        List<ChuongTrinhDaoTao> ctdtList =
+            ctdtRepo.findByNganhIdWithMonHocAndKhoi(nganhId);
+
+        // Query 2: tat ca khoi cua nganh (ca khoi chung nganh_id=null)
+        List<KhoiKienThuc> danhSachKhoi =
+            khoiRepo.findByNganh_IdOrNganhIsNullOrderByMaKhoiAsc(nganhId);
+
+        // Query 3: lich su dang ky cua SV
         List<DangKyHocPhan> lichSu = dkhpRepo.findLichSuDangKy(sinhVienId);
 
-        // 3. Map: monHocId -> dang ky tot nhat (co diem tong ket cao nhat)
-        Map<Long, DangKyHocPhan> bestDangKy = new HashMap<>();
+        // Build map: monHocId -> diem tong ket tot nhat
+        Map<Long, BigDecimal> diemMap = new HashMap<>();
+        Map<Long, String>     trangThaiMap = new HashMap<>();
         for (DangKyHocPhan dk : lichSu) {
             Long monId = dk.getLopHocPhan().getMonHoc().getId();
-            if (!bestDangKy.containsKey(monId)) {
-                bestDangKy.put(monId, dk);
+            BigDecimal diem = dk.getDiemTongKet();
+            // Giu diem cao nhat
+            if (!diemMap.containsKey(monId)) {
+                diemMap.put(monId, diem);
+                trangThaiMap.put(monId, dk.getTrangThai().name());
             } else {
-                DangKyHocPhan existing = bestDangKy.get(monId);
-                if (dk.getDiemTongKet() != null) {
-                    if (existing.getDiemTongKet() == null ||
-                        dk.getDiemTongKet().compareTo(existing.getDiemTongKet()) > 0) {
-                        bestDangKy.put(monId, dk);
-                    }
+                BigDecimal cur = diemMap.get(monId);
+                if (diem != null && (cur == null || diem.compareTo(cur) > 0)) {
+                    diemMap.put(monId, diem);
+                    trangThaiMap.put(monId, dk.getTrangThai().name());
                 }
             }
         }
 
-        // 4. Nhom CTDT theo khoi
-        // Cac mon chua co khoi gom vao 1 nhom "Khac"
-        Map<String, List<ChuongTrinhDaoTao>> byKhoi = new LinkedHashMap<>();
+        // Build map: maKhoi -> list CTDT (theo thu tu khoi)
+        // Khoi chung (GDTC, QPAN) co nganh_id=null nen dung id de match
+        Map<Long, KhoiKienThuc>            khoiById  = new LinkedHashMap<>();
+        Map<String, List<ChuongTrinhDaoTao>> byMaKhoi = new LinkedHashMap<>();
 
-        for (ChuongTrinhDaoTao c : ctdt) {
-            String key = c.getKhoiKienThuc() != null
-                    ? c.getKhoiKienThuc().getMaKhoi()
-                    : "KHAC";
-            byKhoi.computeIfAbsent(key, k -> new ArrayList<>()).add(c);
+        for (KhoiKienThuc k : danhSachKhoi) {
+            khoiById.put(k.getId(), k);
+            byMaKhoi.put(k.getMaKhoi(), new ArrayList<>());
+        }
+        // Fallback cho mon chua co khoi
+        byMaKhoi.put("KHAC", new ArrayList<>());
+
+        for (ChuongTrinhDaoTao c : ctdtList) {
+            if (c.getKhoiKienThuc() != null) {
+                String maKhoi = c.getKhoiKienThuc().getMaKhoi();
+                byMaKhoi.computeIfAbsent(maKhoi, k -> new ArrayList<>()).add(c);
+            } else {
+                byMaKhoi.get("KHAC").add(c);
+            }
         }
 
-        // 5. Build DTO cho tung khoi
+        // Build result
         List<TinChiKhoiDto> result = new ArrayList<>();
-        for (Map.Entry<String, List<ChuongTrinhDaoTao>> entry : byKhoi.entrySet()) {
-            List<ChuongTrinhDaoTao> monTrongKhoi = entry.getValue();
-            ChuongTrinhDaoTao first = monTrongKhoi.get(0);
+        for (Map.Entry<String, List<ChuongTrinhDaoTao>> entry : byMaKhoi.entrySet()) {
+            List<ChuongTrinhDaoTao> monList = entry.getValue();
+            if (monList.isEmpty()) continue;
 
-            String maKhoi   = entry.getKey();
-            String tenKhoi  = (first.getKhoiKienThuc() != null)
-                    ? first.getKhoiKienThuc().getTenKhoi()
-                    : "Khác";
-            Long   khoiId   = (first.getKhoiKienThuc() != null)
-                    ? first.getKhoiKienThuc().getId()
-                    : null;
+            String maKhoi = entry.getKey();
+            KhoiKienThuc khoi = danhSachKhoi.stream()
+                .filter(k -> k.getMaKhoi().equals(maKhoi))
+                .findFirst().orElse(null);
 
-            int tongTC    = 0;
-            int batBuocTC = 0;
-            int tichLuyTC = 0;
+            String tenKhoi = khoi != null ? khoi.getTenKhoi() : "Khác";
+            Long   khoiId  = khoi != null ? khoi.getId() : null;
 
-            List<MonTrongKhoiDto> dsMon = new ArrayList<>();
+            int tongTC = 0, batBuocTC = 0, tichLuyTC = 0;
+            List<MonTrongKhoiDto> dsDto = new ArrayList<>();
             int stt = 1;
 
-            for (ChuongTrinhDaoTao c : monTrongKhoi) {
+            for (ChuongTrinhDaoTao c : monList) {
                 int tc = c.getMonHoc().getSoTinChi();
                 tongTC += tc;
-                if (Boolean.TRUE.equals(c.getBatBuoc())) batBuocTC += tc;
+                boolean batBuoc = Boolean.TRUE.equals(c.getBatBuoc());
+                if (batBuoc) batBuocTC += tc;
 
-                DangKyHocPhan dk  = bestDangKy.get(c.getMonHoc().getId());
-                BigDecimal diem   = (dk != null) ? dk.getDiemTongKet() : null;
-                boolean dat       = diem != null && diem.compareTo(
-                        c.getDiemDat() != null ? c.getDiemDat() : new BigDecimal("5.0")) >= 0;
+                Long       monId    = c.getMonHoc().getId();
+                BigDecimal diem     = diemMap.get(monId);
+                BigDecimal ngưỡng   = c.getDiemDat() != null
+                    ? c.getDiemDat() : new BigDecimal("5.0");
+                boolean    dat      = diem != null && diem.compareTo(ngưỡng) >= 0;
 
                 if (dat) tichLuyTC += tc;
 
-                String danhGia   = diem == null ? "" : (dat ? "Đạt" : "Không đạt");
-                BigDecimal quyDoi = diemQuyDoi(diem);
-                String chu        = diemChu(diem);
                 String ketQua;
-                if (dk == null) {
-                    ketQua = "Chưa học";
-                } else if (dat) {
-                    ketQua = "Hoàn thành";
-                } else if (diem != null) {
-                    ketQua = "Không đạt";
-                } else {
-                    ketQua = "Đang học";
-                }
+                String trangThai = trangThaiMap.get(monId);
+                if (trangThai == null)                        ketQua = "Chưa học";
+                else if (dat)                                 ketQua = "Hoàn thành";
+                else if (diem != null)                        ketQua = "Không đạt";
+                else                                          ketQua = "Đang học";
 
-                dsMon.add(MonTrongKhoiDto.builder()
-                        .stt(stt++)
-                        .maMon(c.getMonHoc().getMaMon())
-                        .tenMon(c.getMonHoc().getTenMon())
-                        .soTinChi(tc)
-                        .diem(diem)
-                        .danhGia(danhGia)
-                        .diemQuyDoi(quyDoi)
-                        .diemChu(chu)
-                        .ketQua(ketQua)
-                        .batBuoc(Boolean.TRUE.equals(c.getBatBuoc()))
-                        .build());
+                dsDto.add(MonTrongKhoiDto.builder()
+                    .stt(stt++)
+                    .maMon(c.getMonHoc().getMaMon())
+                    .tenMon(c.getMonHoc().getTenMon())
+                    .soTinChi(tc)
+                    .diem(diem)
+                    .danhGia(diem == null ? "" : (dat ? "Đạt" : "Không đạt"))
+                    .diemQuyDoi(diemQuyDoi(diem))
+                    .diemChu(diemChu(diem))
+                    .ketQua(ketQua)
+                    .batBuoc(batBuoc)
+                    .build());
             }
 
             result.add(TinChiKhoiDto.builder()
-                    .khoiId(khoiId)
-                    .maKhoi(maKhoi)
-                    .tenKhoi(tenKhoi)
-                    .tongSoTinChi(tongTC)
-                    .tinChiBatBuoc(batBuocTC)
-                    .tinChiDaTichLuy(tichLuyTC)
-                    .danhSachMon(dsMon)
-                    .build());
+                .khoiId(khoiId)
+                .maKhoi(maKhoi)
+                .tenKhoi(tenKhoi)
+                .tongSoTinChi(tongTC)
+                .tinChiBatBuoc(batBuocTC)
+                .tinChiDaTichLuy(tichLuyTC)
+                .danhSachMon(dsDto)
+                .build());
         }
 
         return result;
@@ -137,15 +148,11 @@ public class TinChiTichLuyServiceImpl implements TinChiTichLuyService {
 
     @Override
     public int tongTinChiDaTichLuy(Long sinhVienId, Long nganhId) {
-        return tinhTinChiTheoKhoi(sinhVienId, nganhId)
-                .stream()
-                .mapToInt(TinChiKhoiDto::getTinChiDaTichLuy)
-                .sum();
+        return tinhTinChiTheoKhoi(sinhVienId, nganhId).stream()
+            .mapToInt(TinChiKhoiDto::getTinChiDaTichLuy)
+            .sum();
     }
 
-    // ----------------------------------------------------------------
-    // Quy doi diem he 10 -> he 4 (theo thang diem 10-4 pho bien VN)
-    // ----------------------------------------------------------------
     private static BigDecimal diemQuyDoi(BigDecimal d) {
         if (d == null) return null;
         double v = d.doubleValue();

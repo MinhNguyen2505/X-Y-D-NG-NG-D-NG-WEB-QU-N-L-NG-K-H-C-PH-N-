@@ -240,13 +240,13 @@
                     <div th:if="${khoi.tongSoTinChi > 0}" class="mini-progress">
                       <div class="mini-bar-wrap">
                         <div class="mini-bar"
-                             th:classappend="${khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi >= 80} ? ' ok'
-                                           : ${khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi >= 40} ? ' mid'
+                             th:classappend="${khoi.tongSoTinChi > 0 and khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi >= 80} ? ' ok'
+                                           : ${khoi.tongSoTinChi > 0 and khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi >= 40} ? ' mid'
                                            : ' low'"
-                             th:style="'width:' + (${khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi}) + '%'"></div>
+                             th:style="'width:' + (${khoi.tongSoTinChi > 0 ? khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi : 0}) + '%'"></div>
                       </div>
                       <span style="font-size:11px;color:var(--gray-500);white-space:nowrap;"
-                            th:text="${khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi} + '%'"></span>
+                            th:text="${khoi.tongSoTinChi > 0 ? khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi : 0} + '%'"></span>
                     </div>
                   </td>
                 </tr>
@@ -260,10 +260,10 @@
                     <div class="mini-progress" th:if="${tongYeuCau > 0}">
                       <div class="mini-bar-wrap">
                         <div class="mini-bar ok"
-                             th:style="'width:' + (${tongTichLuy * 100 / tongYeuCau}) + '%'"></div>
+                             th:style="'width:' + (${tongYeuCau > 0 ? tongTichLuy * 100 / tongYeuCau : 0}) + '%'"></div>
                       </div>
                       <span style="font-size:11px;font-weight:700;"
-                            th:text="${tongTichLuy * 100 / tongYeuCau} + '%'"></span>
+                            th:text="${tongYeuCau > 0 ? tongTichLuy * 100 / tongYeuCau : 0} + '%'"></span>
                     </div>
                   </td>
                 </tr>

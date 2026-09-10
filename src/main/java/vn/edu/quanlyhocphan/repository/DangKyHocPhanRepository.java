@@ -80,7 +80,8 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Lo
 
     /**
      * Lay toan bo lich su dang ky cua SV (tat ca hoc ky, tat ca trang thai).
-     * Dung cho trang "Xem ket qua hoc tap" cua SinhVien.
+     * Fetch day du MonHoc de tranh N+1 query.
+     * Dung cho trang "Xem ket qua hoc tap" va "Tin chi tich luy".
      */
     @Query("SELECT dkhp FROM DangKyHocPhan dkhp " +
            "JOIN FETCH dkhp.lopHocPhan lhp " +
