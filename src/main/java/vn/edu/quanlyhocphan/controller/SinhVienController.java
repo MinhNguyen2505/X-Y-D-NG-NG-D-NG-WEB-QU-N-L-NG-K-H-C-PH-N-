@@ -16,6 +16,8 @@ import vn.edu.quanlyhocphan.repository.DangKyHocPhanRepository;
 import vn.edu.quanlyhocphan.service.*;
 import vn.edu.quanlyhocphan.service.NguyenVongService;
 import vn.edu.quanlyhocphan.service.DinhHuongService;
+import vn.edu.quanlyhocphan.service.TinChiTichLuyService;
+import vn.edu.quanlyhocphan.repository.LichThiRepository;
 
 import java.util.List;
 import java.util.Set;
@@ -40,6 +42,8 @@ public class SinhVienController {
     private final ChuongTrinhDaoTaoRepository chuongTrinhDaoTaoRepo;
     private final NguyenVongService nguyenVongService;
     private final DinhHuongService dinhHuongService;
+    private final TinChiTichLuyService tinChiTichLuyService;
+    private final LichThiRepository lichThiRepo;
 
     // -----------------------------------------------------------------
     // Helper: lay SinhVien tu Principal (email la username)
@@ -195,27 +199,34 @@ public class SinhVienController {
     }
 
     // =================================================================
-    // THOI KHOA BIEU
+    // THOI KHOA BIEU (lich hoc + lich thi)
     // =================================================================
 
     @GetMapping("/thoi-khoa-bieu")
     public String xemThoiKhoaBieu(
             @AuthenticationPrincipal UserDetails principal,
             @RequestParam(required = false) Long hocKyId,
+            @RequestParam(defaultValue = "lich-hoc") String tab,
             Model model) {
 
         SinhVien sv = laySinhVienHienTai(principal);
         List<HocKy> danhSachHocKy = hocKyService.findAll();
         model.addAttribute("sinhVien", sv);
         model.addAttribute("danhSachHocKy", danhSachHocKy);
+        model.addAttribute("tab", tab);
 
         if (hocKyId != null) {
             HocKy hocKy = hocKyService.findById(hocKyId);
-            // DangKyHocPhan da fetch kem LopHocPhan + LichHoc (JOIN FETCH trong repo)
+            // Lich hoc: DangKyHocPhan kem LopHocPhan + LichHoc
             List<DangKyHocPhan> danhSachDangKy =
                 dangKyService.layDangKyHienTai(sv.getId(), hocKyId);
+            // Lich thi: tat ca lich thi cua cac lop SV dang hoc trong hoc ky nay
+            List<LichThi> danhSachLichThi =
+                lichThiRepo.findBySinhVienAndHocKy(sv.getId(), hocKyId);
+
             model.addAttribute("hocKyChon", hocKy);
             model.addAttribute("danhSachDangKy", danhSachDangKy);
+            model.addAttribute("danhSachLichThi", danhSachLichThi);
         }
         return "sinh-vien/thoi-khoa-bieu";
     }
@@ -389,6 +400,40 @@ public class SinhVienController {
         model.addAttribute("sinhVien", sv);
         model.addAttribute("monKhongDat", monKhongDat);
         return "sinh-vien/dang-ky-thi-lai";
+    }
+
+    // =================================================================
+    // TIN CHI TICH LUY
+    // =================================================================
+
+    @GetMapping("/tin-chi-tich-luy")
+    public String xemTinChiTichLuy(
+            @AuthenticationPrincipal UserDetails principal,
+            Model model) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        model.addAttribute("sinhVien", sv);
+
+        if (sv.getNganh() == null) {
+            model.addAttribute("errorMsg", "Ban chua duoc gan nganh hoc.");
+            return "sinh-vien/tin-chi-tich-luy";
+        }
+
+        var danhSachKhoi = tinChiTichLuyService.tinhTinChiTheoKhoi(
+                sv.getId(), sv.getNganh().getId());
+        int tongTichLuy  = tinChiTichLuyService.tongTinChiDaTichLuy(
+                sv.getId(), sv.getNganh().getId());
+
+        // Tong so tin chi yeu cau trong CTDT
+        int tongYeuCau = danhSachKhoi.stream()
+                .mapToInt(k -> k.getTongSoTinChi()).sum();
+        int tongBatBuoc = danhSachKhoi.stream()
+                .mapToInt(k -> k.getTinChiBatBuoc()).sum();
+
+        model.addAttribute("danhSachKhoi", danhSachKhoi);
+        model.addAttribute("tongTichLuy",  tongTichLuy);
+        model.addAttribute("tongYeuCau",   tongYeuCau);
+        model.addAttribute("tongBatBuoc",  tongBatBuoc);
+        return "sinh-vien/tin-chi-tich-luy";
     }
 
     // =================================================================

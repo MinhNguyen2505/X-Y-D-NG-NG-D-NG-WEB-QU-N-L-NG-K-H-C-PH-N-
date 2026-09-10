@@ -101,6 +101,11 @@ public class LopHocPhan {
     @Builder.Default
     private List<LichHoc> lichHocs = new ArrayList<>();
 
+    // ---- Quan he 1-N voi LichThi ----
+    @OneToMany(mappedBy = "lopHocPhan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<LichThi> lichThis = new ArrayList<>();
+
     // ---- Quan he 1-N voi DangKyHocPhan ----
     @OneToMany(mappedBy = "lopHocPhan", fetch = FetchType.LAZY)
     @Builder.Default

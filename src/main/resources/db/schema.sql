@@ -273,3 +273,48 @@ CREATE TABLE IF NOT EXISTS dang_ky_dinh_huong (
     CONSTRAINT fk_dkdh_sv FOREIGN KEY (sinh_vien_id) REFERENCES sinh_vien(id),
     CONSTRAINT fk_dkdh_dh FOREIGN KEY (dinh_huong_id) REFERENCES dinh_huong(id)
 );
+
+-- =============================================================
+-- 16. KHOI_KIEN_THUC
+-- Nhom cac mon hoc theo khoi (VD: KT1.1, KT3.1, GDTC, QPAN...)
+-- =============================================================
+CREATE TABLE IF NOT EXISTS khoi_kien_thuc (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ma_khoi     VARCHAR(30)  NOT NULL,
+    ten_khoi    VARCHAR(255) NOT NULL,
+    nganh_id    BIGINT,
+    CONSTRAINT uq_khoi_ma UNIQUE (ma_khoi, nganh_id),
+    CONSTRAINT fk_khoi_nganh FOREIGN KEY (nganh_id) REFERENCES nganh(id)
+);
+
+-- =============================================================
+-- 17. CHUONG_TRINH_DAO_TAO cap nhat: them khoi_id
+-- (ALTER TABLE de khong pha du lieu cu)
+-- =============================================================
+ALTER TABLE chuong_trinh_dao_tao
+    ADD COLUMN IF NOT EXISTS khoi_id BIGINT NULL,
+    ADD COLUMN IF NOT EXISTS diem_dat DECIMAL(4,2) NULL DEFAULT 5.00,
+    ADD CONSTRAINT fk_ctdt_khoi FOREIGN KEY (khoi_id) REFERENCES khoi_kien_thuc(id);
+
+-- =============================================================
+-- 18. LICH_THI
+-- Lich thi cuoi ky / giua ky cho tung lop hoc phan
+-- loai_thi: GIUA_KY / CUOI_KY
+-- hinh_thuc: TU_LUAN / TRAC_NGHIEM / THUC_HANH / VAN_DAP
+-- =============================================================
+CREATE TABLE IF NOT EXISTS lich_thi (
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    lop_hoc_phan_id  BIGINT       NOT NULL,
+    loai_thi         VARCHAR(20)  NOT NULL DEFAULT 'CUOI_KY',
+    ngay_thi         DATE         NOT NULL,
+    gio_bat_dau      TIME         NOT NULL,
+    gio_ket_thuc     TIME         NOT NULL,
+    phong_thi        VARCHAR(50),
+    hinh_thuc        VARCHAR(30)  NOT NULL DEFAULT 'TU_LUAN',
+    ghi_chu          TEXT,
+    CONSTRAINT chk_lt_gio CHECK (gio_ket_thuc > gio_bat_dau),
+    CONSTRAINT chk_lt_loai CHECK (loai_thi IN ('GIUA_KY','CUOI_KY')),
+    CONSTRAINT fk_lt_lop_hoc_phan FOREIGN KEY (lop_hoc_phan_id) REFERENCES lop_hoc_phan(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_lt_lhp ON lich_thi (lop_hoc_phan_id);

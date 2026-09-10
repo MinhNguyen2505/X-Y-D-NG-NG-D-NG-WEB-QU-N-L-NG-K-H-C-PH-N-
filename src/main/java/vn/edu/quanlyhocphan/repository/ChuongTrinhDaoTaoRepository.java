@@ -21,6 +21,16 @@ public interface ChuongTrinhDaoTaoRepository extends JpaRepository<ChuongTrinhDa
     List<ChuongTrinhDaoTao> findByNganhIdWithMonHoc(@Param("nganhId") Long nganhId);
 
     /**
+     * Lay CTDT kem khoi kien thuc — dung cho trang tin chi tich luy.
+     */
+    @Query("SELECT ctdt FROM ChuongTrinhDaoTao ctdt " +
+           "JOIN FETCH ctdt.monHoc " +
+           "LEFT JOIN FETCH ctdt.khoiKienThuc " +
+           "WHERE ctdt.nganh.id = :nganhId " +
+           "ORDER BY ctdt.hocKyThu ASC")
+    List<ChuongTrinhDaoTao> findByNganhIdWithMonHocAndKhoi(@Param("nganhId") Long nganhId);
+
+    /**
      * Kiem tra mon hoc co thuoc chuong trinh dao tao cua nganh khong.
      */
     Optional<ChuongTrinhDaoTao> findByNganhIdAndMonHocId(Long nganhId, Long monHocId);

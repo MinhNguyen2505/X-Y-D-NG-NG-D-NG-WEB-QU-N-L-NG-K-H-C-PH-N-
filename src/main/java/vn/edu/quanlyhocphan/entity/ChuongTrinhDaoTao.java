@@ -3,6 +3,8 @@ package vn.edu.quanlyhocphan.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 /**
  * Bang CHUONG_TRINH_DAO_TAO — ke hoach hoc tap cua 1 nganh.
  * Moi ban ghi = 1 mon hoc thuoc 1 nganh, goi y hoc o hoc ky thu may.
@@ -54,4 +56,14 @@ public class ChuongTrinhDaoTao {
     @Column(name = "bat_buoc", nullable = false)
     @Builder.Default
     private Boolean batBuoc = true;
+
+    /** Khoi kien thuc cua mon hoc nay trong CTDT (co the null) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "khoi_id", foreignKey = @ForeignKey(name = "fk_ctdt_khoi"))
+    private KhoiKienThuc khoiKienThuc;
+
+    /** Diem dat toi thieu cho mon nay (default 5.00) */
+    @Column(name = "diem_dat", precision = 4, scale = 2)
+    @Builder.Default
+    private BigDecimal diemDat = new BigDecimal("5.00");
 }

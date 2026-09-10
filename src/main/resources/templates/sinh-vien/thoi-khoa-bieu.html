@@ -6,6 +6,135 @@
   <title>Thời khoá biểu</title>
   <link rel="stylesheet" th:href="@{/css/app.css}"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    /* ---- Tabs ---- */
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      border-bottom: 2px solid var(--gray-200);
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      padding: 10px 22px;
+      border: none;
+      background: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-500);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: var(--transition);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+    .tab-btn:hover { color: var(--primary); background: var(--gray-50); }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: #eff6ff; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ---- Schedule grid (lịch học dạng lưới) ---- */
+    .tkb-grid {
+      overflow-x: auto;
+    }
+    .tkb-grid table {
+      border-collapse: collapse;
+      min-width: 680px;
+      width: 100%;
+    }
+    .tkb-grid th {
+      background: var(--gray-100);
+      color: var(--gray-700);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 10px 12px;
+      text-align: center;
+      border: 1px solid var(--gray-200);
+    }
+    .tkb-grid td {
+      padding: 6px 10px;
+      border: 1px solid var(--gray-200);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+    .tkb-cell {
+      background: linear-gradient(135deg, #dbeafe, #eff6ff);
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 12px;
+      text-align: center;
+    }
+    .tkb-cell .mon-name { font-weight: 700; color: var(--navy); font-size: 12px; }
+    .tkb-cell .mon-meta { color: var(--gray-500); font-size: 11px; margin-top: 2px; }
+    .tkb-cell .mon-room {
+      display: inline-block;
+      margin-top: 3px;
+      background: var(--primary);
+      color: white;
+      padding: 1px 7px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* ---- Lịch thi ---- */
+    .thi-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .thi-cuoi-ky { background: #fee2e2; color: #dc2626; }
+    .thi-giua-ky { background: #fef3c7; color: #92400e; }
+
+    .hinh-thuc-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    /* ---- Tiet helper text ---- */
+    .tiet-label { font-size: 11px; color: var(--gray-500); }
+
+    /* ---- Summary strip ---- */
+    .summary-strip {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .summary-chip {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .summary-chip i { color: var(--primary); }
+
+    /* ---- Ngay thi highlight ---- */
+    .ngay-thi-box {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--primary);
+      color: white;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      min-width: 52px;
+    }
+    .ngay-thi-box span { font-size: 20px; line-height: 1.1; }
+  </style>
 </head>
 <body>
 <div class="layout">
@@ -20,73 +149,258 @@
         <span class="topbar-name" th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
       </div>
     </header>
+
     <div class="content">
 
       <!-- Chọn học kỳ -->
-      <div class="card">
-        <div class="card-header"><span class="card-title">Chọn học kỳ</span></div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><span class="card-title"><i class="fa-solid fa-calendar-days" style="color:var(--primary);margin-right:6px;"></i>Chọn học kỳ</span></div>
         <div class="card-body">
           <div class="flex-wrap">
             <a th:each="hk : ${danhSachHocKy}"
-               th:href="@{/sinh-vien/thoi-khoa-bieu(hocKyId=${hk.id})}"
+               th:href="@{/sinh-vien/thoi-khoa-bieu(hocKyId=${hk.id},tab=${tab})}"
                th:text="${hk.tenHocKy} + ' (' + ${hk.namHoc} + ')'"
                th:class="${hocKyChon?.id == hk.id} ? 'btn btn-primary' : 'btn btn-outline'">
             </a>
           </div>
+          <div th:if="${danhSachHocKy == null or danhSachHocKy.empty}" class="text-muted" style="margin-top:6px;">
+            Chưa có học kỳ nào trong hệ thống.
+          </div>
         </div>
       </div>
 
-      <!-- Bảng TKB -->
-      <div th:if="${hocKyChon != null}" class="card">
-        <div class="card-header">
-          <span class="card-title">
-            TKB — <span th:text="${hocKyChon.tenHocKy} + ' ' + ${hocKyChon.namHoc}"></span>
-          </span>
-          <span th:if="${danhSachDangKy != null}" style="font-size:12px;color:var(--gray-500);">
-            <span th:text="${danhSachDangKy.size()}"></span> môn đã đăng ký
-          </span>
-        </div>
-        <div class="card-body" style="padding:0;">
-          <div th:if="${danhSachDangKy == null or danhSachDangKy.empty}" class="empty-state">
-            <i class="fa-solid fa-calendar-xmark"></i>Chưa đăng ký học phần nào trong học kỳ này.
+      <!-- Nội dung sau khi chọn học kỳ -->
+      <div th:if="${hocKyChon != null}">
+
+        <!-- Summary -->
+        <div class="summary-strip">
+          <div class="summary-chip">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span th:text="${hocKyChon.tenHocKy} + ' — ' + ${hocKyChon.namHoc}"></span>
           </div>
-          <table th:if="${danhSachDangKy != null and !danhSachDangKy.empty}" class="table">
-            <thead>
-              <tr><th>Môn học</th><th>Mã lớp</th><th>TC</th><th>Giảng viên</th><th>Thứ</th><th>Tiết</th><th>Phòng</th></tr>
-            </thead>
-            <tbody>
-              <th:block th:each="dk : ${danhSachDangKy}">
-                <!-- Nếu không có lịch học -->
-                <tr th:if="${dk.lopHocPhan.lichHocs.empty}">
-                  <td th:text="${dk.lopHocPhan.monHoc.tenMon}"></td>
-                  <td><code th:text="${dk.lopHocPhan.maLopHp}"></code></td>
-                  <td th:text="${dk.lopHocPhan.monHoc.soTinChi}"></td>
-                  <td th:text="${dk.lopHocPhan.giangVien?.hoTen ?: '—'}"></td>
-                  <td colspan="3" class="text-muted">Chưa có lịch học</td>
-                </tr>
-                <!-- Mỗi buổi học 1 dòng -->
-                <tr th:each="lh, lhStat : ${dk.lopHocPhan.lichHocs}">
-                  <td th:if="${lhStat.first}" th:rowspan="${dk.lopHocPhan.lichHocs.size()}"
-                      th:text="${dk.lopHocPhan.monHoc.tenMon}"></td>
-                  <td th:if="${lhStat.first}" th:rowspan="${dk.lopHocPhan.lichHocs.size()}">
-                    <code th:text="${dk.lopHocPhan.maLopHp}"></code>
-                  </td>
-                  <td th:if="${lhStat.first}" th:rowspan="${dk.lopHocPhan.lichHocs.size()}"
-                      th:text="${dk.lopHocPhan.monHoc.soTinChi}"></td>
-                  <td th:if="${lhStat.first}" th:rowspan="${dk.lopHocPhan.lichHocs.size()}"
-                      th:text="${dk.lopHocPhan.giangVien?.hoTen ?: '—'}"></td>
-                  <td th:text="'Thứ ' + ${lh.thu}"></td>
-                  <td th:text="${lh.tietBatDau} + ' - ' + ${lh.tietKetThuc}"></td>
-                  <td th:text="${lh.phong ?: '—'}"></td>
-                </tr>
-              </th:block>
-            </tbody>
-          </table>
+          <div class="summary-chip">
+            <i class="fa-solid fa-book-open"></i>
+            <span><b th:text="${danhSachDangKy?.size() ?: 0}"></b> môn đã đăng ký</span>
+          </div>
+          <div class="summary-chip" th:if="${danhSachLichThi != null}">
+            <i class="fa-solid fa-file-pen"></i>
+            <span><b th:text="${danhSachLichThi.size()}"></b> lịch thi</span>
+          </div>
         </div>
+
+        <!-- Tab bar -->
+        <div class="tab-bar">
+          <button class="tab-btn"
+                  th:classappend="${tab == 'lich-hoc'} ? ' active'"
+                  onclick="switchTab('lich-hoc')">
+            <i class="fa-solid fa-calendar-week"></i> Lịch học
+          </button>
+          <button class="tab-btn"
+                  th:classappend="${tab == 'lich-thi'} ? ' active'"
+                  onclick="switchTab('lich-thi')">
+            <i class="fa-solid fa-file-pen"></i> Lịch thi
+          </button>
+        </div>
+
+        <!-- ======================== TAB LỊCH HỌC ======================== -->
+        <div id="tab-lich-hoc" class="tab-panel"
+             th:classappend="${tab == 'lich-hoc'} ? ' active'">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Lịch học theo tuần</span>
+              <span style="font-size:12px;color:var(--gray-500);">Tiết 1=7h, mỗi tiết ~50 phút</span>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <div th:if="${danhSachDangKy == null or danhSachDangKy.empty}" class="empty-state">
+                <i class="fa-solid fa-calendar-xmark"></i>Chưa đăng ký học phần nào trong học kỳ này.
+              </div>
+
+              <!-- Dạng bảng chi tiết -->
+              <div th:if="${danhSachDangKy != null and !danhSachDangKy.empty}" class="tkb-grid">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Môn học</th>
+                      <th>Mã lớp</th>
+                      <th style="text-align:center;">TC</th>
+                      <th>Giảng viên</th>
+                      <th style="text-align:center;">Thứ</th>
+                      <th style="text-align:center;">Tiết</th>
+                      <th>Phòng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <th:block th:each="dk : ${danhSachDangKy}">
+                      <!-- Không có lịch học -->
+                      <tr th:if="${dk.lopHocPhan.lichHocs.empty}">
+                        <td><b th:text="${dk.lopHocPhan.monHoc.tenMon}"></b><br/>
+                            <small class="text-muted" th:text="${dk.lopHocPhan.monHoc.maMon}"></small></td>
+                        <td><code th:text="${dk.lopHocPhan.maLopHp}"></code></td>
+                        <td style="text-align:center;" th:text="${dk.lopHocPhan.monHoc.soTinChi}"></td>
+                        <td th:text="${dk.lopHocPhan.giangVien?.hoTen ?: '—'}"></td>
+                        <td colspan="3" class="text-muted" style="text-align:center;font-style:italic;">Chưa xếp lịch</td>
+                      </tr>
+                      <!-- Mỗi buổi học 1 dòng -->
+                      <tr th:each="lh, stat : ${dk.lopHocPhan.lichHocs}"
+                          style="border-top: 1px solid var(--gray-100);">
+                        <td th:if="${stat.first}"
+                            th:rowspan="${dk.lopHocPhan.lichHocs.size()}">
+                          <b th:text="${dk.lopHocPhan.monHoc.tenMon}"></b><br/>
+                          <small class="text-muted" th:text="${dk.lopHocPhan.monHoc.maMon}"></small>
+                        </td>
+                        <td th:if="${stat.first}"
+                            th:rowspan="${dk.lopHocPhan.lichHocs.size()}">
+                          <code th:text="${dk.lopHocPhan.maLopHp}"></code>
+                        </td>
+                        <td th:if="${stat.first}"
+                            th:rowspan="${dk.lopHocPhan.lichHocs.size()}"
+                            style="text-align:center;">
+                          <span class="badge badge-primary"
+                                th:text="${dk.lopHocPhan.monHoc.soTinChi} + ' TC'"></span>
+                        </td>
+                        <td th:if="${stat.first}"
+                            th:rowspan="${dk.lopHocPhan.lichHocs.size()}"
+                            th:text="${dk.lopHocPhan.giangVien?.hoTen ?: '—'}"></td>
+                        <td style="text-align:center;">
+                          <b th:text="'Thứ ' + ${lh.thu}"></b>
+                        </td>
+                        <td style="text-align:center;">
+                          <span th:text="${lh.tietBatDau} + ' → ' + ${lh.tietKetThuc}"></span>
+                          <br/><span class="tiet-label"
+                               th:text="'(' + ${(lh.tietKetThuc - lh.tietBatDau + 1)} + ' tiết)'"></span>
+                        </td>
+                        <td>
+                          <span th:if="${lh.phong}" class="badge badge-secondary"
+                                th:text="${lh.phong}"></span>
+                          <span th:if="${lh.phong == null}" class="text-muted">—</span>
+                        </td>
+                      </tr>
+                    </th:block>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div><!-- /tab-lich-hoc -->
+
+        <!-- ======================== TAB LỊCH THI ======================== -->
+        <div id="tab-lich-thi" class="tab-panel"
+             th:classappend="${tab == 'lich-thi'} ? ' active'">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Lịch thi học kỳ</span>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <div th:if="${danhSachLichThi == null or danhSachLichThi.empty}" class="empty-state">
+                <i class="fa-solid fa-file-circle-xmark"></i>Chưa có lịch thi nào trong học kỳ này.
+              </div>
+
+              <table th:if="${danhSachLichThi != null and !danhSachLichThi.empty}" class="table">
+                <thead>
+                  <tr>
+                    <th style="width:50px;text-align:center;">STT</th>
+                    <th>Ngày thi</th>
+                    <th>Môn học</th>
+                    <th>Loại thi</th>
+                    <th style="text-align:center;">Giờ thi</th>
+                    <th>Phòng thi</th>
+                    <th>Hình thức</th>
+                    <th>Ghi chú</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="lt, stat : ${danhSachLichThi}">
+                    <td style="text-align:center;" th:text="${stat.count}"></td>
+                    <!-- Ngày thi dạng box -->
+                    <td>
+                      <div class="ngay-thi-box">
+                        <span th:text="${#temporals.format(lt.ngayThi,'dd')}">01</span>
+                        <span th:text="'/' + ${#temporals.format(lt.ngayThi,'MM/yyyy')}">/09/2026</span>
+                      </div>
+                      <div style="font-size:11px;color:var(--gray-500);margin-top:3px;"
+                           th:text="${#temporals.format(lt.ngayThi,'EEEE',new java.util.Locale('vi'))}">Thứ Hai</div>
+                    </td>
+                    <td>
+                      <b th:text="${lt.lopHocPhan.monHoc.tenMon}"></b><br/>
+                      <small class="text-muted" th:text="${lt.lopHocPhan.monHoc.maMon} + ' — ' + ${lt.lopHocPhan.maLopHp}"></small>
+                    </td>
+                    <td>
+                      <span th:if="${lt.loaiThi == 'CUOI_KY'}" class="thi-badge thi-cuoi-ky">
+                        <i class="fa-solid fa-star"></i> Cuối kỳ
+                      </span>
+                      <span th:if="${lt.loaiThi == 'GIUA_KY'}" class="thi-badge thi-giua-ky">
+                        <i class="fa-solid fa-flag"></i> Giữa kỳ
+                      </span>
+                    </td>
+                    <td style="text-align:center;">
+                      <b th:text="${#temporals.format(lt.gioBatDau,'HH:mm')}"></b>
+                      <span style="color:var(--gray-500);"> → </span>
+                      <b th:text="${#temporals.format(lt.gioKetThuc,'HH:mm')}"></b>
+                    </td>
+                    <td>
+                      <span th:if="${lt.phongThi}" class="badge badge-secondary"
+                            th:text="${lt.phongThi}"></span>
+                      <span th:if="${lt.phongThi == null}" class="text-muted">—</span>
+                    </td>
+                    <td>
+                      <span class="hinh-thuc-badge"
+                            th:text="${lt.hinhThuc == 'TU_LUAN'     ? 'Tự luận'
+                                    : lt.hinhThuc == 'TRAC_NGHIEM'  ? 'Trắc nghiệm'
+                                    : lt.hinhThuc == 'THUC_HANH'    ? 'Thực hành'
+                                    : lt.hinhThuc == 'VAN_DAP'      ? 'Vấn đáp'
+                                    : lt.hinhThuc}">
+                      </span>
+                    </td>
+                    <td style="font-size:12px;color:var(--gray-500);"
+                        th:text="${lt.ghiChu ?: '—'}"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Ghi chu -->
+          <div class="card" style="margin-top:12px;background:#fffbeb;border:1px solid #fde68a;">
+            <div class="card-body" style="padding:12px 16px;">
+              <p style="font-size:12px;color:#92400e;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <b>Lưu ý:</b> Sinh viên có mặt trước giờ thi ít nhất 15 phút. Mang theo thẻ sinh viên hoặc CCCD khi thi.
+                Lịch thi có thể thay đổi — vui lòng theo dõi thông báo chính thức.
+              </p>
+            </div>
+          </div>
+        </div><!-- /tab-lich-thi -->
+
+      </div><!-- /hocKyChon != null -->
+
+      <!-- Chưa chọn học kỳ -->
+      <div th:if="${hocKyChon == null}" class="empty-state" style="min-height:200px;">
+        <i class="fa-solid fa-hand-pointer"></i>Chọn học kỳ ở trên để xem thời khoá biểu.
       </div>
 
     </div>
   </div>
 </div>
+
+<script th:inline="javascript">
+  // Tab switching
+  function switchTab(tabId) {
+    // Cập nhật URL để giữ trạng thái tab khi reload
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tabId);
+    window.history.replaceState({}, '', url);
+
+    // Ẩn tất cả panel
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+    // Hiện panel được chọn
+    const panel = document.getElementById('tab-' + tabId);
+    if (panel) panel.classList.add('active');
+
+    // Active button
+    event.currentTarget.classList.add('active');
+  }
+</script>
 </body>
 </html>
