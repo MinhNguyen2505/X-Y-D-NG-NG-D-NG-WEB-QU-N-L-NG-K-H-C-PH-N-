@@ -217,6 +217,52 @@ public class SinhVienController {
     }
 
     // =================================================================
+    // DANG KY NGUYEN VONG (placeholder)
+    // =================================================================
+    @GetMapping("/dang-ky-nguyen-vong")
+    public String dangKyNguyenVong(@AuthenticationPrincipal UserDetails principal, Model model) {
+        model.addAttribute("sinhVien", laySinhVienHienTai(principal));
+        return "sinh-vien/dang-ky-nguyen-vong";
+    }
+
+    // =================================================================
+    // TRA CUU KET QUA DANG KY
+    // =================================================================
+    @GetMapping("/tra-cuu-ket-qua")
+    public String traCuuKetQua(@AuthenticationPrincipal UserDetails principal, Model model) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        List<DangKyHocPhan> lichSu = dangKyService.layLichSuDangKy(sv.getId());
+        model.addAttribute("sinhVien", sv);
+        model.addAttribute("lichSu", lichSu);
+        return "sinh-vien/tra-cuu-ket-qua";
+    }
+
+    // =================================================================
+    // DINH HUONG HOC TAP (placeholder)
+    // =================================================================
+    @GetMapping("/dinh-huong-hoc-tap")
+    public String dinhHuongHocTap(@AuthenticationPrincipal UserDetails principal, Model model) {
+        model.addAttribute("sinhVien", laySinhVienHienTai(principal));
+        return "sinh-vien/dinh-huong-hoc-tap";
+    }
+
+    // =================================================================
+    // DANG KY THI LAI (placeholder)
+    // =================================================================
+    @GetMapping("/dang-ky-thi-lai")
+    public String dangKyThiLai(@AuthenticationPrincipal UserDetails principal, Model model) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        // Hiển thị các môn có điểm < 5 để SV đăng ký thi lại
+        List<DangKyHocPhan> monKhongDat = dangKyService.layLichSuDangKy(sv.getId())
+            .stream()
+            .filter(dk -> dk.getDiemTongKet() != null && dk.getDiemTongKet().doubleValue() < 5.0)
+            .collect(Collectors.toList());
+        model.addAttribute("sinhVien", sv);
+        model.addAttribute("monKhongDat", monKhongDat);
+        return "sinh-vien/dang-ky-thi-lai";
+    }
+
+    // =================================================================
     // KET QUA HOC TAP
     // =================================================================
 

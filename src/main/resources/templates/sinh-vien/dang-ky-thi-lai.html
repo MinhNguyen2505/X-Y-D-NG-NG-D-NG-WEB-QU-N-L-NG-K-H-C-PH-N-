@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Đăng ký thi lại</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="layout">
+  <div th:insert="~{fragments/sidebar :: sv('sv-thi-lai')}"></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Đăng ký thi lại</div>
+      <div class="topbar-user">
+        <div class="topbar-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
+        <span class="topbar-name" th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
+      </div>
+    </header>
+    <div class="content">
+
+      <div th:if="${successMsg}" class="flash flash-success"><i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span></div>
+      <div th:if="${errorMsg}"   class="flash flash-danger"><i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span></div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <i class="fa-solid fa-rotate-right" style="color:var(--danger);margin-right:6px;"></i>
+            Môn học không đạt — có thể đăng ký thi lại
+          </span>
+        </div>
+        <div class="card-body" style="padding:0;">
+
+          <div th:if="${monKhongDat == null or monKhongDat.empty}" class="empty-state">
+            <i class="fa-solid fa-circle-check" style="color:var(--success);"></i>
+            Bạn không có môn nào điểm dưới 5. Không cần đăng ký thi lại.
+          </div>
+
+          <table th:if="${monKhongDat != null and !monKhongDat.empty}" class="table">
+            <thead>
+              <tr>
+                <th>Học kỳ</th>
+                <th>Môn học</th>
+                <th>Mã lớp</th>
+                <th>TC</th>
+                <th>Điểm TK</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="dk : ${monKhongDat}">
+                <td th:text="${dk.lopHocPhan.hocKy.tenHocKy}"></td>
+                <td th:text="${dk.lopHocPhan.monHoc.tenMon}"></td>
+                <td><code th:text="${dk.lopHocPhan.maLopHp}"></code></td>
+                <td th:text="${dk.lopHocPhan.monHoc.soTinChi}"></td>
+                <td>
+                  <b style="color:var(--danger);" th:text="${dk.diemTongKet}"></b>
+                </td>
+                <td>
+                  <button class="btn btn-danger btn-sm" disabled
+                          title="Chức năng đang phát triển">
+                    <i class="fa-solid fa-rotate-right"></i> Đăng ký thi lại
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-body" style="text-align:center;padding:20px;color:var(--gray-500);font-size:13px;">
+          <i class="fa-solid fa-circle-info" style="margin-right:6px;color:var(--primary);"></i>
+          Để đăng ký thi lại, vui lòng liên hệ Phòng Đào tạo hoặc chờ thông báo mở đăng ký thi lại từ nhà trường.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

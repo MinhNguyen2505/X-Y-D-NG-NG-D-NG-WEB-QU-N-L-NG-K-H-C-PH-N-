@@ -10,12 +10,47 @@
     <div><div class="sb-logo-text">Quản Lý Học Phần</div><div class="sb-logo-sub">Hệ thống tín chỉ</div></div>
   </div>
   <nav class="sb-nav">
-    <div class="sb-section">Sinh Viên</div>
-    <a th:href="@{/sinh-vien/dashboard}"          th:classappend="${activePage=='sv-home'}?' active'"    class="sb-link"><i class="fa-solid fa-house"></i> Trang chủ</a>
-    <a th:href="@{/sinh-vien/chuong-trinh-dao-tao}" th:classappend="${activePage=='sv-ctdt'}?' active'"   class="sb-link"><i class="fa-solid fa-book-open"></i> Chương trình ĐT</a>
-    <a th:href="@{/sinh-vien/dang-ky}"             th:classappend="${activePage=='sv-dangky'}?' active'" class="sb-link"><i class="fa-solid fa-pen-to-square"></i> Đăng ký học phần</a>
-    <a th:href="@{/sinh-vien/thoi-khoa-bieu}"      th:classappend="${activePage=='sv-tkb'}?' active'"    class="sb-link"><i class="fa-solid fa-calendar-days"></i> Thời khoá biểu</a>
-    <a th:href="@{/sinh-vien/ket-qua-hoc-tap}"     th:classappend="${activePage=='sv-kqht'}?' active'"   class="sb-link"><i class="fa-solid fa-chart-line"></i> Kết quả học tập</a>
+    <div class="sb-section">Trang chủ</div>
+    <a th:href="@{/sinh-vien/dashboard}"
+       th:classappend="${activePage=='sv-home'}?' active'" class="sb-link">
+      <i class="fa-solid fa-house"></i> Trang chủ
+    </a>
+
+    <div class="sb-section">Đăng ký</div>
+    <a th:href="@{/sinh-vien/dang-ky}"
+       th:classappend="${activePage=='sv-dangky'}?' active'" class="sb-link">
+      <i class="fa-solid fa-pen-to-square"></i> Đăng ký học
+    </a>
+    <a th:href="@{/sinh-vien/dang-ky-nguyen-vong}"
+       th:classappend="${activePage=='sv-nguyen-vong'}?' active'" class="sb-link">
+      <i class="fa-solid fa-star"></i> Đăng ký nguyện vọng
+    </a>
+    <a th:href="@{/sinh-vien/tra-cuu-ket-qua}"
+       th:classappend="${activePage=='sv-tra-cuu'}?' active'" class="sb-link">
+      <i class="fa-solid fa-magnifying-glass"></i> Tra cứu kết quả ĐK
+    </a>
+    <a th:href="@{/sinh-vien/dinh-huong-hoc-tap}"
+       th:classappend="${activePage=='sv-dinh-huong'}?' active'" class="sb-link">
+      <i class="fa-solid fa-compass"></i> Đăng ký định hướng HT
+    </a>
+    <a th:href="@{/sinh-vien/dang-ky-thi-lai}"
+       th:classappend="${activePage=='sv-thi-lai'}?' active'" class="sb-link">
+      <i class="fa-solid fa-rotate-right"></i> Đăng ký thi lại
+    </a>
+
+    <div class="sb-section">Học tập</div>
+    <a th:href="@{/sinh-vien/chuong-trinh-dao-tao}"
+       th:classappend="${activePage=='sv-ctdt'}?' active'" class="sb-link">
+      <i class="fa-solid fa-book-open"></i> Chương trình ĐT
+    </a>
+    <a th:href="@{/sinh-vien/thoi-khoa-bieu}"
+       th:classappend="${activePage=='sv-tkb'}?' active'" class="sb-link">
+      <i class="fa-solid fa-calendar-days"></i> Thời khoá biểu
+    </a>
+    <a th:href="@{/sinh-vien/ket-qua-hoc-tap}"
+       th:classappend="${activePage=='sv-kqht'}?' active'" class="sb-link">
+      <i class="fa-solid fa-chart-line"></i> Kết quả học tập
+    </a>
   </nav>
   <div class="sb-footer">
     <div class="sb-user">
