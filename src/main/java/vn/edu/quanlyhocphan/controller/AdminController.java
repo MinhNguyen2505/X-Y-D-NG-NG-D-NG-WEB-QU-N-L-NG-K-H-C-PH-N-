@@ -10,6 +10,7 @@ import vn.edu.quanlyhocphan.entity.*;
 import vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan;
 import vn.edu.quanlyhocphan.repository.NganhRepository;
 import vn.edu.quanlyhocphan.service.*;
+import vn.edu.quanlyhocphan.service.NguyenVongService;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class AdminController {
     private final HocKyService hocKyService;
     private final LopHocPhanService lopHocPhanService;
     private final NganhRepository nganhRepo;
+    private final NguyenVongService nguyenVongService;
 
     // =================================================================
     // DASHBOARD
@@ -371,5 +373,91 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("errorMsg", "Co loi: " + e.getMessage());
         }
         return "redirect:/admin/lop-hoc-phan/sua/" + id;
+    }
+
+    // =================================================================
+    // QUAN LY KE HOACH NGUYEN VONG
+    // =================================================================
+
+    @GetMapping("/nguyen-vong")
+    public String danhSachKeHoach(Model model) {
+        model.addAttribute("danhSach", nguyenVongService.findAllKeHoach());
+        return "admin/nguyen-vong/danh-sach";
+    }
+
+    @GetMapping("/nguyen-vong/them")
+    public String formThemKeHoach(Model model) {
+        model.addAttribute("keHoach", new vn.edu.quanlyhocphan.entity.KeHoachNguyenVong());
+        model.addAttribute("danhSachHocKy", hocKyService.findAll());
+        return "admin/nguyen-vong/form";
+    }
+
+    @PostMapping("/nguyen-vong/them")
+    public String themKeHoach(@ModelAttribute vn.edu.quanlyhocphan.entity.KeHoachNguyenVong keHoach,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            nguyenVongService.saveKeHoach(keHoach);
+            redirectAttributes.addFlashAttribute("successMsg", "Tao ke hoach nguyen vong thanh cong.");
+        } catch (Exception e) {
+            log.error("Loi tao ke hoach nguyen vong", e);
+            redirectAttributes.addFlashAttribute("errorMsg", "Co loi: " + e.getMessage());
+        }
+        return "redirect:/admin/nguyen-vong";
+    }
+
+    @GetMapping("/nguyen-vong/{id}")
+    public String chiTietKeHoach(@PathVariable Long id, Model model) {
+        model.addAttribute("keHoach", nguyenVongService.findKeHoachById(id));
+        model.addAttribute("tatCaMonHoc", monHocService.findAll());
+        model.addAttribute("danhSachDangKy", nguyenVongService.findDangKyByKeHoach(id));
+        return "admin/nguyen-vong/chi-tiet";
+    }
+
+    @PostMapping("/nguyen-vong/{id}/dong")
+    public String dongKeHoach(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            nguyenVongService.dongKeHoach(id);
+            redirectAttributes.addFlashAttribute("successMsg", "Da dong ke hoach dang ky nguyen vong.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Co loi: " + e.getMessage());
+        }
+        return "redirect:/admin/nguyen-vong/" + id;
+    }
+
+    @PostMapping("/nguyen-vong/{id}/mo")
+    public String moKeHoach(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            nguyenVongService.moKeHoach(id);
+            redirectAttributes.addFlashAttribute("successMsg", "Da mo lai ke hoach dang ky nguyen vong.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Co loi: " + e.getMessage());
+        }
+        return "redirect:/admin/nguyen-vong/" + id;
+    }
+
+    @PostMapping("/nguyen-vong/{id}/them-mon")
+    public String themMonVaoKeHoach(@PathVariable Long id,
+                                    @RequestParam Long monHocId,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            nguyenVongService.themMonVaoKeHoach(id, monHocId);
+            redirectAttributes.addFlashAttribute("successMsg", "Da them mon hoc vao ke hoach.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/admin/nguyen-vong/" + id;
+    }
+
+    @PostMapping("/nguyen-vong/{keHoachId}/xoa-mon/{nvMonHocId}")
+    public String xoaMonKhoiKeHoach(@PathVariable Long keHoachId,
+                                    @PathVariable Long nvMonHocId,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            nguyenVongService.xoaMonKhoiKeHoach(nvMonHocId);
+            redirectAttributes.addFlashAttribute("successMsg", "Da xoa mon hoc khoi ke hoach.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/admin/nguyen-vong/" + keHoachId;
     }
 }

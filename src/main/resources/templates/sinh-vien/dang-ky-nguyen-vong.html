@@ -5,10 +5,30 @@
   <title>Đăng ký nguyện vọng</title>
   <link rel="stylesheet" th:href="@{/css/app.css}"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .sv-info-row { display:grid; grid-template-columns:180px 1fr; gap:6px 16px; font-size:13px; margin-bottom:20px; }
+    .sv-info-label { color:var(--gray-500); }
+    .sv-info-value { font-weight:600; color:var(--gray-900); }
+    .required-star { color:var(--danger); margin-left:2px; }
+
+    /* Checkbox table row */
+    .table tbody tr.da-dang-ky { background:#f0fdf4; }
+    .table tbody tr.da-dang-ky td { color:var(--success); }
+    .check-col { width:40px; text-align:center; }
+    input[type="checkbox"] { width:16px; height:16px; cursor:pointer; accent-color:var(--primary); }
+
+    /* Section title line */
+    .section-title {
+      font-size:13px; font-weight:700; color:var(--navy);
+      padding:8px 0; border-bottom:2px solid var(--primary);
+      margin-bottom:12px; display:flex; align-items:center; gap:8px;
+    }
+  </style>
 </head>
 <body>
 <div class="layout">
   <div th:insert="~{fragments/sidebar :: sv('sv-nguyen-vong')}"></div>
+
   <div class="main">
     <header class="topbar">
       <div class="topbar-title">Đăng ký nguyện vọng</div>
@@ -18,20 +38,183 @@
       </div>
     </header>
     <div class="content">
-      <div class="card">
-        <div class="card-body" style="text-align:center;padding:48px;">
-          <div style="font-size:56px;margin-bottom:16px;">⭐</div>
-          <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px;">Đăng ký nguyện vọng</div>
-          <div style="color:var(--gray-500);font-size:14px;">Chức năng này chưa được mở trong học kỳ hiện tại.</div>
-          <div style="margin-top:24px;">
-            <a th:href="@{/sinh-vien/dashboard}" class="btn btn-primary">
-              <i class="fa-solid fa-arrow-left"></i> Quay về trang chủ
-            </a>
+
+      <div th:if="${successMsg}" class="flash flash-success"><i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span></div>
+      <div th:if="${errorMsg}"   class="flash flash-danger"><i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span></div>
+
+      <!-- ===== THÔNG TIN THÍ SINH ===== -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header">
+          <span class="card-title" style="border-left:3px solid var(--primary);padding-left:10px;">
+            THÔNG TIN THÍ SINH
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="sv-info-row">
+            <span class="sv-info-label">Mã số</span>
+            <span class="sv-info-value" th:text="${sinhVien?.mssv}"></span>
+
+            <span class="sv-info-label">Họ và tên :</span>
+            <span class="sv-info-value" th:text="${sinhVien?.hoTen}"></span>
+
+            <span class="sv-info-label">Ngành học <span class="required-star">*</span></span>
+            <span class="sv-info-value"
+                  th:text="${sinhVien?.nganh?.tenNganh ?: 'Chưa xác định'}"></span>
+
+            <span class="sv-info-label">Kế hoạch <span class="required-star">*</span></span>
+            <span>
+              <!-- Dropdown chọn kế hoạch -->
+              <div class="flex-wrap">
+                <span th:if="${danhSachKeHoach == null or danhSachKeHoach.empty}"
+                      style="color:var(--gray-500);font-size:13px;">
+                  Hiện không có kế hoạch đăng ký nguyện vọng nào đang mở.
+                </span>
+                <a th:each="kh : ${danhSachKeHoach}"
+                   th:href="@{/sinh-vien/dang-ky-nguyen-vong(keHoachId=${kh.id})}"
+                   th:text="${kh.tenKeHoach}"
+                   th:class="${keHoachChon?.id == kh.id} ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm'">
+                </a>
+              </div>
+            </span>
           </div>
         </div>
       </div>
+
+      <!-- ===== NỘI DUNG KHI ĐÃ CHỌN KẾ HOẠCH ===== -->
+      <div th:if="${keHoachChon != null}">
+
+        <form th:action="@{/sinh-vien/dang-ky-nguyen-vong}" method="post" id="formDangKy">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input type="hidden" name="keHoachId" th:value="${keHoachChon.id}"/>
+
+          <!-- Danh sách môn CHƯA đăng ký -->
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-header">
+              <span class="card-title">
+                <i class="fa-solid fa-list-ul" style="color:var(--primary);margin-right:6px;"></i>
+                Danh sách các nguyện vọng chưa đăng ký
+              </span>
+              <button type="submit" class="btn btn-success btn-sm" form="formDangKy">
+                <i class="fa-solid fa-check"></i> Đăng ký
+              </button>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <div th:if="${keHoachChon.danhSachMon.empty}" style="padding:20px;text-align:center;color:var(--gray-500);">
+                Kế hoạch này chưa có môn học nào.
+              </div>
+              <table th:if="${!keHoachChon.danhSachMon.empty}" class="table">
+                <thead>
+                  <tr>
+                    <th class="check-col">
+                      <input type="checkbox" id="chkAll" title="Chọn tất cả"
+                             onclick="toggleAll(this)"/>
+                    </th>
+                    <th>STT</th>
+                    <th>Mã học phần</th>
+                    <th>Tên học phần</th>
+                    <th>Số tín chỉ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <th:block th:each="m, i : ${keHoachChon.danhSachMon}">
+                    <!-- Chỉ hiện môn chưa đăng ký -->
+                    <tr th:if="${daDangKyIds == null or !daDangKyIds.contains(m.id)}">
+                      <td class="check-col">
+                        <input type="checkbox" name="nguyenVongMonHocIds"
+                               th:value="${m.id}" class="chk-mon"/>
+                      </td>
+                      <td th:text="${i.count}"></td>
+                      <td><code th:text="${m.monHoc.maMon}"></code></td>
+                      <td th:text="${m.monHoc.tenMon}"></td>
+                      <td th:text="${m.monHoc.soTinChi}"></td>
+                    </tr>
+                  </th:block>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </form>
+
+        <!-- Danh sách nguyện vọng ĐÃ đăng ký -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">
+              <i class="fa-solid fa-check-circle" style="color:var(--success);margin-right:6px;"></i>
+              Danh sách các nguyện vọng đã đăng ký
+            </span>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div th:if="${daDangKy == null or daDangKy.empty}"
+                 style="padding:20px;text-align:center;color:var(--gray-500);">
+              Bạn chưa đăng ký nguyện vọng nào trong kế hoạch này.
+            </div>
+            <table th:if="${daDangKy != null and !daDangKy.empty}" class="table">
+              <thead>
+                <tr>
+                  <th class="check-col">
+                    <input type="checkbox" title="Chọn tất cả để hủy" disabled/>
+                  </th>
+                  <th>STT</th>
+                  <th>Mã học phần</th>
+                  <th>Tên học phần</th>
+                  <th>Số tín chỉ</th>
+                  <th>Thời gian</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="dk, i : ${daDangKy}" class="da-dang-ky">
+                  <td class="check-col">
+                    <input type="checkbox" disabled checked/>
+                  </td>
+                  <td th:text="${i.count}"></td>
+                  <td><code th:text="${dk.nguyenVongMonHoc.monHoc.maMon}"></code></td>
+                  <td th:text="${dk.nguyenVongMonHoc.monHoc.tenMon}"></td>
+                  <td th:text="${dk.nguyenVongMonHoc.monHoc.soTinChi}"></td>
+                  <td th:text="${#temporals.format(dk.ngayDangKy,'dd/MM/yyyy HH:mm')}"></td>
+                  <td>
+                    <span th:if="${dk.trangThai == 'CHO_DUYET'}" class="badge badge-warning">Chờ duyệt</span>
+                    <span th:if="${dk.trangThai == 'DA_DUYET'}"  class="badge badge-success">Đã duyệt</span>
+                    <span th:if="${dk.trangThai == 'DA_HUY'}"    class="badge badge-danger">Đã hủy</span>
+                  </td>
+                  <td>
+                    <form th:action="@{/sinh-vien/huy-nguyen-vong}" method="post"
+                          onsubmit="return confirm('Hủy nguyện vọng này?')">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input type="hidden" name="nguyenVongMonHocId"
+                             th:value="${dk.nguyenVongMonHoc.id}"/>
+                      <input type="hidden" name="keHoachId" th:value="${keHoachChon.id}"/>
+                      <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fa-solid fa-xmark"></i> Hủy đăng ký
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <!-- END keHoachChon -->
+
     </div>
   </div>
 </div>
+
+<script>
+function toggleAll(master) {
+  document.querySelectorAll('.chk-mon').forEach(cb => cb.checked = master.checked);
+}
+// Nếu không có checkbox nào được check thì không submit
+document.getElementById('formDangKy')?.addEventListener('submit', function(e) {
+  const checked = document.querySelectorAll('.chk-mon:checked');
+  if (checked.length === 0) {
+    e.preventDefault();
+    alert('Vui lòng chọn ít nhất 1 nguyện vọng trước khi đăng ký.');
+  }
+});
+</script>
 </body>
 </html>

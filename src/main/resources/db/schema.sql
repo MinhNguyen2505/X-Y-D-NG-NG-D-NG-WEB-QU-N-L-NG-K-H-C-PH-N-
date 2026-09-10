@@ -193,3 +193,50 @@ CREATE INDEX idx_dkhp_lhp ON dang_ky_hoc_phan (lop_hoc_phan_id, trang_thai);
 
 -- Tim lop hoc phan theo hoc ky
 CREATE INDEX idx_lhp_hk ON lop_hoc_phan (hoc_ky_id, trang_thai);
+
+-- =============================================================
+-- 11. KE_HOACH_NGUYEN_VONG
+-- Admin tao ke hoach, gom cac mon hoc de SV dang ky nguyen vong
+-- trang_thai: DANG_MO / DA_DONG
+-- =============================================================
+CREATE TABLE IF NOT EXISTS ke_hoach_nguyen_vong (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ten_ke_hoach    VARCHAR(255) NOT NULL,
+    mo_ta           TEXT,
+    hoc_ky_id       BIGINT NOT NULL,
+    ngay_bat_dau    DATE NOT NULL,
+    ngay_ket_thuc   DATE NOT NULL,
+    trang_thai      VARCHAR(20) NOT NULL DEFAULT 'DANG_MO',
+    CONSTRAINT fk_khnv_hoc_ky FOREIGN KEY (hoc_ky_id) REFERENCES hoc_ky(id),
+    CONSTRAINT chk_khnv_trang_thai CHECK (trang_thai IN ('DANG_MO','DA_DONG'))
+);
+
+-- =============================================================
+-- 12. NGUYEN_VONG_MON_HOC
+-- Cac mon hoc duoc admin them vao 1 ke hoach nguyen vong
+-- =============================================================
+CREATE TABLE IF NOT EXISTS nguyen_vong_mon_hoc (
+    id                      BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ke_hoach_nguyen_vong_id BIGINT NOT NULL,
+    mon_hoc_id              BIGINT NOT NULL,
+    CONSTRAINT uq_nvmh UNIQUE (ke_hoach_nguyen_vong_id, mon_hoc_id),
+    CONSTRAINT fk_nvmh_ke_hoach FOREIGN KEY (ke_hoach_nguyen_vong_id) REFERENCES ke_hoach_nguyen_vong(id),
+    CONSTRAINT fk_nvmh_mon_hoc  FOREIGN KEY (mon_hoc_id) REFERENCES mon_hoc(id)
+);
+
+-- =============================================================
+-- 13. DANG_KY_NGUYEN_VONG
+-- SV dang ky nguyen vong theo tung mon trong ke hoach
+-- trang_thai: CHO_DUYET / DA_DUYET / DA_HUY
+-- =============================================================
+CREATE TABLE IF NOT EXISTS dang_ky_nguyen_vong (
+    id                      BIGINT AUTO_INCREMENT PRIMARY KEY,
+    sinh_vien_id            BIGINT NOT NULL,
+    nguyen_vong_mon_hoc_id  BIGINT NOT NULL,
+    ngay_dang_ky            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    trang_thai              VARCHAR(20) NOT NULL DEFAULT 'CHO_DUYET',
+    CONSTRAINT uq_dknv UNIQUE (sinh_vien_id, nguyen_vong_mon_hoc_id),
+    CONSTRAINT chk_dknv_trang_thai CHECK (trang_thai IN ('CHO_DUYET','DA_DUYET','DA_HUY')),
+    CONSTRAINT fk_dknv_sinh_vien        FOREIGN KEY (sinh_vien_id)           REFERENCES sinh_vien(id),
+    CONSTRAINT fk_dknv_nguyen_vong_mh   FOREIGN KEY (nguyen_vong_mon_hoc_id) REFERENCES nguyen_vong_mon_hoc(id)
+);

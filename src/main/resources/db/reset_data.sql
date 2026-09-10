@@ -124,3 +124,22 @@ INSERT INTO lich_hoc (lop_hoc_phan_id, thu, tiet_bat_dau, tiet_ket_thuc, phong) 
 (7, 6, 1, 3, 'B301'),
 (7, 4, 1, 3, 'Lab4'),
 (8, 5, 1, 3, 'C401');
+
+-- =============================================================
+-- KE HOACH NGUYEN VONG mau
+-- =============================================================
+INSERT INTO ke_hoach_nguyen_vong (ten_ke_hoach, mo_ta, hoc_ky_id, ngay_bat_dau, ngay_ket_thuc, trang_thai) VALUES
+('Đăng ký nguyện vọng HK1 2026-2027',
+ 'Sinh viên đăng ký nguyện vọng các môn học dự kiến cho học kỳ 1 năm học 2026-2027',
+ 3, '2026-09-01', '2026-09-30', 'DANG_MO');
+
+-- Them cac mon hoc vao ke hoach (ke_hoach id=1, cac mon id 1-8)
+INSERT INTO nguyen_vong_mon_hoc (ke_hoach_nguyen_vong_id, mon_hoc_id) VALUES
+(1, 1), -- MATH101
+(1, 2), -- PROG101
+(1, 3), -- PROG201
+(1, 4), -- DS201
+(1, 5), -- DB301
+(1, 6), -- NET301
+(1, 7), -- WEB401
+(1, 8); -- OS201

@@ -14,6 +14,7 @@ import vn.edu.quanlyhocphan.exception.*;
 import vn.edu.quanlyhocphan.repository.ChuongTrinhDaoTaoRepository;
 import vn.edu.quanlyhocphan.repository.DangKyHocPhanRepository;
 import vn.edu.quanlyhocphan.service.*;
+import vn.edu.quanlyhocphan.service.NguyenVongService;
 
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,7 @@ public class SinhVienController {
     private final HocKyService hocKyService;
     private final LopHocPhanService lopHocPhanService;
     private final ChuongTrinhDaoTaoRepository chuongTrinhDaoTaoRepo;
+    private final NguyenVongService nguyenVongService;
 
     // -----------------------------------------------------------------
     // Helper: lay SinhVien tu Principal (email la username)
@@ -217,12 +219,69 @@ public class SinhVienController {
     }
 
     // =================================================================
-    // DANG KY NGUYEN VONG (placeholder)
+    // DANG KY NGUYEN VONG
     // =================================================================
     @GetMapping("/dang-ky-nguyen-vong")
-    public String dangKyNguyenVong(@AuthenticationPrincipal UserDetails principal, Model model) {
-        model.addAttribute("sinhVien", laySinhVienHienTai(principal));
+    public String dangKyNguyenVong(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam(required = false) Long keHoachId,
+            Model model) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        model.addAttribute("sinhVien", sv);
+        model.addAttribute("danhSachKeHoach", nguyenVongService.findKeHoachDangMo());
+
+        if (keHoachId != null) {
+            var keHoach = nguyenVongService.findKeHoachById(keHoachId);
+            var daDangKyIds = nguyenVongService.findDaDangKyIds(sv.getId(), keHoachId);
+            var daDangKy = nguyenVongService.findDangKyCuaSinhVien(sv.getId(), keHoachId);
+            model.addAttribute("keHoachChon", keHoach);
+            model.addAttribute("daDangKyIds", daDangKyIds);
+            model.addAttribute("daDangKy", daDangKy);
+        }
         return "sinh-vien/dang-ky-nguyen-vong";
+    }
+
+    @PostMapping("/dang-ky-nguyen-vong")
+    public String thucHienDangKyNguyenVong(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam Long keHoachId,
+            @RequestParam List<Long> nguyenVongMonHocIds,
+            RedirectAttributes redirectAttributes) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        int thanhCong = 0;
+        int loi = 0;
+        for (Long nvMonHocId : nguyenVongMonHocIds) {
+            try {
+                nguyenVongService.dangKy(sv.getId(), nvMonHocId);
+                thanhCong++;
+            } catch (Exception e) {
+                log.warn("Loi dang ky nguyen vong: {}", e.getMessage());
+                loi++;
+            }
+        }
+        if (thanhCong > 0)
+            redirectAttributes.addFlashAttribute("successMsg",
+                "Dang ky thanh cong " + thanhCong + " nguyen vong.");
+        if (loi > 0)
+            redirectAttributes.addFlashAttribute("errorMsg",
+                loi + " nguyen vong bi loi (co the da dang ky truoc do).");
+        return "redirect:/sinh-vien/dang-ky-nguyen-vong?keHoachId=" + keHoachId;
+    }
+
+    @PostMapping("/huy-nguyen-vong")
+    public String huyNguyenVong(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam Long nguyenVongMonHocId,
+            @RequestParam Long keHoachId,
+            RedirectAttributes redirectAttributes) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        try {
+            nguyenVongService.huyDangKy(sv.getId(), nguyenVongMonHocId);
+            redirectAttributes.addFlashAttribute("successMsg", "Da huy dang ky nguyen vong.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Co loi: " + e.getMessage());
+        }
+        return "redirect:/sinh-vien/dang-ky-nguyen-vong?keHoachId=" + keHoachId;
     }
 
     // =================================================================
