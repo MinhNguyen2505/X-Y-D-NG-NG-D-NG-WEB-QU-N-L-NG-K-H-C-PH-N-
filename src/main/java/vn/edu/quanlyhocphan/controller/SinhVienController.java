@@ -15,6 +15,7 @@ import vn.edu.quanlyhocphan.repository.ChuongTrinhDaoTaoRepository;
 import vn.edu.quanlyhocphan.repository.DangKyHocPhanRepository;
 import vn.edu.quanlyhocphan.service.*;
 import vn.edu.quanlyhocphan.service.NguyenVongService;
+import vn.edu.quanlyhocphan.service.DinhHuongService;
 
 import java.util.List;
 import java.util.Set;
@@ -38,6 +39,7 @@ public class SinhVienController {
     private final LopHocPhanService lopHocPhanService;
     private final ChuongTrinhDaoTaoRepository chuongTrinhDaoTaoRepo;
     private final NguyenVongService nguyenVongService;
+    private final DinhHuongService dinhHuongService;
 
     // -----------------------------------------------------------------
     // Helper: lay SinhVien tu Principal (email la username)
@@ -318,12 +320,59 @@ public class SinhVienController {
     }
 
     // =================================================================
-    // DINH HUONG HOC TAP (placeholder)
+    // DINH HUONG HOC TAP
     // =================================================================
     @GetMapping("/dinh-huong-hoc-tap")
-    public String dinhHuongHocTap(@AuthenticationPrincipal UserDetails principal, Model model) {
-        model.addAttribute("sinhVien", laySinhVienHienTai(principal));
+    public String dinhHuongHocTap(
+            @AuthenticationPrincipal UserDetails principal,
+            Model model) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        model.addAttribute("sinhVien", sv);
+
+        // Lay dinh huong dang mo theo nganh cua SV
+        List<DinhHuong> danhSachDinhHuong = new java.util.ArrayList<>();
+        DangKyDinhHuong daDangKy = null;
+
+        if (sv.getNganh() != null) {
+            danhSachDinhHuong = dinhHuongService.findDangMoByNganh(sv.getNganh().getId());
+            daDangKy = dinhHuongService.findActiveByNganh(sv.getId(), sv.getNganh().getId())
+                .orElse(null);
+        }
+
+        model.addAttribute("danhSachDinhHuong", danhSachDinhHuong);
+        model.addAttribute("daDangKy", daDangKy);
+        model.addAttribute("lichSuDangKy", dinhHuongService.findDangKyCuaSinhVien(sv.getId()));
         return "sinh-vien/dinh-huong-hoc-tap";
+    }
+
+    @PostMapping("/dang-ky-dinh-huong")
+    public String dangKyDinhHuong(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam Long dinhHuongId,
+            RedirectAttributes ra) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        try {
+            dinhHuongService.dangKy(sv.getId(), dinhHuongId);
+            ra.addFlashAttribute("successMsg", "Dang ky dinh huong hoc tap thanh cong!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/sinh-vien/dinh-huong-hoc-tap";
+    }
+
+    @PostMapping("/huy-dinh-huong")
+    public String huyDinhHuong(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam Long dinhHuongId,
+            RedirectAttributes ra) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        try {
+            dinhHuongService.huy(sv.getId(), dinhHuongId);
+            ra.addFlashAttribute("successMsg", "Da huy dang ky dinh huong.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/sinh-vien/dinh-huong-hoc-tap";
     }
 
     // =================================================================

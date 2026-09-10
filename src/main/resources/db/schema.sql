@@ -240,3 +240,36 @@ CREATE TABLE IF NOT EXISTS dang_ky_nguyen_vong (
     CONSTRAINT fk_dknv_sinh_vien        FOREIGN KEY (sinh_vien_id)           REFERENCES sinh_vien(id),
     CONSTRAINT fk_dknv_nguyen_vong_mh   FOREIGN KEY (nguyen_vong_mon_hoc_id) REFERENCES nguyen_vong_mon_hoc(id)
 );
+
+-- =============================================================
+-- 14. DINH_HUONG
+-- Admin tao dinh huong hoc tap cho tung nganh
+-- trang_thai: DANG_MO / DA_DONG
+-- =============================================================
+CREATE TABLE IF NOT EXISTS dinh_huong (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ten_dinh_huong  VARCHAR(255) NOT NULL,
+    mo_ta           TEXT,
+    nganh_id        BIGINT NOT NULL,
+    ngay_bat_dau    DATE,
+    ngay_ket_thuc   DATE,
+    che_do_dang_ky  VARCHAR(50) DEFAULT 'BAT_BUOC',
+    trang_thai      VARCHAR(20) NOT NULL DEFAULT 'DANG_MO',
+    CONSTRAINT fk_dh_nganh FOREIGN KEY (nganh_id) REFERENCES nganh(id)
+);
+
+-- =============================================================
+-- 15. DANG_KY_DINH_HUONG
+-- SV dang ky 1 dinh huong (moi SV chi duoc chon 1 dinh huong
+-- trong cung 1 nganh tại 1 thoi diem)
+-- =============================================================
+CREATE TABLE IF NOT EXISTS dang_ky_dinh_huong (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    sinh_vien_id    BIGINT NOT NULL,
+    dinh_huong_id   BIGINT NOT NULL,
+    ngay_dang_ky    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    trang_thai      VARCHAR(20) NOT NULL DEFAULT 'DA_DANG_KY',
+    CONSTRAINT uq_dkdh UNIQUE (sinh_vien_id, dinh_huong_id),
+    CONSTRAINT fk_dkdh_sv FOREIGN KEY (sinh_vien_id) REFERENCES sinh_vien(id),
+    CONSTRAINT fk_dkdh_dh FOREIGN KEY (dinh_huong_id) REFERENCES dinh_huong(id)
+);

@@ -11,6 +11,7 @@ import vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan;
 import vn.edu.quanlyhocphan.repository.NganhRepository;
 import vn.edu.quanlyhocphan.service.*;
 import vn.edu.quanlyhocphan.service.NguyenVongService;
+import vn.edu.quanlyhocphan.service.DinhHuongService;
 
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class AdminController {
     private final LopHocPhanService lopHocPhanService;
     private final NganhRepository nganhRepo;
     private final NguyenVongService nguyenVongService;
+    private final DinhHuongService dinhHuongService;
 
     // =================================================================
     // DASHBOARD
@@ -459,5 +461,71 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
         }
         return "redirect:/admin/nguyen-vong/" + keHoachId;
+    }
+
+    // =================================================================
+    // QUAN LY DINH HUONG HOC TAP
+    // =================================================================
+
+    @GetMapping("/dinh-huong")
+    public String danhSachDinhHuong(Model model) {
+        model.addAttribute("danhSach", dinhHuongService.findAll());
+        return "admin/dinh-huong/danh-sach";
+    }
+
+    @GetMapping("/dinh-huong/them")
+    public String formThemDinhHuong(Model model) {
+        model.addAttribute("dinhHuong", new vn.edu.quanlyhocphan.entity.DinhHuong());
+        model.addAttribute("danhSachNganh", nganhRepo.findAll());
+        return "admin/dinh-huong/form";
+    }
+
+    @PostMapping("/dinh-huong/them")
+    public String themDinhHuong(
+            @ModelAttribute vn.edu.quanlyhocphan.entity.DinhHuong dinhHuong,
+            RedirectAttributes ra) {
+        try {
+            dinhHuongService.save(dinhHuong);
+            ra.addFlashAttribute("successMsg", "Tao dinh huong thanh cong.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", "Co loi: " + e.getMessage());
+        }
+        return "redirect:/admin/dinh-huong";
+    }
+
+    @GetMapping("/dinh-huong/sua/{id}")
+    public String formSuaDinhHuong(@PathVariable Long id, Model model) {
+        model.addAttribute("dinhHuong", dinhHuongService.findById(id));
+        model.addAttribute("danhSachNganh", nganhRepo.findAll());
+        model.addAttribute("danhSachDangKy", dinhHuongService.findDangKyByDinhHuong(id));
+        return "admin/dinh-huong/form";
+    }
+
+    @PostMapping("/dinh-huong/sua/{id}")
+    public String suaDinhHuong(@PathVariable Long id,
+                               @ModelAttribute vn.edu.quanlyhocphan.entity.DinhHuong dinhHuong,
+                               RedirectAttributes ra) {
+        try {
+            dinhHuong.setId(id);
+            dinhHuongService.save(dinhHuong);
+            ra.addFlashAttribute("successMsg", "Cap nhat dinh huong thanh cong.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", "Co loi: " + e.getMessage());
+        }
+        return "redirect:/admin/dinh-huong";
+    }
+
+    @PostMapping("/dinh-huong/{id}/dong")
+    public String dongDinhHuong(@PathVariable Long id, RedirectAttributes ra) {
+        try { dinhHuongService.dong(id); ra.addFlashAttribute("successMsg", "Da dong dinh huong."); }
+        catch (Exception e) { ra.addFlashAttribute("errorMsg", e.getMessage()); }
+        return "redirect:/admin/dinh-huong";
+    }
+
+    @PostMapping("/dinh-huong/{id}/mo")
+    public String moDinhHuong(@PathVariable Long id, RedirectAttributes ra) {
+        try { dinhHuongService.mo(id); ra.addFlashAttribute("successMsg", "Da mo lai dinh huong."); }
+        catch (Exception e) { ra.addFlashAttribute("errorMsg", e.getMessage()); }
+        return "redirect:/admin/dinh-huong";
     }
 }

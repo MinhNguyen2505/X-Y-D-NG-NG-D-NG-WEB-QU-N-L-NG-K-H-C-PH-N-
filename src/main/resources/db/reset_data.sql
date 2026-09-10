@@ -143,3 +143,12 @@ INSERT INTO nguyen_vong_mon_hoc (ke_hoach_nguyen_vong_id, mon_hoc_id) VALUES
 (1, 6), -- NET301
 (1, 7), -- WEB401
 (1, 8); -- OS201
+
+-- =============================================================
+-- DINH HUONG mau (nganh CNTT id=1, KTPM id=2)
+-- =============================================================
+INSERT INTO dinh_huong (ten_dinh_huong, mo_ta, nganh_id, ngay_bat_dau, ngay_ket_thuc, che_do_dang_ky, trang_thai) VALUES
+('Công nghệ phần mềm',   'Định hướng phát triển phần mềm, lập trình ứng dụng', 1, '2026-09-01', '2026-09-30', 'BAT_BUOC', 'DANG_MO'),
+('Hệ thống thông tin',   'Định hướng phân tích thiết kế hệ thống thông tin',    1, '2026-09-01', '2026-09-30', 'BAT_BUOC', 'DANG_MO'),
+('Kỹ thuật phần mềm',    'Định hướng kiểm thử và đảm bảo chất lượng phần mềm', 2, '2026-09-01', '2026-09-30', 'TU_CHON',  'DANG_MO'),
+('Phân tích dữ liệu',    'Định hướng xử lý và phân tích dữ liệu lớn',          2, '2026-09-01', '2026-09-30', 'TU_CHON',  'DANG_MO');

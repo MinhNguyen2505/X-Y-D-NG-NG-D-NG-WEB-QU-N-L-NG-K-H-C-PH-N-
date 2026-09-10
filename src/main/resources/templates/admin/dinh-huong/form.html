@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Form Định hướng</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body><div class="layout">
+  <div th:insert="~{fragments/sidebar :: admin('admin-dh')}"></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" th:text="${dinhHuong.id == null} ? 'Tạo định hướng' : 'Sửa định hướng'">Form</div>
+    </header>
+    <div class="content">
+      <div class="page-hd">
+        <div class="page-hd-title" th:text="${dinhHuong.id == null} ? 'Tạo định hướng học tập' : 'Sửa định hướng học tập'">Form</div>
+        <a th:href="@{/admin/dinh-huong}" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+
+        <!-- Form -->
+        <div class="card"><div class="card-body">
+          <form th:action="${dinhHuong.id == null} ? @{/admin/dinh-huong/them} : @{/admin/dinh-huong/sua/{id}(id=${dinhHuong.id})}"
+                method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="form-group">
+              <label class="form-label">Tên định hướng *</label>
+              <input type="text" name="tenDinhHuong" class="form-control"
+                     th:value="${dinhHuong.tenDinhHuong}" required
+                     placeholder="VD: Công nghệ phần mềm"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mô tả</label>
+              <textarea name="moTa" class="form-control" rows="3"
+                        th:text="${dinhHuong.moTa}" placeholder="Mô tả định hướng..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ngành *</label>
+              <select name="nganh.id" class="form-control" required>
+                <option value="">-- Chọn ngành --</option>
+                <option th:each="n : ${danhSachNganh}" th:value="${n.id}" th:text="${n.tenNganh}"
+                        th:selected="${dinhHuong.nganh?.id == n.id}"></option>
+              </select>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Ngày bắt đầu ĐK</label>
+                <input type="date" name="ngayBatDau" class="form-control" th:value="${dinhHuong.ngayBatDau}"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ngày kết thúc ĐK</label>
+                <input type="date" name="ngayKetThuc" class="form-control" th:value="${dinhHuong.ngayKetThuc}"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Chế độ đăng ký</label>
+              <select name="cheDoDangKy" class="form-control">
+                <option value="BAT_BUOC" th:selected="${dinhHuong.cheDoDangKy == 'BAT_BUOC' or dinhHuong.cheDoDangKy == null}">Bắt buộc</option>
+                <option value="TU_CHON"  th:selected="${dinhHuong.cheDoDangKy == 'TU_CHON'}">Tự chọn</option>
+              </select>
+            </div>
+            <div class="flex mt-2">
+              <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
+              <a th:href="@{/admin/dinh-huong}" class="btn btn-outline">Hủy</a>
+            </div>
+          </form>
+        </div></div>
+
+        <!-- Danh sách SV đã đăng ký (khi sửa) -->
+        <div th:if="${dinhHuong.id != null}" class="card"><div class="card-body" style="padding:0;">
+          <div class="card-header" style="background:var(--gray-50);">
+            <span class="card-title">SV đã đăng ký (<span th:text="${danhSachDangKy?.size() ?: 0}"></span>)</span>
+          </div>
+          <div th:if="${danhSachDangKy == null or danhSachDangKy.empty}" class="empty-state">
+            <i class="fa-solid fa-users"></i>Chưa có sinh viên đăng ký.
+          </div>
+          <table th:if="${danhSachDangKy != null and !danhSachDangKy.empty}" class="table">
+            <thead><tr><th>MSSV</th><th>Họ tên</th><th>Ngày ĐK</th><th>TT</th></tr></thead>
+            <tbody>
+              <tr th:each="dk : ${danhSachDangKy}">
+                <td th:text="${dk.sinhVien.mssv}"></td>
+                <td th:text="${dk.sinhVien.hoTen}"></td>
+                <td th:text="${#temporals.format(dk.ngayDangKy,'dd/MM/yyyy')}"></td>
+                <td>
+                  <span th:if="${dk.trangThai == 'DA_DANG_KY'}" class="badge badge-success">Đã ĐK</span>
+                  <span th:if="${dk.trangThai == 'DA_HUY'}"     class="badge badge-danger">Đã hủy</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div></div>
+
+      </div>
+    </div>
+  </div>
+</div></body></html>
