@@ -42,7 +42,7 @@ public class SinhVienServiceImpl implements SinhVienService {
     @Override
     @Transactional(readOnly = true)
     public List<SinhVien> findAll() {
-        return sinhVienRepo.findAll();
+        return sinhVienRepo.findAllWithNganh();
     }
 
     @Override

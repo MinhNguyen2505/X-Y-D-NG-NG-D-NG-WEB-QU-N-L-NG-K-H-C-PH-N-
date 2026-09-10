@@ -29,6 +29,10 @@ public interface SinhVienRepository extends JpaRepository<SinhVien, Long> {
     @Query("SELECT sv FROM SinhVien sv LEFT JOIN FETCH sv.nganh WHERE sv.id = :id")
     Optional<SinhVien> findByIdWithNganh(@Param("id") Long id);
 
+    /** Lay tat ca SV kem Nganh — dung cho admin danh sach (tranh LazyInit) */
+    @Query("SELECT sv FROM SinhVien sv LEFT JOIN FETCH sv.nganh ORDER BY sv.mssv ASC")
+    List<SinhVien> findAllWithNganh();
+
     /** Tim SV theo nganh */
     List<SinhVien> findByNganhId(Long nganhId);
 }
