@@ -13,6 +13,7 @@ import vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan;
 import vn.edu.quanlyhocphan.exception.*;
 import vn.edu.quanlyhocphan.repository.ChuongTrinhDaoTaoRepository;
 import vn.edu.quanlyhocphan.repository.DangKyHocPhanRepository;
+import vn.edu.quanlyhocphan.repository.NganhRepository;
 import vn.edu.quanlyhocphan.service.*;
 import vn.edu.quanlyhocphan.service.NguyenVongService;
 import vn.edu.quanlyhocphan.service.DinhHuongService;
@@ -44,6 +45,7 @@ public class SinhVienController {
     private final DinhHuongService dinhHuongService;
     private final TinChiTichLuyService tinChiTichLuyService;
     private final LichThiRepository lichThiRepo;
+    private final NganhRepository nganhRepo;
 
     // -----------------------------------------------------------------
     // Helper: lay SinhVien tu Principal (email la username)
@@ -400,6 +402,57 @@ public class SinhVienController {
         model.addAttribute("sinhVien", sv);
         model.addAttribute("monKhongDat", monKhongDat);
         return "sinh-vien/dang-ky-thi-lai";
+    }
+
+    // =================================================================
+    // THONG TIN CHUONG TRINH HOC
+    // =================================================================
+
+    @GetMapping("/chuong-trinh-hoc")
+    public String xemChuongTrinhHoc(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam(required = false) Long nganhId,
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            Model model) {
+
+        SinhVien sv = laySinhVienHienTai(principal);
+        model.addAttribute("sinhVien", sv);
+
+        // Lay tat ca nganh de hien thi dropdown
+        List<vn.edu.quanlyhocphan.entity.Nganh> danhSachNganh = nganhRepo.findAll();
+        model.addAttribute("danhSachNganh", danhSachNganh);
+        model.addAttribute("keyword", keyword);
+
+        // Mac dinh chon nganh cua SV neu chua chon
+        Long nganhIdChon = nganhId;
+        if (nganhIdChon == null && sv.getNganh() != null) {
+            nganhIdChon = sv.getNganh().getId();
+        }
+        model.addAttribute("nganhIdChon", nganhIdChon);
+
+        if (nganhIdChon != null) {
+            List<ChuongTrinhDaoTao> danhSachCTDT =
+                chuongTrinhDaoTaoRepo.searchByNganhId(nganhIdChon, keyword);
+
+            // Tinh tong so tin chi
+            int tongTC = danhSachCTDT.stream()
+                .mapToInt(c -> c.getMonHoc().getSoTinChi())
+                .sum();
+
+            // Dem so mon bat buoc / tu chon
+            long soBatBuoc = danhSachCTDT.stream().filter(c -> Boolean.TRUE.equals(c.getBatBuoc())).count();
+            long soTuChon  = danhSachCTDT.stream().filter(c -> !Boolean.TRUE.equals(c.getBatBuoc())).count();
+
+            model.addAttribute("danhSachCTDT", danhSachCTDT);
+            model.addAttribute("tongTC", tongTC);
+            model.addAttribute("soBatBuoc", soBatBuoc);
+            model.addAttribute("soTuChon", soTuChon);
+
+            // Lay ten nganh duoc chon
+            nganhRepo.findById(nganhIdChon).ifPresent(n ->
+                model.addAttribute("nganhChon", n));
+        }
+        return "sinh-vien/chuong-trinh-hoc";
     }
 
     // =================================================================

@@ -318,3 +318,15 @@ CREATE TABLE IF NOT EXISTS lich_thi (
 );
 
 CREATE INDEX IF NOT EXISTS idx_lt_lhp ON lich_thi (lop_hoc_phan_id);
+
+-- =============================================================
+-- 19. ALTER chuong_trinh_dao_tao: them cac cot cho trang CTDT
+-- =============================================================
+ALTER TABLE chuong_trinh_dao_tao
+    ADD COLUMN IF NOT EXISTS so_tiet_phi          INT          NULL,
+    ADD COLUMN IF NOT EXISTS hoc_ky_du_kien_label VARCHAR(50)  NULL,
+    ADD COLUMN IF NOT EXISTS hoc_ky_thuc_te_label VARCHAR(50)  NULL,
+    ADD COLUMN IF NOT EXISTS lt_bt                INT          NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS so_tiet_th           INT          NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS btl_damh             INT          NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS tt_da_kltn           INT          NOT NULL DEFAULT 0;

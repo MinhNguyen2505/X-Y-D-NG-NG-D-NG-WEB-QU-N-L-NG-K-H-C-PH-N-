@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Thông tin chương trình học</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    /* ---- Breadcrumb ---- */
+    .breadcrumb { font-size:12px; color:var(--gray-500); margin-bottom:14px; }
+    .breadcrumb a { color:var(--primary); }
+    .breadcrumb span { color:var(--gray-700); font-weight:600; }
+
+    /* ---- Top bar filter ---- */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .filter-label { font-size:13px; font-weight:600; color:var(--gray-700); white-space:nowrap; }
+    .filter-select {
+      flex: 1;
+      min-width: 260px;
+      max-width: 420px;
+      padding: 8px 12px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--gray-700);
+      background: var(--white);
+      cursor: pointer;
+    }
+    .filter-select:focus { outline:none; border-color:var(--primary); }
+
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: var(--white);
+      flex: 1;
+      min-width: 200px;
+      max-width: 320px;
+    }
+    .search-wrap i { padding: 0 10px; color:var(--gray-500); font-size:13px; }
+    .search-wrap input {
+      border: none;
+      outline: none;
+      padding: 8px 8px 8px 0;
+      font-family: inherit;
+      font-size: 13px;
+      width: 100%;
+      color: var(--gray-700);
+    }
+    .search-wrap:focus-within { border-color: var(--primary); }
+
+    /* ---- Stat chips ---- */
+    .stat-chips {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-700);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .stat-chip i { color: var(--primary); }
+    .stat-chip.success i { color: var(--success); }
+    .stat-chip.warning i { color: var(--warning); }
+
+    /* ---- Table ---- */
+    .ctdt-table th {
+      background: var(--gray-50);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-700);
+      padding: 10px 10px;
+      white-space: nowrap;
+      border-bottom: 2px solid var(--gray-200);
+    }
+    .ctdt-table td {
+      padding: 9px 10px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--gray-100);
+      vertical-align: middle;
+    }
+    .ctdt-table tbody tr:hover { background: #f8faff; }
+
+    /* HK separator row */
+    .hk-separator td {
+      background: linear-gradient(90deg, #dbeafe, #eff6ff);
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--navy);
+      padding: 6px 10px;
+      border-top: 2px solid var(--primary);
+    }
+
+    /* Khối KT badge */
+    .khoi-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .khoi-kt1  { background:#dbeafe; color:#1d4ed8; }
+    .khoi-kt2  { background:#dcfce7; color:#15803d; }
+    .khoi-kt3  { background:#fef3c7; color:#92400e; }
+    .khoi-kt4  { background:#fce7f3; color:#9d174d; }
+    .khoi-gdtc { background:#f3e8ff; color:#7c3aed; }
+    .khoi-qpan { background:#fee2e2; color:#dc2626; }
+    .khoi-other{ background:#f1f5f9; color:#475569; }
+
+    /* Điều kiện ràng buộc */
+    .dk-tag {
+      display: inline-block;
+      background: #fff7ed;
+      color: #c2410c;
+      border: 1px solid #fed7aa;
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 11px;
+      margin: 1px 2px;
+      white-space: nowrap;
+    }
+
+    /* BB / TC badge */
+    .bb-badge { background:#dcfce7; color:#15803d; font-size:11px; font-weight:700; padding:1px 7px; border-radius:20px; }
+    .tc-badge { background:#f1f5f9; color:#64748b; font-size:11px; font-weight:700; padding:1px 7px; border-radius:20px; }
+
+    /* Số tiết columns */
+    .so-tiet { text-align:center; font-size:12px; color:var(--gray-700); }
+    .so-tiet-0 { color:var(--gray-300); }
+
+    /* Detail button */
+    .btn-detail {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:28px; height:28px;
+      border:1px solid var(--gray-300);
+      border-radius:var(--radius-sm);
+      color:var(--primary);
+      font-size:12px;
+      cursor:pointer;
+      background: var(--white);
+      transition:var(--transition);
+      text-decoration:none;
+    }
+    .btn-detail:hover { background:var(--primary); color:white; border-color:var(--primary); }
+
+    /* HK label */
+    .hk-label {
+      font-size:11px;
+      color: var(--gray-600);
+      white-space: nowrap;
+    }
+    .hk-label-real {
+      font-size:11px;
+      color: var(--success);
+      white-space: nowrap;
+    }
+
+    /* Highlight khi search */
+    mark { background:#fef08a; padding:0 2px; border-radius:2px; }
+
+    /* Sticky header */
+    .ctdt-table thead th { position:sticky; top:0; z-index:1; }
+
+    /* Total row */
+    .total-row td { font-weight:800; background:var(--gray-50); border-top:2px solid var(--gray-300); }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <div th:insert="~{fragments/sidebar :: sv('sv-ctdt-hoc')}"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Thông tin chương trình học</div>
+      <div class="topbar-user">
+        <div class="topbar-avatar"
+             th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
+        <span class="topbar-name"
+              th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a th:href="@{/sinh-vien/dashboard}">Góc học tập</a>
+        &rsaquo; <span>Xem thông tin chương trình học</span>
+      </div>
+
+      <!-- ===== FILTER BAR ===== -->
+      <form th:action="@{/sinh-vien/chuong-trinh-hoc}" method="get" id="filterForm">
+        <div class="filter-bar">
+          <!-- Label + Dropdown chọn chương trình -->
+          <span class="filter-label">Nội dung học phần theo chương trình:</span>
+          <select name="nganhId" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+            <option value="">-- Chọn chương trình --</option>
+            <option th:each="n : ${danhSachNganh}"
+                    th:value="${n.id}"
+                    th:text="'Đại học Chính quy - ' + ${n.tenNganh}"
+                    th:selected="${nganhIdChon == n.id}">
+            </option>
+          </select>
+
+          <!-- Search box -->
+          <div class="search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" name="keyword" id="searchInput"
+                   placeholder="Tìm theo mã hoặc tên học phần..."
+                   th:value="${keyword}"
+                   autocomplete="off"/>
+          </div>
+          <button type="submit" class="btn btn-primary" style="white-space:nowrap;">
+            <i class="fa-solid fa-search"></i> Tìm
+          </button>
+          <a th:if="${keyword != null and keyword != ''}"
+             th:href="@{/sinh-vien/chuong-trinh-hoc(nganhId=${nganhIdChon})}"
+             class="btn btn-outline" style="white-space:nowrap;">
+            <i class="fa-solid fa-xmark"></i> Xóa lọc
+          </a>
+        </div>
+      </form>
+
+      <!-- ===== STATS ===== -->
+      <div th:if="${danhSachCTDT != null}" class="stat-chips">
+        <div class="stat-chip">
+          <i class="fa-solid fa-list-ol"></i>
+          <span><b th:text="${danhSachCTDT.size()}"></b> học phần</span>
+        </div>
+        <div class="stat-chip">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <span>Tổng <b th:text="${tongTC}"></b> tín chỉ</span>
+        </div>
+        <div class="stat-chip success">
+          <i class="fa-solid fa-circle-check"></i>
+          <span><b th:text="${soBatBuoc}"></b> bắt buộc</span>
+        </div>
+        <div class="stat-chip warning">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span><b th:text="${soTuChon}"></b> tự chọn</span>
+        </div>
+        <div th:if="${keyword != null and keyword != ''}" class="stat-chip"
+             style="background:#fffbeb; border-color:#fde68a;">
+          <i class="fa-solid fa-filter" style="color:#d97706;"></i>
+          <span>Lọc theo: "<b th:text="${keyword}"></b>"</span>
+        </div>
+      </div>
+
+      <!-- ===== BẢNG CTĐT ===== -->
+      <div th:if="${danhSachCTDT != null and !danhSachCTDT.empty}"
+           class="card" style="margin-bottom:16px;">
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="table ctdt-table" style="min-width:1000px;">
+            <thead>
+              <tr>
+                <th style="width:40px;text-align:center;">STT</th>
+                <th>Mã học phần</th>
+                <th style="min-width:200px;">Tên học phần</th>
+                <th style="text-align:center;">Khối KT</th>
+                <th style="text-align:center;">Số tín chỉ học phần</th>
+                <th style="text-align:center;">Số tín học phí</th>
+                <th style="min-width:130px;">Điều kiện ràng buộc</th>
+                <th style="text-align:center;min-width:110px;">Học kỳ dự kiến</th>
+                <th style="text-align:center;min-width:110px;">Học kỳ thực tế</th>
+                <th style="text-align:center;">LT_BT</th>
+                <th style="text-align:center;">TH</th>
+                <th style="text-align:center;">BTL_DAMH</th>
+                <th style="text-align:center;">TT_DA_KLTN</th>
+                <th style="text-align:center;width:60px;">Chi tiết</th>
+              </tr>
+            </thead>
+            <tbody>
+              <th:block th:with="prevHk=-1, stt=0">
+                <th:block th:each="ctdt, stat : ${danhSachCTDT}">
+
+                  <!-- Dòng phân cách học kỳ -->
+                  <tr th:if="${ctdt.hocKyThu != prevHk}"
+                      th:with="prevHk=${ctdt.hocKyThu}"
+                      class="hk-separator">
+                    <td colspan="14">
+                      <i class="fa-solid fa-calendar-week"></i>
+                      Học kỳ <span th:text="${ctdt.hocKyThu}"></span>
+                      — Năm <span th:text="${(ctdt.hocKyThu + 1) / 2}"></span>
+                      <span th:if="${ctdt.hocKyThu % 2 == 1}">(Kỳ 1)</span>
+                      <span th:if="${ctdt.hocKyThu % 2 == 0}">(Kỳ 2)</span>
+                    </td>
+                  </tr>
+
+                  <!-- Dòng dữ liệu -->
+                  <tr>
+                    <!-- STT liên tục -->
+                    <td style="text-align:center;color:var(--gray-500);"
+                        th:text="${stat.count}"></td>
+
+                    <!-- Mã học phần -->
+                    <td>
+                      <span style="font-family:monospace;font-weight:700;font-size:13px;"
+                            th:utext="${keyword != null and keyword != ''
+                              and #strings.containsIgnoreCase(ctdt.monHoc.maMon, keyword)}
+                              ? '<mark>' + ${ctdt.monHoc.maMon} + '</mark>'
+                              : ${ctdt.monHoc.maMon}">
+                      </span>
+                    </td>
+
+                    <!-- Tên học phần -->
+                    <td>
+                      <span th:utext="${keyword != null and keyword != ''
+                              and #strings.containsIgnoreCase(ctdt.monHoc.tenMon, keyword)}
+                              ? '<mark>' + ${ctdt.monHoc.tenMon} + '</mark>'
+                              : ${ctdt.monHoc.tenMon}"
+                            style="font-weight:500;">
+                      </span>
+                      <span th:if="${!ctdt.batBuoc}"
+                            class="tc-badge" style="margin-left:4px;">Tự chọn</span>
+                    </td>
+
+                    <!-- Khối KT -->
+                    <td style="text-align:center;">
+                      <span th:if="${ctdt.khoiKienThuc != null}"
+                            class="khoi-badge"
+                            th:classappend="${#strings.startsWith(ctdt.khoiKienThuc.maKhoi,'KT1')} ? ' khoi-kt1'
+                                          : ${#strings.startsWith(ctdt.khoiKienThuc.maKhoi,'KT2')} ? ' khoi-kt2'
+                                          : ${#strings.startsWith(ctdt.khoiKienThuc.maKhoi,'KT3')} ? ' khoi-kt3'
+                                          : ${#strings.startsWith(ctdt.khoiKienThuc.maKhoi,'KT4')} ? ' khoi-kt4'
+                                          : ${ctdt.khoiKienThuc.maKhoi == 'GDTC'}                  ? ' khoi-gdtc'
+                                          : ${ctdt.khoiKienThuc.maKhoi == 'QPAN'}                  ? ' khoi-qpan'
+                                          : ' khoi-other'"
+                            th:text="${ctdt.khoiKienThuc.maKhoi}">
+                      </span>
+                      <span th:if="${ctdt.khoiKienThuc == null}" class="text-muted">—</span>
+                    </td>
+
+                    <!-- Số tín chỉ -->
+                    <td style="text-align:center;font-weight:700;"
+                        th:text="${ctdt.monHoc.soTinChi}"></td>
+
+                    <!-- Số tín học phí -->
+                    <td style="text-align:center;"
+                        th:text="${ctdt.soTietPhi != null ? ctdt.soTietPhi : ctdt.monHoc.soTinChi}"></td>
+
+                    <!-- Điều kiện ràng buộc (môn tiên quyết) -->
+                    <td>
+                      <th:block th:if="${!ctdt.monHoc.cacMonTienQuyet.empty}">
+                        <span th:each="mtq : ${ctdt.monHoc.cacMonTienQuyet}"
+                              class="dk-tag"
+                              th:text="${mtq.monTienQuyet.maMon}">
+                        </span>
+                      </th:block>
+                      <span th:if="${ctdt.monHoc.cacMonTienQuyet.empty}"
+                            class="text-muted" style="font-size:11px;">—</span>
+                    </td>
+
+                    <!-- HK dự kiến -->
+                    <td style="text-align:center;">
+                      <span th:if="${ctdt.hocKyDuKienLabel != null}"
+                            class="hk-label"
+                            th:text="${ctdt.hocKyDuKienLabel}"></span>
+                      <span th:if="${ctdt.hocKyDuKienLabel == null}"
+                            class="text-muted">—</span>
+                    </td>
+
+                    <!-- HK thực tế -->
+                    <td style="text-align:center;">
+                      <span th:if="${ctdt.hocKyThucTeLabel != null}"
+                            class="hk-label-real"
+                            th:text="${ctdt.hocKyThucTeLabel}"></span>
+                      <span th:if="${ctdt.hocKyThucTeLabel == null}"
+                            class="text-muted" style="font-size:11px;">—</span>
+                    </td>
+
+                    <!-- LT_BT -->
+                    <td class="so-tiet"
+                        th:classappend="${ctdt.ltBt == 0} ? ' so-tiet-0'"
+                        th:text="${ctdt.ltBt}"></td>
+
+                    <!-- TH -->
+                    <td class="so-tiet"
+                        th:classappend="${ctdt.soTietTh == 0} ? ' so-tiet-0'"
+                        th:text="${ctdt.soTietTh}"></td>
+
+                    <!-- BTL_DAMH -->
+                    <td class="so-tiet"
+                        th:classappend="${ctdt.btlDamh == 0} ? ' so-tiet-0'"
+                        th:text="${ctdt.btlDamh}"></td>
+
+                    <!-- TT_DA_KLTN -->
+                    <td class="so-tiet"
+                        th:classappend="${ctdt.ttDaKltn == 0} ? ' so-tiet-0'"
+                        th:text="${ctdt.ttDaKltn}"></td>
+
+                    <!-- Chi tiết -->
+                    <td style="text-align:center;">
+                      <a th:href="@{/sinh-vien/chuong-trinh-hoc}" class="btn-detail"
+                         title="Xem chi tiết">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                      </a>
+                    </td>
+                  </tr>
+
+                </th:block>
+              </th:block>
+
+              <!-- Dòng tổng -->
+              <tr class="total-row">
+                <td colspan="4" style="text-align:right;padding:10px 12px;">
+                  Tổng cộng (<span th:text="${danhSachCTDT.size()}"></span> học phần)
+                </td>
+                <td style="text-align:center;" th:text="${tongTC}"></td>
+                <td colspan="9"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div th:if="${nganhIdChon == null}" class="empty-state" style="min-height:180px;">
+        <i class="fa-solid fa-hand-pointer"></i>
+        Chọn chương trình đào tạo ở trên để xem danh sách học phần.
+      </div>
+      <div th:if="${nganhIdChon != null and (danhSachCTDT == null or danhSachCTDT.empty)}"
+           class="empty-state" style="min-height:180px;">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        Không tìm thấy học phần nào
+        <span th:if="${keyword != null and keyword != ''}">
+          phù hợp với "<b th:text="${keyword}"></b>".
+        </span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Tìm kiếm realtime bằng Enter
+  document.getElementById('searchInput')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('filterForm').submit();
+    }
+  });
+</script>
+</body>
+</html>
