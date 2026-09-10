@@ -285,14 +285,35 @@ public class SinhVienController {
     }
 
     // =================================================================
-    // TRA CUU KET QUA DANG KY
+    // TRA CUU KET QUA DANG KY (ket qua dang ky nguyen vong)
     // =================================================================
     @GetMapping("/tra-cuu-ket-qua")
-    public String traCuuKetQua(@AuthenticationPrincipal UserDetails principal, Model model) {
+    public String traCuuKetQua(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam(required = false) Long keHoachId,
+            Model model) {
         SinhVien sv = laySinhVienHienTai(principal);
-        List<DangKyHocPhan> lichSu = dangKyService.layLichSuDangKy(sv.getId());
+
+        // Lay tat ca ke hoach (ca mo lan dong) de SV chon xem
+        List<vn.edu.quanlyhocphan.entity.KeHoachNguyenVong> danhSachKeHoach =
+            nguyenVongService.findAllKeHoach();
+
         model.addAttribute("sinhVien", sv);
-        model.addAttribute("lichSu", lichSu);
+        model.addAttribute("danhSachKeHoach", danhSachKeHoach);
+
+        if (keHoachId != null) {
+            var keHoach = nguyenVongService.findKeHoachById(keHoachId);
+            var danhSachDangKy = nguyenVongService.findDangKyCuaSinhVien(sv.getId(), keHoachId);
+
+            // Thong ke
+            long choDuyet = danhSachDangKy.stream().filter(d -> "CHO_DUYET".equals(d.getTrangThai())).count();
+            long daDuyet  = danhSachDangKy.stream().filter(d -> "DA_DUYET".equals(d.getTrangThai())).count();
+
+            model.addAttribute("keHoachChon", keHoach);
+            model.addAttribute("danhSachDangKy", danhSachDangKy);
+            model.addAttribute("choDuyet", choDuyet);
+            model.addAttribute("daDuyet",  daDuyet);
+        }
         return "sinh-vien/tra-cuu-ket-qua";
     }
 
