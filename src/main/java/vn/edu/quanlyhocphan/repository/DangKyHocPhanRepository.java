@@ -27,6 +27,21 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Lo
             @Param("hocKyId") Long hocKyId,
             @Param("trangThai") TrangThaiDangKy trangThai);
 
+    /**
+     * Lay dang ky cua SV trong 1 hoc ky — ca DA_DANG_KY lan HOAN_THANH.
+     * Dung cho Thoi khoa bieu: HK cu da HOAN_THANH van can hien.
+     */
+    @Query("SELECT dkhp FROM DangKyHocPhan dkhp " +
+           "JOIN FETCH dkhp.lopHocPhan lhp " +
+           "JOIN FETCH lhp.monHoc " +
+           "LEFT JOIN FETCH lhp.lichHocs " +
+           "WHERE dkhp.sinhVien.id = :sinhVienId " +
+           "AND lhp.hocKy.id = :hocKyId " +
+           "AND dkhp.trangThai IN ('DA_DANG_KY','HOAN_THANH')")
+    List<DangKyHocPhan> findDangKyTheoHocKy(
+            @Param("sinhVienId") Long sinhVienId,
+            @Param("hocKyId") Long hocKyId);
+
     @Query("SELECT COALESCE(SUM(lhp.monHoc.soTinChi), 0) " +
            "FROM DangKyHocPhan dkhp " +
            "JOIN dkhp.lopHocPhan lhp " +

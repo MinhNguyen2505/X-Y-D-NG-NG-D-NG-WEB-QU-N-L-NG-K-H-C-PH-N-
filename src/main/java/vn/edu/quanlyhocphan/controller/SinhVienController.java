@@ -263,10 +263,12 @@ public class SinhVienController {
 
         if (hocKyId != null) {
             HocKy hocKy = hocKyService.findById(hocKyId);
-            // Lich hoc: DangKyHocPhan kem LopHocPhan + LichHoc
+
+            // Lay ca DA_DANG_KY lan HOAN_THANH — HK cu da ket thuc van hien duoc
             List<DangKyHocPhan> danhSachDangKy =
-                dangKyService.layDangKyHienTai(sv.getId(), hocKyId);
-            // Lich thi: tat ca lich thi cua cac lop SV dang hoc trong hoc ky nay
+                dangKyService.layDangKyTheoHocKy(sv.getId(), hocKyId);
+
+            // Lich thi: lay theo cac lop SV co trong HK nay
             List<LichThi> danhSachLichThi =
                 lichThiRepo.findBySinhVienAndHocKy(sv.getId(), hocKyId);
 
