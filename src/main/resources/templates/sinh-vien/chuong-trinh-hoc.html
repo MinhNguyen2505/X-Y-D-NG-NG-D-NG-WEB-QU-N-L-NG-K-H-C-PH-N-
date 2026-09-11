@@ -309,18 +309,9 @@
                 <div class="hk-stat">
                   <span th:text="${entry.value.size()} + ' môn'"></span>
                   &nbsp;|&nbsp;
-                  <span th:text="${#aggregates.sum(entry.value.![lopHocPhan.monHoc.soTinChi])} + ' TC'"></span>
+                  <span th:text="${tcTheoHK[entry.key]} + ' TC'"></span>
                   &nbsp;|&nbsp;
-                  GPA:
-                  <b th:text="${entry.value.stream().filter(dk -> dk.diemTongKet != null).count() > 0}
-                               ? ${#numbers.formatDecimal(
-                                   entry.value.stream().filter(dk -> dk.diemTongKet != null)
-                                     .mapToDouble(dk -> dk.diemTongKet.doubleValue() * dk.lopHocPhan.monHoc.soTinChi).sum()
-                                   / entry.value.stream().filter(dk -> dk.diemTongKet != null)
-                                     .mapToInt(dk -> dk.lopHocPhan.monHoc.soTinChi).sum(),
-                                   1, 'DEFAULT', 2, 'DEFAULT')}
-                               : '—'">
-                  </b>
+                  GPA: <b th:text="${gpaTheoHK[entry.key]}"></b>
                 </div>
               </div>
 

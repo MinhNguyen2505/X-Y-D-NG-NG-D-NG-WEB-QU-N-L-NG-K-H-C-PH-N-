@@ -472,13 +472,40 @@ public class SinhVienController {
         // Tab 2: Lich su hoc tap — nhom theo hoc ky thuc te
         List<DangKyHocPhan> lichSu = dangKyService.layLichSuDangKy(sv.getId());
 
-        // Nhom theo hoc ky (nam_hoc + ky)
+        // Nhom theo hoc ky, tinh GPA tung ky
         java.util.Map<String, List<DangKyHocPhan>> lichSuTheoHK = new java.util.LinkedHashMap<>();
+        java.util.Map<String, String>   gpaTheoHK   = new java.util.LinkedHashMap<>();
+        java.util.Map<String, Integer>  tcTheoHK    = new java.util.LinkedHashMap<>();
+
         for (DangKyHocPhan dk : lichSu) {
             String hkKey = dk.getLopHocPhan().getHocKy().getTenHocKy();
             lichSuTheoHK.computeIfAbsent(hkKey, k -> new java.util.ArrayList<>()).add(dk);
         }
-        model.addAttribute("lichSuTheoHK", lichSuTheoHK);
+
+        for (java.util.Map.Entry<String, List<DangKyHocPhan>> e : lichSuTheoHK.entrySet()) {
+            List<DangKyHocPhan> dkList = e.getValue();
+            // Tong tin chi trong ky
+            int tc = dkList.stream()
+                .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
+                .sum();
+            tcTheoHK.put(e.getKey(), tc);
+            // GPA weighted average
+            double tongDiem = dkList.stream()
+                .filter(dk -> dk.getDiemTongKet() != null)
+                .mapToDouble(dk -> dk.getDiemTongKet().doubleValue()
+                                 * dk.getLopHocPhan().getMonHoc().getSoTinChi())
+                .sum();
+            int tcCoDiem = dkList.stream()
+                .filter(dk -> dk.getDiemTongKet() != null)
+                .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
+                .sum();
+            gpaTheoHK.put(e.getKey(), tcCoDiem > 0
+                ? String.format("%.2f", tongDiem / tcCoDiem) : "—");
+        }
+
+        model.addAttribute("lichSuTheoHK",  lichSuTheoHK);
+        model.addAttribute("gpaTheoHK",     gpaTheoHK);
+        model.addAttribute("tcTheoHK",      tcTheoHK);
 
         return "sinh-vien/chuong-trinh-hoc";
     }
