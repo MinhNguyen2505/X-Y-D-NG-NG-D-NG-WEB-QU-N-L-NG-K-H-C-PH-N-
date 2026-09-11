@@ -476,6 +476,21 @@ public class SinhVienController {
             model.addAttribute("soBatBuoc", soBatBuoc);
             model.addAttribute("soTuChon", soTuChon);
 
+            // ---- Tin chi tich luy (ghep vao cung trang) ----
+            if (sv.getNganh() != null) {
+                var danhSachKhoi = tinChiTichLuyService.tinhTinChiTheoKhoi(
+                        sv.getId(), sv.getNganh().getId());
+                int tongTichLuy = tinChiTichLuyService.tongTinChiDaTichLuy(
+                        sv.getId(), sv.getNganh().getId());
+                int tongYeuCau  = danhSachKhoi.stream().mapToInt(k -> k.getTongSoTinChi()).sum();
+                int tongBatBuoc = danhSachKhoi.stream().mapToInt(k -> k.getTinChiBatBuoc()).sum();
+
+                model.addAttribute("danhSachKhoi", danhSachKhoi);
+                model.addAttribute("tongTichLuy",  tongTichLuy);
+                model.addAttribute("tongYeuCau",   tongYeuCau);
+                model.addAttribute("tongBatBuoc",  tongBatBuoc);
+            }
+
             // Lay ten nganh duoc chon
             nganhRepo.findById(nganhIdChon).ifPresent(n ->
                 model.addAttribute("nganhChon", n));

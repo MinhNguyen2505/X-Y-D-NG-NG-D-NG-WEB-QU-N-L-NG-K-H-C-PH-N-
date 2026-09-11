@@ -3,126 +3,106 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Thông tin chương trình học</title>
+  <title>Tín chỉ tích lũy &amp; Chương trình học</title>
   <link rel="stylesheet" th:href="@{/css/app.css}"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-    /* ---- Breadcrumb ---- */
-    .breadcrumb { font-size:12px; color:var(--gray-500); margin-bottom:14px; }
-    .breadcrumb a { color:var(--primary); }
-    .breadcrumb span { color:var(--gray-700); font-weight:600; }
-
-    /* ---- Top bar filter ---- */
-    .filter-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 16px;
+    /* ===== STAT CARDS ===== */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
       background: var(--white);
       border: 1px solid var(--gray-200);
       border-radius: var(--radius-md);
-      margin-bottom: 14px;
-      flex-wrap: wrap;
+      padding: 16px 18px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat-card .sc-label { font-size:12px; color:var(--gray-500); font-weight:500; }
+    .stat-card .sc-value { font-size:26px; font-weight:800; color:var(--navy); line-height:1; }
+    .stat-card .sc-sub   { font-size:11px; color:var(--gray-500); }
+    .stat-card.highlight { background:linear-gradient(135deg,var(--primary),#1d4ed8); border:none; }
+    .stat-card.highlight .sc-label,
+    .stat-card.highlight .sc-value,
+    .stat-card.highlight .sc-sub { color:white; }
+
+    /* ===== PROGRESS ===== */
+    .progress-wrap { background:var(--gray-100); border-radius:20px; height:12px; overflow:hidden; margin-top:6px; }
+    .progress-bar  { height:100%; background:linear-gradient(90deg,var(--primary),#38bdf8); border-radius:20px; }
+
+    /* ===== BẢNG TỔNG THEO KHỐI ===== */
+    .khoi-summary th {
+      background:var(--gray-100); font-size:12px; font-weight:700;
+      padding:9px 10px; white-space:nowrap;
+    }
+    .khoi-summary td { padding:8px 10px; font-size:13px; }
+    .khoi-summary tr.tong-row td {
+      font-weight:800; background:var(--gray-50);
+      border-top:2px solid var(--gray-300);
+    }
+    .mini-bar-wrap { flex:1; background:var(--gray-200); border-radius:20px; height:7px; overflow:hidden; }
+    .mini-bar { height:100%; border-radius:20px; }
+    .mini-bar.ok  { background:var(--success); }
+    .mini-bar.mid { background:var(--warning); }
+    .mini-bar.low { background:var(--danger); }
+
+    /* ===== FILTER BAR ===== */
+    .filter-bar {
+      display:flex; align-items:center; gap:10px;
+      padding:12px 16px; background:var(--white);
+      border:1px solid var(--gray-200); border-radius:var(--radius-md);
+      margin-bottom:12px; flex-wrap:wrap;
     }
     .filter-label { font-size:13px; font-weight:600; color:var(--gray-700); white-space:nowrap; }
     .filter-select {
-      flex: 1;
-      min-width: 260px;
-      max-width: 420px;
-      padding: 8px 12px;
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-sm);
-      font-family: inherit;
-      font-size: 13px;
-      color: var(--gray-700);
-      background: var(--white);
-      cursor: pointer;
+      flex:1; min-width:240px; max-width:400px;
+      padding:8px 12px; border:1px solid var(--gray-300);
+      border-radius:var(--radius-sm); font-family:inherit; font-size:13px;
+      color:var(--gray-700); background:var(--white); cursor:pointer;
     }
     .filter-select:focus { outline:none; border-color:var(--primary); }
-
     .search-wrap {
-      display: flex;
-      align-items: center;
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      background: var(--white);
-      flex: 1;
-      min-width: 200px;
-      max-width: 320px;
+      display:flex; align-items:center; border:1px solid var(--gray-300);
+      border-radius:var(--radius-sm); overflow:hidden; background:var(--white);
+      flex:1; min-width:180px; max-width:300px;
     }
-    .search-wrap i { padding: 0 10px; color:var(--gray-500); font-size:13px; }
+    .search-wrap i { padding:0 10px; color:var(--gray-500); font-size:13px; }
     .search-wrap input {
-      border: none;
-      outline: none;
-      padding: 8px 8px 8px 0;
-      font-family: inherit;
-      font-size: 13px;
-      width: 100%;
-      color: var(--gray-700);
+      border:none; outline:none; padding:8px 8px 8px 0;
+      font-family:inherit; font-size:13px; width:100%; color:var(--gray-700);
     }
-    .search-wrap:focus-within { border-color: var(--primary); }
+    .search-wrap:focus-within { border-color:var(--primary); }
 
-    /* ---- Stat chips ---- */
-    .stat-chips {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
+    /* ===== STAT CHIPS ===== */
+    .stat-chips { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
     .stat-chip {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: 20px;
-      padding: 5px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--gray-700);
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      background:var(--white); border:1px solid var(--gray-200); border-radius:20px;
+      padding:4px 12px; font-size:12px; font-weight:600; color:var(--gray-700);
+      display:flex; align-items:center; gap:5px;
     }
-    .stat-chip i { color: var(--primary); }
-    .stat-chip.success i { color: var(--success); }
-    .stat-chip.warning i { color: var(--warning); }
+    .stat-chip i { color:var(--primary); }
+    .stat-chip.success i { color:var(--success); }
+    .stat-chip.warning i { color:var(--warning); }
 
-    /* ---- Table ---- */
+    /* ===== BẢNG CTĐT ===== */
     .ctdt-table th {
-      background: var(--gray-50);
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--gray-700);
-      padding: 10px 10px;
-      white-space: nowrap;
-      border-bottom: 2px solid var(--gray-200);
+      background:var(--gray-50); font-size:12px; font-weight:700;
+      padding:9px 9px; white-space:nowrap; border-bottom:2px solid var(--gray-200);
+      position:sticky; top:0; z-index:1;
     }
-    .ctdt-table td {
-      padding: 9px 10px;
-      font-size: 13px;
-      border-bottom: 1px solid var(--gray-100);
-      vertical-align: middle;
-    }
-    .ctdt-table tbody tr:hover { background: #f8faff; }
-
-    /* HK separator row */
+    .ctdt-table td { padding:8px 9px; font-size:13px; border-bottom:1px solid var(--gray-100); vertical-align:middle; }
+    .ctdt-table tbody tr:hover { background:#f8faff; }
     .hk-separator td {
-      background: linear-gradient(90deg, #dbeafe, #eff6ff);
-      font-weight: 700;
-      font-size: 12px;
-      color: var(--navy);
-      padding: 6px 10px;
-      border-top: 2px solid var(--primary);
+      background:linear-gradient(90deg,#dbeafe,#eff6ff);
+      font-weight:700; font-size:12px; color:var(--navy);
+      padding:6px 10px; border-top:2px solid var(--primary);
     }
 
     /* Khối KT badge */
-    .khoi-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
+    .khoi-badge { display:inline-block; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:700; white-space:nowrap; }
     .khoi-kt1  { background:#dbeafe; color:#1d4ed8; }
     .khoi-kt2  { background:#dcfce7; color:#15803d; }
     .khoi-kt3  { background:#fef3c7; color:#92400e; }
@@ -132,61 +112,20 @@
     .khoi-other{ background:#f1f5f9; color:#475569; }
 
     /* Điều kiện ràng buộc */
-    .dk-tag {
-      display: inline-block;
-      background: #fff7ed;
-      color: #c2410c;
-      border: 1px solid #fed7aa;
-      border-radius: 4px;
-      padding: 1px 7px;
-      font-size: 11px;
-      margin: 1px 2px;
-      white-space: nowrap;
-    }
-
-    /* BB / TC badge */
-    .bb-badge { background:#dcfce7; color:#15803d; font-size:11px; font-weight:700; padding:1px 7px; border-radius:20px; }
-    .tc-badge { background:#f1f5f9; color:#64748b; font-size:11px; font-weight:700; padding:1px 7px; border-radius:20px; }
-
-    /* Số tiết columns */
+    .dk-tag { display:inline-block; background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; border-radius:4px; padding:1px 6px; font-size:11px; margin:1px 2px; white-space:nowrap; }
+    .tc-badge { background:#f1f5f9; color:#64748b; font-size:11px; font-weight:700; padding:1px 6px; border-radius:20px; }
     .so-tiet { text-align:center; font-size:12px; color:var(--gray-700); }
     .so-tiet-0 { color:var(--gray-300); }
-
-    /* Detail button */
-    .btn-detail {
-      display:inline-flex; align-items:center; justify-content:center;
-      width:28px; height:28px;
-      border:1px solid var(--gray-300);
-      border-radius:var(--radius-sm);
-      color:var(--primary);
-      font-size:12px;
-      cursor:pointer;
-      background: var(--white);
-      transition:var(--transition);
-      text-decoration:none;
-    }
-    .btn-detail:hover { background:var(--primary); color:white; border-color:var(--primary); }
-
-    /* HK label */
-    .hk-label {
-      font-size:11px;
-      color: var(--gray-600);
-      white-space: nowrap;
-    }
-    .hk-label-real {
-      font-size:11px;
-      color: var(--success);
-      white-space: nowrap;
-    }
-
-    /* Highlight khi search */
+    .hk-label { font-size:11px; color:var(--gray-600); white-space:nowrap; }
+    .hk-label-real { font-size:11px; color:var(--success); white-space:nowrap; }
+    .total-row td { font-weight:800; background:var(--gray-50); border-top:2px solid var(--gray-300); }
     mark { background:#fef08a; padding:0 2px; border-radius:2px; }
 
-    /* Sticky header */
-    .ctdt-table thead th { position:sticky; top:0; z-index:1; }
-
-    /* Total row */
-    .total-row td { font-weight:800; background:var(--gray-50); border-top:2px solid var(--gray-300); }
+    /* Kết quả tích lũy badge trong bảng CTĐT */
+    .tl-dat     { color:var(--success); font-weight:700; font-size:12px; }
+    .tl-khong   { color:var(--danger);  font-weight:700; font-size:12px; }
+    .tl-chua    { color:var(--gray-400); font-size:12px; }
+    .tl-dang    { color:#0369a1; font-size:12px; }
   </style>
 </head>
 <body>
@@ -195,29 +134,126 @@
 
   <div class="main">
     <header class="topbar">
-      <div class="topbar-title">Thông tin chương trình học</div>
+      <div class="topbar-title">Tín chỉ tích lũy &amp; Chương trình học</div>
       <div class="topbar-user">
         <div class="topbar-avatar"
              th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
-        <span class="topbar-name"
-              th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
+        <span class="topbar-name" th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
       </div>
     </header>
 
     <div class="content">
 
-      <!-- Breadcrumb -->
-      <div class="breadcrumb">
-        <a th:href="@{/sinh-vien/dashboard}">Góc học tập</a>
-        &rsaquo; <span>Xem thông tin chương trình học</span>
-      </div>
+      <!-- ================================================================
+           PHẦN 1: TÍN CHỈ TÍCH LŨY (chỉ hiện khi SV có ngành)
+           ================================================================ -->
+      <div th:if="${danhSachKhoi != null}">
 
-      <!-- ===== FILTER BAR ===== -->
+        <!-- Stat cards -->
+        <div class="stat-grid">
+          <div class="stat-card highlight">
+            <div class="sc-label">Tín chỉ đã tích lũy</div>
+            <div class="sc-value" th:text="${tongTichLuy}">0</div>
+            <div class="sc-sub">trên <span th:text="${tongYeuCau}">0</span> TC yêu cầu</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-label">Tổng TC chương trình</div>
+            <div class="sc-value" th:text="${tongYeuCau}">0</div>
+            <div class="sc-sub">toàn khóa học</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-label">TC bắt buộc</div>
+            <div class="sc-value" th:text="${tongBatBuoc}">0</div>
+            <div class="sc-sub">trong chương trình</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-label">Tiến độ hoàn thành</div>
+            <div class="sc-value"
+                 th:text="${tongYeuCau > 0} ? ${#numbers.formatDecimal(tongTichLuy * 100.0 / tongYeuCau, 1, 1)} + '%' : '0%'">0%</div>
+            <div class="progress-wrap">
+              <div class="progress-bar"
+                   th:style="'width:' + (${tongYeuCau > 0 ? tongTichLuy * 100 / tongYeuCau : 0}) + '%'"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bảng tổng theo khối -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header">
+            <span class="card-title">Tổng điểm theo khối</span>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="table khoi-summary">
+              <thead>
+                <tr>
+                  <th style="text-align:center;width:40px;">STT</th>
+                  <th>Mã khối</th>
+                  <th>Tên khối</th>
+                  <th style="text-align:center;">Tổng số tín chỉ</th>
+                  <th style="text-align:center;">Tổng số tín bắt buộc</th>
+                  <th style="text-align:center;">Tổng số tín đã tích lũy</th>
+                  <th style="min-width:120px;">Tiến độ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="khoi, kStat : ${danhSachKhoi}">
+                  <td style="text-align:center;" th:text="${kStat.count}"></td>
+                  <td><code th:text="${khoi.maKhoi}"></code></td>
+                  <td th:text="${khoi.tenKhoi}"></td>
+                  <td style="text-align:center;font-weight:700;" th:text="${khoi.tongSoTinChi}"></td>
+                  <td style="text-align:center;" th:text="${khoi.tinChiBatBuoc}"></td>
+                  <td style="text-align:center;">
+                    <span th:if="${khoi.tinChiDaTichLuy > 0}"
+                          style="font-weight:700;color:var(--success);"
+                          th:text="${khoi.tinChiDaTichLuy}"></span>
+                    <span th:if="${khoi.tinChiDaTichLuy == 0}" class="text-muted">—</span>
+                  </td>
+                  <td>
+                    <div th:if="${khoi.tongSoTinChi > 0}" style="display:flex;align-items:center;gap:6px;">
+                      <div class="mini-bar-wrap">
+                        <div class="mini-bar"
+                             th:classappend="${khoi.tongSoTinChi > 0 and khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi >= 80} ? ' ok'
+                                           : ${khoi.tongSoTinChi > 0 and khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi >= 40} ? ' mid'
+                                           : ' low'"
+                             th:style="'width:' + (${khoi.tongSoTinChi > 0 ? khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi : 0}) + '%'"></div>
+                      </div>
+                      <span style="font-size:11px;color:var(--gray-500);white-space:nowrap;"
+                            th:text="${khoi.tongSoTinChi > 0 ? khoi.tinChiDaTichLuy * 100 / khoi.tongSoTinChi : 0} + '%'"></span>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="tong-row">
+                  <td colspan="3" style="text-align:right;padding:8px 12px;">Tổng</td>
+                  <td style="text-align:center;" th:text="${tongYeuCau}"></td>
+                  <td style="text-align:center;" th:text="${tongBatBuoc}"></td>
+                  <td style="text-align:center;color:var(--success);" th:text="${tongTichLuy}"></td>
+                  <td>
+                    <div th:if="${tongYeuCau > 0}" style="display:flex;align-items:center;gap:6px;">
+                      <div class="mini-bar-wrap">
+                        <div class="mini-bar ok"
+                             th:style="'width:' + (${tongYeuCau > 0 ? tongTichLuy * 100 / tongYeuCau : 0}) + '%'"></div>
+                      </div>
+                      <span style="font-size:11px;font-weight:700;"
+                            th:text="${tongYeuCau > 0 ? tongTichLuy * 100 / tongYeuCau : 0} + '%'"></span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /danhSachKhoi -->
+
+      <!-- ================================================================
+           PHẦN 2: BẢNG CHI TIẾT CHƯƠNG TRÌNH ĐÀO TẠO
+           ================================================================ -->
+
+      <!-- Filter bar -->
       <form th:action="@{/sinh-vien/chuong-trinh-hoc}" method="get" id="filterForm">
         <div class="filter-bar">
-          <!-- Label + Dropdown chọn chương trình -->
           <span class="filter-label">Nội dung học phần theo chương trình:</span>
-          <select name="nganhId" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+          <select name="nganhId" class="filter-select"
+                  onchange="document.getElementById('filterForm').submit()">
             <option value="">-- Chọn chương trình --</option>
             <option th:each="n : ${danhSachNganh}"
                     th:value="${n.id}"
@@ -225,14 +261,11 @@
                     th:selected="${nganhIdChon == n.id}">
             </option>
           </select>
-
-          <!-- Search box -->
           <div class="search-wrap">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" name="keyword" id="searchInput"
                    placeholder="Tìm theo mã hoặc tên học phần..."
-                   th:value="${keyword}"
-                   autocomplete="off"/>
+                   th:value="${keyword}" autocomplete="off"/>
           </div>
           <button type="submit" class="btn btn-primary" style="white-space:nowrap;">
             <i class="fa-solid fa-search"></i> Tìm
@@ -245,7 +278,7 @@
         </div>
       </form>
 
-      <!-- ===== STATS ===== -->
+      <!-- Stat chips -->
       <div th:if="${danhSachCTDT != null}" class="stat-chips">
         <div class="stat-chip">
           <i class="fa-solid fa-list-ol"></i>
@@ -263,41 +296,41 @@
           <i class="fa-solid fa-circle-dot"></i>
           <span><b th:text="${soTuChon}"></b> tự chọn</span>
         </div>
-        <div th:if="${keyword != null and keyword != ''}" class="stat-chip"
-             style="background:#fffbeb; border-color:#fde68a;">
-          <i class="fa-solid fa-filter" style="color:#d97706;"></i>
-          <span>Lọc theo: "<b th:text="${keyword}"></b>"</span>
+        <div th:if="${tongTichLuy != null}" class="stat-chip"
+             style="background:#dcfce7;border-color:#86efac;">
+          <i class="fa-solid fa-check-circle" style="color:var(--success);"></i>
+          <span>Đã tích lũy <b th:text="${tongTichLuy}"></b> TC</span>
         </div>
       </div>
 
-      <!-- ===== BẢNG CTĐT ===== -->
+      <!-- Bảng CTĐT chi tiết -->
       <div th:if="${danhSachCTDT != null and !danhSachCTDT.empty}"
            class="card" style="margin-bottom:16px;">
         <div class="card-body" style="padding:0;overflow-x:auto;">
           <table class="table ctdt-table" style="min-width:1000px;">
             <thead>
               <tr>
-                <th style="width:40px;text-align:center;">STT</th>
+                <th style="width:36px;text-align:center;">STT</th>
                 <th>Mã học phần</th>
-                <th style="min-width:200px;">Tên học phần</th>
+                <th style="min-width:190px;">Tên học phần</th>
                 <th style="text-align:center;">Khối KT</th>
-                <th style="text-align:center;">Số tín chỉ học phần</th>
-                <th style="text-align:center;">Số tín học phí</th>
-                <th style="min-width:130px;">Điều kiện ràng buộc</th>
-                <th style="text-align:center;min-width:110px;">Học kỳ dự kiến</th>
-                <th style="text-align:center;min-width:110px;">Học kỳ thực tế</th>
+                <th style="text-align:center;">Số TC</th>
+                <th style="text-align:center;">TC phí</th>
+                <th style="min-width:120px;">Điều kiện</th>
+                <th style="text-align:center;min-width:100px;">HK dự kiến</th>
+                <th style="text-align:center;min-width:100px;">HK thực tế</th>
                 <th style="text-align:center;">LT_BT</th>
                 <th style="text-align:center;">TH</th>
                 <th style="text-align:center;">BTL_DAMH</th>
                 <th style="text-align:center;">TT_DA_KLTN</th>
-                <th style="text-align:center;width:60px;">Chi tiết</th>
+                <th style="text-align:center;width:80px;">Tích lũy</th>
               </tr>
             </thead>
             <tbody>
-              <th:block th:with="prevHk=-1, stt=0">
+              <th:block th:with="prevHk=-1">
                 <th:block th:each="ctdt, stat : ${danhSachCTDT}">
 
-                  <!-- Dòng phân cách học kỳ -->
+                  <!-- Separator học kỳ -->
                   <tr th:if="${ctdt.hocKyThu != prevHk}"
                       th:with="prevHk=${ctdt.hocKyThu}"
                       class="hk-separator">
@@ -310,13 +343,10 @@
                     </td>
                   </tr>
 
-                  <!-- Dòng dữ liệu -->
                   <tr>
-                    <!-- STT liên tục -->
-                    <td style="text-align:center;color:var(--gray-500);"
-                        th:text="${stat.count}"></td>
+                    <td style="text-align:center;color:var(--gray-500);" th:text="${stat.count}"></td>
 
-                    <!-- Mã học phần -->
+                    <!-- Mã HP -->
                     <td>
                       <span style="font-family:monospace;font-weight:700;font-size:13px;"
                             th:utext="${keyword != null and keyword != ''
@@ -326,22 +356,19 @@
                       </span>
                     </td>
 
-                    <!-- Tên học phần -->
+                    <!-- Tên HP -->
                     <td>
                       <span th:utext="${keyword != null and keyword != ''
                               and #strings.containsIgnoreCase(ctdt.monHoc.tenMon, keyword)}
                               ? '<mark>' + ${ctdt.monHoc.tenMon} + '</mark>'
                               : ${ctdt.monHoc.tenMon}"
-                            style="font-weight:500;">
-                      </span>
-                      <span th:if="${!ctdt.batBuoc}"
-                            class="tc-badge" style="margin-left:4px;">Tự chọn</span>
+                            style="font-weight:500;"></span>
+                      <span th:if="${!ctdt.batBuoc}" class="tc-badge" style="margin-left:4px;">Tự chọn</span>
                     </td>
 
                     <!-- Khối KT -->
                     <td style="text-align:center;">
-                      <span th:if="${ctdt.khoiKienThuc != null}"
-                            class="khoi-badge"
+                      <span th:if="${ctdt.khoiKienThuc != null}" class="khoi-badge"
                             th:classappend="${#strings.startsWith(ctdt.khoiKienThuc.maKhoi,'KT1')} ? ' khoi-kt1'
                                           : ${#strings.startsWith(ctdt.khoiKienThuc.maKhoi,'KT2')} ? ' khoi-kt2'
                                           : ${#strings.startsWith(ctdt.khoiKienThuc.maKhoi,'KT3')} ? ' khoi-kt3'
@@ -354,70 +381,63 @@
                       <span th:if="${ctdt.khoiKienThuc == null}" class="text-muted">—</span>
                     </td>
 
-                    <!-- Số tín chỉ -->
-                    <td style="text-align:center;font-weight:700;"
-                        th:text="${ctdt.monHoc.soTinChi}"></td>
-
-                    <!-- Số tín học phí -->
+                    <td style="text-align:center;font-weight:700;" th:text="${ctdt.monHoc.soTinChi}"></td>
                     <td style="text-align:center;"
                         th:text="${ctdt.soTietPhi != null ? ctdt.soTietPhi : ctdt.monHoc.soTinChi}"></td>
 
-                    <!-- Điều kiện ràng buộc (môn tiên quyết) -->
+                    <!-- Điều kiện ràng buộc -->
                     <td>
                       <th:block th:if="${!ctdt.monHoc.cacMonTienQuyet.empty}">
                         <span th:each="mtq : ${ctdt.monHoc.cacMonTienQuyet}"
-                              class="dk-tag"
-                              th:text="${mtq.monTienQuyet.maMon}">
-                        </span>
+                              class="dk-tag" th:text="${mtq.monTienQuyet.maMon}"></span>
                       </th:block>
-                      <span th:if="${ctdt.monHoc.cacMonTienQuyet.empty}"
-                            class="text-muted" style="font-size:11px;">—</span>
+                      <span th:if="${ctdt.monHoc.cacMonTienQuyet.empty}" class="text-muted" style="font-size:11px;">—</span>
                     </td>
 
-                    <!-- HK dự kiến -->
                     <td style="text-align:center;">
-                      <span th:if="${ctdt.hocKyDuKienLabel != null}"
-                            class="hk-label"
+                      <span th:if="${ctdt.hocKyDuKienLabel != null}" class="hk-label"
                             th:text="${ctdt.hocKyDuKienLabel}"></span>
-                      <span th:if="${ctdt.hocKyDuKienLabel == null}"
-                            class="text-muted">—</span>
+                      <span th:if="${ctdt.hocKyDuKienLabel == null}" class="text-muted">—</span>
                     </td>
-
-                    <!-- HK thực tế -->
                     <td style="text-align:center;">
-                      <span th:if="${ctdt.hocKyThucTeLabel != null}"
-                            class="hk-label-real"
+                      <span th:if="${ctdt.hocKyThucTeLabel != null}" class="hk-label-real"
                             th:text="${ctdt.hocKyThucTeLabel}"></span>
-                      <span th:if="${ctdt.hocKyThucTeLabel == null}"
-                            class="text-muted" style="font-size:11px;">—</span>
+                      <span th:if="${ctdt.hocKyThucTeLabel == null}" class="text-muted">—</span>
                     </td>
 
-                    <!-- LT_BT -->
-                    <td class="so-tiet"
-                        th:classappend="${ctdt.ltBt == 0} ? ' so-tiet-0'"
+                    <td class="so-tiet" th:classappend="${ctdt.ltBt == 0} ? ' so-tiet-0'"
                         th:text="${ctdt.ltBt}"></td>
-
-                    <!-- TH -->
-                    <td class="so-tiet"
-                        th:classappend="${ctdt.soTietTh == 0} ? ' so-tiet-0'"
+                    <td class="so-tiet" th:classappend="${ctdt.soTietTh == 0} ? ' so-tiet-0'"
                         th:text="${ctdt.soTietTh}"></td>
-
-                    <!-- BTL_DAMH -->
-                    <td class="so-tiet"
-                        th:classappend="${ctdt.btlDamh == 0} ? ' so-tiet-0'"
+                    <td class="so-tiet" th:classappend="${ctdt.btlDamh == 0} ? ' so-tiet-0'"
                         th:text="${ctdt.btlDamh}"></td>
-
-                    <!-- TT_DA_KLTN -->
-                    <td class="so-tiet"
-                        th:classappend="${ctdt.ttDaKltn == 0} ? ' so-tiet-0'"
+                    <td class="so-tiet" th:classappend="${ctdt.ttDaKltn == 0} ? ' so-tiet-0'"
                         th:text="${ctdt.ttDaKltn}"></td>
 
-                    <!-- Chi tiết -->
+                    <!-- Cột tích lũy: so sánh với danhSachKhoi để biết mon đã đạt chưa -->
                     <td style="text-align:center;">
-                      <a th:href="@{/sinh-vien/chuong-trinh-hoc}" class="btn-detail"
-                         title="Xem chi tiết">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                      </a>
+                      <th:block th:if="${danhSachKhoi != null}">
+                        <!-- Tìm môn này trong danh sách khối -->
+                        <th:block th:with="monId=${ctdt.monHoc.id}">
+                          <th:block th:each="khoi : ${danhSachKhoi}">
+                            <th:block th:each="mon : ${khoi.danhSachMon}">
+                              <span th:if="${mon.maMon == ctdt.monHoc.maMon}">
+                                <span th:if="${mon.ketQua == 'Hoàn thành'}" class="tl-dat">
+                                  <i class="fa-solid fa-check-circle"></i>
+                                </span>
+                                <span th:if="${mon.ketQua == 'Không đạt'}" class="tl-khong">
+                                  <i class="fa-solid fa-times-circle"></i>
+                                </span>
+                                <span th:if="${mon.ketQua == 'Đang học'}" class="tl-dang">
+                                  <i class="fa-solid fa-spinner"></i>
+                                </span>
+                                <span th:if="${mon.ketQua == 'Chưa học'}" class="tl-chua">—</span>
+                              </span>
+                            </th:block>
+                          </th:block>
+                        </th:block>
+                      </th:block>
+                      <span th:if="${danhSachKhoi == null}" class="text-muted">—</span>
                     </td>
                   </tr>
 
@@ -426,24 +446,28 @@
 
               <!-- Dòng tổng -->
               <tr class="total-row">
-                <td colspan="4" style="text-align:right;padding:10px 12px;">
+                <td colspan="4" style="text-align:right;padding:9px 12px;">
                   Tổng cộng (<span th:text="${danhSachCTDT.size()}"></span> học phần)
                 </td>
                 <td style="text-align:center;" th:text="${tongTC}"></td>
-                <td colspan="9"></td>
+                <td colspan="8"></td>
+                <td style="text-align:center;color:var(--success);">
+                  <span th:if="${tongTichLuy != null}" th:text="${tongTichLuy}"></span>
+                  <span th:if="${tongTichLuy == null}">—</span>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Empty state -->
-      <div th:if="${nganhIdChon == null}" class="empty-state" style="min-height:180px;">
+      <!-- Empty states -->
+      <div th:if="${nganhIdChon == null}" class="empty-state" style="min-height:160px;">
         <i class="fa-solid fa-hand-pointer"></i>
-        Chọn chương trình đào tạo ở trên để xem danh sách học phần.
+        Chọn chương trình đào tạo ở trên để xem.
       </div>
       <div th:if="${nganhIdChon != null and (danhSachCTDT == null or danhSachCTDT.empty)}"
-           class="empty-state" style="min-height:180px;">
+           class="empty-state" style="min-height:160px;">
         <i class="fa-solid fa-magnifying-glass"></i>
         Không tìm thấy học phần nào
         <span th:if="${keyword != null and keyword != ''}">
@@ -456,12 +480,8 @@
 </div>
 
 <script>
-  // Tìm kiếm realtime bằng Enter
   document.getElementById('searchInput')?.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.getElementById('filterForm').submit();
-    }
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('filterForm').submit(); }
   });
 </script>
 </body>
