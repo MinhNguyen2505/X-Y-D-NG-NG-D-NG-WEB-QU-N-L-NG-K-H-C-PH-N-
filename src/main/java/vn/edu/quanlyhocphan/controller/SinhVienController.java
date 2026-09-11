@@ -502,17 +502,17 @@ public class SinhVienController {
     // THONG TIN CHUONG TRINH HOC
     // =================================================================
 
+    /** Tab CTDT — chi load chuong trinh dao tao */
     @GetMapping("/chuong-trinh-hoc")
     public String xemChuongTrinhHoc(
             @AuthenticationPrincipal UserDetails principal,
             @RequestParam(required = false, defaultValue = "") String keyword,
-            @RequestParam(defaultValue = "ctdt") String tab,
             Model model) {
 
         SinhVien sv = laySinhVienHienTai(principal);
         model.addAttribute("sinhVien", sv);
         model.addAttribute("keyword", keyword);
-        model.addAttribute("tab", tab);
+        model.addAttribute("tab", "ctdt");
 
         if (sv.getNganh() == null) {
             model.addAttribute("errorMsg", "Bạn chưa được gán ngành học.");
@@ -522,23 +522,59 @@ public class SinhVienController {
         Long nganhId = sv.getNganh().getId();
         model.addAttribute("nganhChon", sv.getNganh());
 
-        // Tab 1: CTDT (chuong trinh dao tao)
+        // 1 query: fetch CTDT + MonHoc + KhoiKienThuc (không fetch tiền quyết ở đây)
         List<ChuongTrinhDaoTao> danhSachCTDT =
             chuongTrinhDaoTaoRepo.searchByNganhId(nganhId, keyword);
 
-        int tongTC    = danhSachCTDT.stream().mapToInt(c -> c.getMonHoc().getSoTinChi()).sum();
+        // Batch-load tiền quyết cho tất cả môn trong 1 query riêng
+        // rồi nhét vào Map để template lookup nhanh
+        java.util.Map<Long, List<vn.edu.quanlyhocphan.entity.MonTienQuyet>> tienQuyetMap =
+            new java.util.HashMap<>();
+        if (!danhSachCTDT.isEmpty()) {
+            List<Long> monHocIds = danhSachCTDT.stream()
+                .map(c -> c.getMonHoc().getId())
+                .distinct()
+                .collect(Collectors.toList());
+            List<vn.edu.quanlyhocphan.entity.MonHoc> monCoTq =
+                chuongTrinhDaoTaoRepo.findMonHocWithTienQuyet(monHocIds);
+            for (vn.edu.quanlyhocphan.entity.MonHoc mh : monCoTq) {
+                tienQuyetMap.put(mh.getId(), mh.getCacMonTienQuyet());
+            }
+        }
+
+        int  tongTC    = danhSachCTDT.stream().mapToInt(c -> c.getMonHoc().getSoTinChi()).sum();
         long soBatBuoc = danhSachCTDT.stream().filter(c -> Boolean.TRUE.equals(c.getBatBuoc())).count();
         long soTuChon  = danhSachCTDT.stream().filter(c -> !Boolean.TRUE.equals(c.getBatBuoc())).count();
 
         model.addAttribute("danhSachCTDT", danhSachCTDT);
-        model.addAttribute("tongTC",    tongTC);
-        model.addAttribute("soBatBuoc", soBatBuoc);
-        model.addAttribute("soTuChon",  soTuChon);
+        model.addAttribute("tienQuyetMap", tienQuyetMap);
+        model.addAttribute("tongTC",       tongTC);
+        model.addAttribute("soBatBuoc",    soBatBuoc);
+        model.addAttribute("soTuChon",     soTuChon);
 
-        // Tab 2: Lich su hoc tap — nhom theo hoc ky thuc te
+        return "sinh-vien/chuong-trinh-hoc";
+    }
+
+    /** Tab Lịch sử học tập — load riêng, chỉ khi SV click sang tab */
+    @GetMapping("/chuong-trinh-hoc/lich-su")
+    public String xemLichSuHocTap(
+            @AuthenticationPrincipal UserDetails principal,
+            Model model) {
+
+        SinhVien sv = laySinhVienHienTai(principal);
+        model.addAttribute("sinhVien", sv);
+        model.addAttribute("tab", "lich-su");
+
+        if (sv.getNganh() == null) {
+            model.addAttribute("errorMsg", "Bạn chưa được gán ngành học.");
+            return "sinh-vien/chuong-trinh-hoc";
+        }
+        model.addAttribute("nganhChon", sv.getNganh());
+
+        // 1 query: toàn bộ lịch sử đăng ký
         List<DangKyHocPhan> lichSu = dangKyService.layLichSuDangKy(sv.getId());
 
-        // Build DTO theo hoc ky
+        // Nhóm theo học kỳ rồi build DTO
         java.util.Map<String, List<DangKyHocPhan>> rawMap = new java.util.LinkedHashMap<>();
         for (DangKyHocPhan dk : lichSu) {
             String hkKey = dk.getLopHocPhan().getHocKy().getTenHocKy();
@@ -548,13 +584,12 @@ public class SinhVienController {
         List<vn.edu.quanlyhocphan.dto.LichSuHocKyDto> danhSachHocKy = new java.util.ArrayList<>();
         for (java.util.Map.Entry<String, List<DangKyHocPhan>> e : rawMap.entrySet()) {
             List<DangKyHocPhan> dkList = e.getValue();
-            int tongTCKy = dkList.stream()
-                .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi()).sum();
-            double tongDiem = dkList.stream()
+            int    tongTCKy  = dkList.stream().mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi()).sum();
+            double tongDiem  = dkList.stream()
                 .filter(dk -> dk.getDiemTongKet() != null)
                 .mapToDouble(dk -> dk.getDiemTongKet().doubleValue()
                                  * dk.getLopHocPhan().getMonHoc().getSoTinChi()).sum();
-            int tcCoDiem = dkList.stream()
+            int    tcCoDiem  = dkList.stream()
                 .filter(dk -> dk.getDiemTongKet() != null)
                 .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi()).sum();
             String gpa = tcCoDiem > 0 ? String.format("%.2f", tongDiem / tcCoDiem) : "—";
@@ -568,10 +603,10 @@ public class SinhVienController {
                     .maMon(dk.getLopHocPhan().getMonHoc().getMaMon())
                     .tenMon(dk.getLopHocPhan().getMonHoc().getTenMon())
                     .soTinChi(dk.getLopHocPhan().getMonHoc().getSoTinChi())
-                    .diemGiuaKy(dk.getDiemGiuaKy() != null
-                        ? String.format("%.1f", dk.getDiemGiuaKy().doubleValue()) : "—")
-                    .diemCuoiKy(dk.getDiemCuoiKy() != null
-                        ? String.format("%.1f", dk.getDiemCuoiKy().doubleValue()) : "—")
+                    .diemGiuaKy(dk.getDiemGiuaKy()  != null
+                        ? String.format("%.1f", dk.getDiemGiuaKy().doubleValue())  : "—")
+                    .diemCuoiKy(dk.getDiemCuoiKy()  != null
+                        ? String.format("%.1f", dk.getDiemCuoiKy().doubleValue())  : "—")
                     .diemTongKet(dtk != null
                         ? String.format("%.1f", dtk.doubleValue()) : "—")
                     .diemChu(vn.edu.quanlyhocphan.dto.LichSuHocKyDto.tinhDiemChu(dtk))
@@ -591,7 +626,6 @@ public class SinhVienController {
         }
 
         model.addAttribute("danhSachHocKy", danhSachHocKy);
-
         return "sinh-vien/chuong-trinh-hoc";
     }
 

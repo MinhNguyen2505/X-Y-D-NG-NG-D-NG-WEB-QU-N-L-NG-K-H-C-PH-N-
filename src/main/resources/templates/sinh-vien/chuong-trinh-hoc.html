@@ -7,27 +7,29 @@
   <link rel="stylesheet" th:href="@{/css/app.css}"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-    /* Tab */
-    .tab-bar { display:flex; gap:4px; border-bottom:2px solid var(--gray-200); margin-bottom:18px; }
-    .tab-btn {
-      padding:10px 22px; border:none; background:none; font-family:inherit;
-      font-size:14px; font-weight:600; color:var(--gray-500); cursor:pointer;
-      border-bottom:3px solid transparent; margin-bottom:-2px;
-      text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    .tab-bar {
+      display:flex; gap:4px;
+      border-bottom:2px solid var(--gray-200);
+      margin-bottom:18px;
     }
-    .tab-btn:hover { color:var(--primary); background:var(--gray-50); }
+    .tab-btn {
+      padding:10px 22px; text-decoration:none;
+      font-size:14px; font-weight:600; color:var(--gray-500);
+      border-bottom:3px solid transparent; margin-bottom:-2px;
+      display:inline-flex; align-items:center; gap:6px;
+    }
+    .tab-btn:hover  { color:var(--primary); background:var(--gray-50); }
     .tab-btn.active { color:var(--primary); border-bottom-color:var(--primary); background:#eff6ff; }
 
-    /* Chips */
     .chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
-    .chip {
+    .chip  {
       background:var(--white); border:1px solid var(--gray-200); border-radius:20px;
       padding:5px 14px; font-size:12px; font-weight:600; color:var(--gray-700);
       display:flex; align-items:center; gap:5px;
     }
 
     /* Khối badge */
-    .kb { display:inline-block; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:700; }
+    .kb      { display:inline-block; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:700; }
     .kb-kt1  { background:#dbeafe; color:#1d4ed8; }
     .kb-kt2  { background:#dcfce7; color:#15803d; }
     .kb-kt3  { background:#fef3c7; color:#92400e; }
@@ -36,23 +38,23 @@
     .kb-qpan { background:#fee2e2; color:#dc2626; }
     .kb-x    { background:#f1f5f9; color:#475569; }
 
-    /* Tiền quyết tag */
-    .tq-tag {
-      display:inline-block; background:#fff7ed; color:#c2410c;
-      border:1px solid #fed7aa; border-radius:4px; padding:1px 6px; font-size:11px; margin:1px;
-    }
+    /* Tiền quyết */
+    .tq { display:inline-block; background:#fff7ed; color:#c2410c;
+          border:1px solid #fed7aa; border-radius:4px;
+          padding:1px 6px; font-size:11px; margin:1px; }
 
-    /* HK separator row */
-    .hk-sep { background:linear-gradient(90deg,#dbeafe,#eff6ff); }
+    /* HK separator */
     .hk-sep td {
+      background:linear-gradient(90deg,#dbeafe,#eff6ff);
       font-weight:700; font-size:12px; color:var(--navy);
       padding:7px 12px; border-top:2px solid var(--primary);
     }
 
-    /* Số tiết 0 */
-    .sc-zero { color:var(--gray-300); }
+    /* Số tiết = 0 */
+    .sc-zero { color:var(--gray-300); font-size:12px; }
+    .sc-val  { font-size:12px; text-align:center; }
 
-    /* Lịch sử học kỳ card */
+    /* Lịch sử card */
     .hk-card { border:1px solid var(--gray-200); border-radius:var(--radius-md); margin-bottom:14px; overflow:hidden; }
     .hk-card-header {
       background:linear-gradient(90deg,#1a56db,#2563eb); color:#fff;
@@ -61,13 +63,13 @@
     .hk-card-header .hk-title { font-weight:700; font-size:14px; }
     .hk-card-header .hk-meta  { font-size:12px; opacity:.85; }
 
-    /* Điểm màu */
-    .diem-a  { color:#16a34a; font-weight:700; }
-    .diem-b  { color:#2563eb; font-weight:700; }
-    .diem-c  { color:#d97706; font-weight:700; }
-    .diem-d  { color:#9333ea; font-weight:700; }
-    .diem-f  { color:#dc2626; font-weight:700; }
-    .diem-na { color:var(--gray-400); }
+    /* Màu điểm */
+    .d-a  { color:#16a34a; font-weight:700; }
+    .d-b  { color:#2563eb; font-weight:700; }
+    .d-c  { color:#d97706; font-weight:700; }
+    .d-d  { color:#9333ea; font-weight:700; }
+    .d-f  { color:#dc2626; font-weight:700; }
+    .d-null { color:var(--gray-400); }
   </style>
 </head>
 <body>
@@ -80,7 +82,8 @@
       <div class="topbar-user">
         <div class="topbar-avatar"
              th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
-        <span class="topbar-name" th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
+        <span class="topbar-name"
+              th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
       </div>
     </header>
 
@@ -94,21 +97,21 @@
 
       <div th:if="${nganhChon != null}">
 
-        <!-- Header ngành + search -->
+        <!-- Header ngành -->
         <div class="card" style="margin-bottom:14px;">
           <div class="card-body"
                style="padding:12px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-            <div style="flex:1;min-width:200px;">
+            <div style="flex:1;min-width:180px;">
               <div style="font-size:11px;color:var(--gray-500);font-weight:600;">
                 Chương trình đào tạo
               </div>
               <div style="font-size:16px;font-weight:800;color:var(--navy);"
                    th:text="'Đại học Chính quy — ' + ${nganhChon.tenNganh}"></div>
             </div>
-            <!-- Ô tìm kiếm (chỉ dùng tab CTDT) -->
-            <form th:action="@{/sinh-vien/chuong-trinh-hoc}" method="get"
+            <!-- Search — chỉ hoạt động ở tab CTDT -->
+            <form th:if="${tab == 'ctdt'}"
+                  th:action="@{/sinh-vien/chuong-trinh-hoc}" method="get"
                   style="display:flex;gap:8px;align-items:center;">
-              <input type="hidden" name="tab" th:value="${tab}"/>
               <input type="text" name="keyword" th:value="${keyword}"
                      placeholder="Tìm mã / tên học phần…"
                      class="form-control" style="width:240px;"/>
@@ -116,49 +119,58 @@
                 <i class="fa-solid fa-magnifying-glass"></i> Tìm
               </button>
               <a th:if="${keyword != null and keyword != ''}"
-                 th:href="@{/sinh-vien/chuong-trinh-hoc}" class="btn btn-outline btn-sm">
+                 th:href="@{/sinh-vien/chuong-trinh-hoc}"
+                 class="btn btn-outline btn-sm">
                 <i class="fa-solid fa-xmark"></i>
               </a>
             </form>
           </div>
         </div>
 
-        <!-- Chips thống kê -->
-        <div class="chips">
-          <div class="chip">
-            <i class="fa-solid fa-list-ol" style="color:var(--primary);"></i>
-            <span><b th:text="${danhSachCTDT?.size() ?: 0}"></b> học phần</span>
-          </div>
-          <div class="chip">
-            <i class="fa-solid fa-graduation-cap" style="color:var(--primary);"></i>
-            <span>Tổng <b th:text="${tongTC ?: 0}"></b> tín chỉ</span>
-          </div>
-          <div class="chip">
-            <i class="fa-solid fa-circle-check" style="color:var(--success);"></i>
-            <span><b th:text="${soBatBuoc ?: 0}"></b> bắt buộc</span>
-          </div>
-          <div class="chip">
-            <i class="fa-solid fa-circle-dot" style="color:var(--warning);"></i>
-            <span><b th:text="${soTuChon ?: 0}"></b> tự chọn</span>
-          </div>
-        </div>
-
-        <!-- Tab bar -->
+        <!-- Tab bar — 2 href riêng biệt, không dùng JS toggle -->
         <div class="tab-bar">
-          <a th:href="@{/sinh-vien/chuong-trinh-hoc(tab='ctdt',keyword=${keyword})}"
-             class="tab-btn" th:classappend="${tab == 'ctdt'} ? ' active'">
+          <a th:href="@{/sinh-vien/chuong-trinh-hoc}"
+             class="tab-btn"
+             th:classappend="${tab == 'ctdt'} ? ' active'">
             <i class="fa-solid fa-book-open"></i> Chương trình đào tạo
           </a>
-          <a th:href="@{/sinh-vien/chuong-trinh-hoc(tab='lich-su')}"
-             class="tab-btn" th:classappend="${tab == 'lich-su'} ? ' active'">
+          <a th:href="@{/sinh-vien/chuong-trinh-hoc/lich-su}"
+             class="tab-btn"
+             th:classappend="${tab == 'lich-su'} ? ' active'">
             <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử học tập
           </a>
         </div>
 
-        <!-- ============================================================
-             TAB 1: CHƯƠNG TRÌNH ĐÀO TẠO
-        ============================================================ -->
+        <!-- ======================================================
+             TAB CTDT
+        ====================================================== -->
         <div th:if="${tab == 'ctdt'}">
+
+          <!-- Chips thống kê -->
+          <div class="chips">
+            <div class="chip">
+              <i class="fa-solid fa-list-ol" style="color:var(--primary);"></i>
+              <b th:text="${danhSachCTDT?.size() ?: 0}"></b> học phần
+            </div>
+            <div class="chip">
+              <i class="fa-solid fa-graduation-cap" style="color:var(--primary);"></i>
+              Tổng <b th:text="${tongTC ?: 0}"></b> tín chỉ
+            </div>
+            <div class="chip">
+              <i class="fa-solid fa-circle-check" style="color:var(--success);"></i>
+              <b th:text="${soBatBuoc ?: 0}"></b> bắt buộc
+            </div>
+            <div class="chip">
+              <i class="fa-solid fa-circle-dot" style="color:var(--warning);"></i>
+              <b th:text="${soTuChon ?: 0}"></b> tự chọn
+            </div>
+            <div th:if="${keyword != null and keyword != ''}" class="chip"
+                 style="background:#fffbeb;border-color:#fde68a;">
+              <i class="fa-solid fa-filter" style="color:#d97706;"></i>
+              Lọc: "<b th:text="${keyword}"></b>"
+            </div>
+          </div>
+
           <div th:if="${danhSachCTDT == null or danhSachCTDT.empty}" class="empty-state">
             <i class="fa-solid fa-magnifying-glass"></i>
             <span th:if="${keyword != null and keyword != ''}">
@@ -177,25 +189,25 @@
                   <th style="width:40px;text-align:center;">STT</th>
                   <th style="width:90px;">Mã HP</th>
                   <th>Tên học phần</th>
-                  <th style="text-align:center;width:80px;">Khối KT</th>
-                  <th style="text-align:center;width:50px;">TC</th>
-                  <th style="text-align:center;width:60px;">TC phí</th>
+                  <th style="text-align:center;width:80px;">Khối</th>
+                  <th style="text-align:center;width:46px;">TC</th>
+                  <th style="text-align:center;width:56px;">TC phí</th>
                   <th style="width:130px;">Tiền quyết</th>
                   <th style="text-align:center;width:90px;">HK dự kiến</th>
                   <th style="text-align:center;width:90px;">HK thực tế</th>
-                  <th style="text-align:center;width:50px;">LT</th>
-                  <th style="text-align:center;width:50px;">TH</th>
-                  <th style="text-align:center;width:50px;">BTL</th>
-                  <th style="text-align:center;width:60px;">KLTN</th>
+                  <th style="text-align:center;width:44px;">LT</th>
+                  <th style="text-align:center;width:44px;">TH</th>
+                  <th style="text-align:center;width:44px;">BTL</th>
+                  <th style="text-align:center;width:52px;">KLTN</th>
                 </tr>
               </thead>
               <tbody>
                 <th:block th:each="c, st : ${danhSachCTDT}">
 
-                  <!-- Dòng separator học kỳ: chỉ in khi đây là mon đầu tiên của HK mới -->
+                  <!-- Separator học kỳ: in khi đây là dòng đầu tiên hoặc HK thay đổi -->
                   <tr class="hk-sep"
-                      th:if="${st.first
-                               or danhSachCTDT[__${st.index - 1}__].hocKyThu != c.hocKyThu}">
+                      th:if="${st.first or
+                               danhSachCTDT[__${st.index - 1}__].hocKyThu != c.hocKyThu}">
                     <td colspan="13">
                       <i class="fa-solid fa-calendar-week"></i>
                       Học kỳ <span th:text="${c.hocKyThu}"></span>
@@ -204,9 +216,8 @@
                     </td>
                   </tr>
 
-                  <!-- Dòng dữ liệu -->
                   <tr>
-                    <td style="text-align:center;color:var(--gray-500);"
+                    <td style="text-align:center;color:var(--gray-400);"
                         th:text="${st.count}"></td>
                     <td>
                       <code style="font-weight:700;font-size:12px;"
@@ -217,9 +228,7 @@
                       <span th:if="${!c.batBuoc}"
                             style="font-size:10px;background:#f1f5f9;color:#64748b;
                                    font-weight:700;padding:1px 6px;border-radius:20px;
-                                   margin-left:4px;">
-                        Tự chọn
-                      </span>
+                                   margin-left:4px;">Tự chọn</span>
                     </td>
                     <td style="text-align:center;">
                       <span th:if="${c.khoiKienThuc != null}" class="kb"
@@ -237,12 +246,16 @@
                         th:text="${c.monHoc.soTinChi}"></td>
                     <td style="text-align:center;"
                         th:text="${c.soTietPhi != null ? c.soTietPhi : c.monHoc.soTinChi}"></td>
+                    <!-- Tiền quyết: đọc từ tienQuyetMap để tránh N+1 -->
                     <td>
-                      <span th:each="mtq : ${c.monHoc.cacMonTienQuyet}"
-                            class="tq-tag"
-                            th:text="${mtq.monTienQuyet.maMon}"></span>
-                      <span th:if="${c.monHoc.cacMonTienQuyet.empty}"
-                            class="text-muted" style="font-size:11px;">—</span>
+                      <th:block th:with="tqs=${tienQuyetMap != null ? tienQuyetMap[c.monHoc.id] : null}">
+                        <span th:if="${tqs != null and !tqs.empty}">
+                          <span th:each="tq : ${tqs}" class="tq"
+                                th:text="${tq.monTienQuyet.maMon}"></span>
+                        </span>
+                        <span th:if="${tqs == null or tqs.empty}"
+                              class="text-muted" style="font-size:11px;">—</span>
+                      </th:block>
                     </td>
                     <td style="text-align:center;font-size:11px;color:var(--gray-500);"
                         th:text="${c.hocKyDuKienLabel ?: '—'}"></td>
@@ -250,27 +263,23 @@
                       <span th:if="${c.hocKyThucTeLabel != null}"
                             style="color:var(--success);font-weight:600;"
                             th:text="${c.hocKyThucTeLabel}"></span>
-                      <span th:if="${c.hocKyThucTeLabel == null}"
-                            class="text-muted">—</span>
+                      <span th:if="${c.hocKyThucTeLabel == null}" class="text-muted">—</span>
                     </td>
-                    <td style="text-align:center;"
-                        th:classappend="${c.ltBt == 0} ? ' sc-zero'"
+                    <td class="sc-val" th:classappend="${c.ltBt == 0} ? ' sc-zero'"
                         th:text="${c.ltBt}"></td>
-                    <td style="text-align:center;"
-                        th:classappend="${c.soTietTh == 0} ? ' sc-zero'"
+                    <td class="sc-val" th:classappend="${c.soTietTh == 0} ? ' sc-zero'"
                         th:text="${c.soTietTh}"></td>
-                    <td style="text-align:center;"
-                        th:classappend="${c.btlDamh == 0} ? ' sc-zero'"
+                    <td class="sc-val" th:classappend="${c.btlDamh == 0} ? ' sc-zero'"
                         th:text="${c.btlDamh}"></td>
-                    <td style="text-align:center;"
-                        th:classappend="${c.ttDaKltn == 0} ? ' sc-zero'"
+                    <td class="sc-val" th:classappend="${c.ttDaKltn == 0} ? ' sc-zero'"
                         th:text="${c.ttDaKltn}"></td>
                   </tr>
 
                 </th:block>
 
-                <!-- Tổng kết -->
-                <tr style="background:var(--gray-50);font-weight:800;border-top:2px solid var(--gray-300);">
+                <!-- Dòng tổng -->
+                <tr style="background:var(--gray-50);font-weight:800;
+                           border-top:2px solid var(--gray-300);">
                   <td colspan="4" style="text-align:right;padding:8px 12px;">
                     Tổng — <span th:text="${danhSachCTDT.size()}"></span> học phần
                   </td>
@@ -280,19 +289,21 @@
               </tbody>
             </table>
           </div>
-        </div>
-        <!-- /tab ctdt -->
 
-        <!-- ============================================================
-             TAB 2: LỊCH SỬ HỌC TẬP
-        ============================================================ -->
+        </div><!-- /tab ctdt -->
+
+        <!-- ======================================================
+             TAB LỊCH SỬ HỌC TẬP
+        ====================================================== -->
         <div th:if="${tab == 'lich-su'}">
 
           <div th:if="${danhSachHocKy == null or danhSachHocKy.empty}" class="empty-state">
-            <i class="fa-solid fa-clock-rotate-left"></i>Chưa có lịch sử học tập.
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            Chưa có lịch sử học tập.
           </div>
 
           <div th:if="${danhSachHocKy != null and !danhSachHocKy.empty}">
+
             <!-- Mỗi học kỳ là 1 card -->
             <div th:each="hk : ${danhSachHocKy}" class="hk-card">
               <div class="hk-card-header">
@@ -301,10 +312,8 @@
                   <span th:text="${hk.tenHocKy}"></span>
                 </div>
                 <div class="hk-meta">
-                  <span th:text="${hk.soMon} + ' môn'"></span>
-                  &nbsp;·&nbsp;
-                  <span th:text="${hk.tongTinChi} + ' TC'"></span>
-                  &nbsp;·&nbsp;
+                  <span th:text="${hk.soMon} + ' môn'"></span> ·
+                  <span th:text="${hk.tongTinChi} + ' TC'"></span> ·
                   GPA <b th:text="${hk.gpa}"></b>
                 </div>
               </div>
@@ -320,7 +329,7 @@
                       <th style="text-align:center;width:70px;">Điểm GK</th>
                       <th style="text-align:center;width:70px;">Điểm CK</th>
                       <th style="text-align:center;width:70px;">Điểm TK</th>
-                      <th style="text-align:center;width:55px;">Chữ</th>
+                      <th style="text-align:center;width:52px;">Chữ</th>
                       <th style="text-align:center;width:110px;">Kết quả</th>
                     </tr>
                   </thead>
@@ -338,31 +347,25 @@
                       </td>
                       <td style="text-align:center;" th:text="${mon.diemGiuaKy}"></td>
                       <td style="text-align:center;" th:text="${mon.diemCuoiKy}"></td>
-                      <!-- Điểm TK tô màu -->
                       <td style="text-align:center;">
                         <span th:class="${mon.mauDiem}"
                               th:text="${mon.diemTongKet}"></span>
                       </td>
-                      <!-- Điểm chữ -->
                       <td style="text-align:center;font-weight:800;">
                         <span th:class="${mon.mauDiem}"
                               th:text="${mon.diemChu}"></span>
                       </td>
-                      <!-- Kết quả badge -->
                       <td style="text-align:center;">
                         <span th:if="${mon.ketQua == 'Hoàn thành'}"
-                              class="badge badge-success"
-                              style="font-size:11px;">
+                              class="badge badge-success" style="font-size:11px;">
                           <i class="fa-solid fa-check"></i> Hoàn thành
                         </span>
                         <span th:if="${mon.ketQua == 'Không đạt'}"
-                              class="badge badge-danger"
-                              style="font-size:11px;">
+                              class="badge badge-danger" style="font-size:11px;">
                           <i class="fa-solid fa-xmark"></i> Không đạt
                         </span>
                         <span th:if="${mon.ketQua == 'Đang học'}"
-                              class="badge badge-secondary"
-                              style="font-size:11px;">
+                              class="badge badge-secondary" style="font-size:11px;">
                           <i class="fa-solid fa-spinner"></i> Đang học
                         </span>
                       </td>
@@ -370,15 +373,12 @@
                   </tbody>
                 </table>
               </div>
-            </div>
-            <!-- /hk-card -->
+            </div><!-- /hk-card -->
+
           </div>
-        </div>
-        <!-- /tab lich-su -->
+        </div><!-- /tab lich-su -->
 
-      </div>
-      <!-- /nganhChon -->
-
+      </div><!-- /nganhChon -->
     </div>
   </div>
 </div>
