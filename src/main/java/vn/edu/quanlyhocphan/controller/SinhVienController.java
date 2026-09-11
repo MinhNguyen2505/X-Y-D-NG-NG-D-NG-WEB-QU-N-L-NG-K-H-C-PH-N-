@@ -80,15 +80,45 @@ public class SinhVienController {
             tinChiDaDangKy = dangKyRepo.tinhTongTinChiDaDangKy(sv.getId(), hocKyHienTai.getId());
         }
 
-        // Dang ky gan day (tat ca hoc ky, lay 5 ban ghi moi nhat)
+        // Dang ky gan day (tat ca hoc ky, 10 ban ghi moi nhat)
         List<DangKyHocPhan> dangKyGanDay = dangKyService.layLichSuDangKy(sv.getId());
+
+        // Nguyen vong dang cho duyet
+        long nguyenVongChoDuyet = nguyenVongService.findAllKeHoach().stream()
+            .flatMap(kh -> nguyenVongService.findLichSuDangKy(sv.getId(), kh.getId()).stream())
+            .filter(d -> "CHO_DUYET".equals(d.getTrangThai()))
+            .count();
+
+        // Thi lai dang cho duyet
+        long thiLaiChoDuyet = thiLaiService.layLichSu(sv.getId()).stream()
+            .filter(t -> "CHO_DUYET".equals(t.getTrangThai()))
+            .count();
+
+        // Dinh huong dang active
+        DangKyDinhHuong dinhHuongActive = null;
+        if (sv.getNganh() != null) {
+            dinhHuongActive = dinhHuongService
+                .findActiveByNganh(sv.getId(), sv.getNganh().getId())
+                .orElse(null);
+        }
+
+        // Tin chi tich luy tong (mon dat >= 5)
+        int tinChiTichLuy = dangKyService.layLichSuDangKy(sv.getId()).stream()
+            .filter(dk -> dk.getDiemTongKet() != null
+                       && dk.getDiemTongKet().doubleValue() >= 5.0)
+            .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
+            .sum();
 
         model.addAttribute("sinhVien", sv);
         model.addAttribute("hocKyDangMo", hocKyDangMo);
         model.addAttribute("hocKyHienTai", hocKyHienTai);
         model.addAttribute("tinChiDaDangKy", tinChiDaDangKy);
+        model.addAttribute("tinChiTichLuy", tinChiTichLuy);
         model.addAttribute("dangKyGanDay", dangKyGanDay);
         model.addAttribute("greeting", greeting);
+        model.addAttribute("nguyenVongChoDuyet", nguyenVongChoDuyet);
+        model.addAttribute("thiLaiChoDuyet", thiLaiChoDuyet);
+        model.addAttribute("dinhHuongActive", dinhHuongActive);
         return "sinh-vien/dashboard";
     }
 
@@ -141,10 +171,29 @@ public class SinhVienController {
                 .map(dk -> dk.getLopHocPhan().getId())
                 .collect(Collectors.toSet());
 
+            // Set monHocId cua cac mon SV da HOAN_THANH (khong cho dang ky lai)
+            Set<Long> monDaHoanThanhIds = dangKyService.layLichSuDangKy(sv.getId()).stream()
+                .filter(dk -> dk.getTrangThai() != null
+                           && "HOAN_THANH".equals(dk.getTrangThai().name()))
+                .map(dk -> dk.getLopHocPhan().getMonHoc().getId())
+                .collect(Collectors.toSet());
+
+            // Set monHocId cua cac mon co nguyen vong DA_DUYET trong hoc ky nay
+            // -> de danh dau lop "goi y theo nguyen vong"
+            Set<Long> monNguyenVongDuyetIds = new java.util.HashSet<>();
+            nguyenVongService.findAllKeHoach().stream()
+                .filter(kh -> kh.getHocKy() != null && kh.getHocKy().getId().equals(hocKyId))
+                .forEach(kh -> nguyenVongService.findDangKyCuaSinhVien(sv.getId(), kh.getId())
+                    .stream()
+                    .filter(d -> "DA_DUYET".equals(d.getTrangThai()))
+                    .forEach(d -> monNguyenVongDuyetIds.add(d.getNguyenVongMonHoc().getMonHoc().getId())));
+
             model.addAttribute("hocKyChon", hocKy);
             model.addAttribute("danhSachLop", danhSachLop);
             model.addAttribute("daDangKy", daDangKy);
             model.addAttribute("daDangKyLopIds", daDangKyLopIds);
+            model.addAttribute("monDaHoanThanhIds", monDaHoanThanhIds);
+            model.addAttribute("monNguyenVongDuyetIds", monNguyenVongDuyetIds);
         }
         return "sinh-vien/dang-ky";
     }
@@ -591,7 +640,7 @@ public class SinhVienController {
         SinhVien sv = laySinhVienHienTai(principal);
         List<DangKyHocPhan> lichSu = dangKyService.layLichSuDangKy(sv.getId());
 
-        // GPA theo weighted average: sum(diem * soTinChi) / sum(soTinChi)
+        // GPA theo weighted average
         double tongDiemNhanTC = lichSu.stream()
             .filter(dk -> dk.getDiemTongKet() != null)
             .mapToDouble(dk -> dk.getDiemTongKet().doubleValue()
@@ -603,17 +652,28 @@ public class SinhVienController {
             .sum();
         double gpa = tongTinChi > 0 ? tongDiemNhanTC / tongTinChi : 0.0;
 
-        // Tinh tong tin chi tich luy (mon dat >= 5)
+        // Tong tin chi tich luy (mon dat >= 5)
         int tinChiTichLuy = lichSu.stream()
             .filter(dk -> dk.getDiemTongKet() != null
                        && dk.getDiemTongKet().doubleValue() >= 5.0)
             .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
             .sum();
 
+        // Build thiLaiMap: dangKyHocPhanId -> DangKyThiLai (ban ghi moi nhat)
+        // De template kiem tra moi mon co dang ky thi lai chua
+        List<vn.edu.quanlyhocphan.entity.DangKyThiLai> lichSuThiLai =
+            thiLaiService.layLichSu(sv.getId());
+        java.util.Map<Long, vn.edu.quanlyhocphan.entity.DangKyThiLai> thiLaiMap =
+            new java.util.LinkedHashMap<>();
+        for (vn.edu.quanlyhocphan.entity.DangKyThiLai tl : lichSuThiLai) {
+            thiLaiMap.putIfAbsent(tl.getDangKyHocPhan().getId(), tl);
+        }
+
         model.addAttribute("sinhVien", sv);
         model.addAttribute("lichSu", lichSu);
         model.addAttribute("gpa", String.format("%.2f", gpa));
         model.addAttribute("tinChiTichLuy", tinChiTichLuy);
+        model.addAttribute("thiLaiMap", thiLaiMap);
         return "sinh-vien/ket-qua-hoc-tap";
     }
 }

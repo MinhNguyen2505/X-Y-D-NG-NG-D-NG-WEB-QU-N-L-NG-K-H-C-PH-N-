@@ -24,6 +24,10 @@
     <a th:href="@{/sinh-vien/dang-ky-nguyen-vong}"
        th:classappend="${activePage=='sv-nguyen-vong'}?' active'" class="sb-link">
       <i class="fa-solid fa-star"></i> Đăng ký nguyện vọng
+      <span th:if="${badgeNguyenVong != null and badgeNguyenVong > 0}"
+            style="margin-left:auto;background:#f59e0b;color:#fff;border-radius:10px;
+                   font-size:10px;padding:1px 6px;font-weight:700;"
+            th:text="${badgeNguyenVong}"></span>
     </a>
     <a th:href="@{/sinh-vien/tra-cuu-ket-qua}"
        th:classappend="${activePage=='sv-tra-cuu'}?' active'" class="sb-link">
@@ -36,6 +40,10 @@
     <a th:href="@{/sinh-vien/dang-ky-thi-lai}"
        th:classappend="${activePage=='sv-thi-lai'}?' active'" class="sb-link">
       <i class="fa-solid fa-rotate-right"></i> Đăng ký thi lại
+      <span th:if="${badgeThiLai != null and badgeThiLai > 0}"
+            style="margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;
+                   font-size:10px;padding:1px 6px;font-weight:700;"
+            th:text="${badgeThiLai}"></span>
     </a>
 
     <div class="sb-section">Học tập</div>

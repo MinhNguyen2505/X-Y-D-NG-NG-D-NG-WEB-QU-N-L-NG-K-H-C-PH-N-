@@ -27,6 +27,11 @@ public class LopHocPhanServiceImpl implements LopHocPhanService {
     }
 
     @Override @Transactional(readOnly = true)
+    public List<LopHocPhan> findAll() {
+        return lopHocPhanRepo.findAll();
+    }
+
+    @Override @Transactional(readOnly = true)
     public LopHocPhan findByMaLopHp(String maLopHp) {
         return lopHocPhanRepo.findByMaLopHp(maLopHp)
             .orElseThrow(() -> new ResourceNotFoundException("Lop hoc phan: " + maLopHp));

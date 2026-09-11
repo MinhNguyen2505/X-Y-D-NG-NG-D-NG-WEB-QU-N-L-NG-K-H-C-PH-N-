@@ -46,10 +46,25 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("tongSinhVien", sinhVienService.findAll().size());
+        model.addAttribute("tongSinhVien",  sinhVienService.findAll().size());
         model.addAttribute("tongGiangVien", giangVienService.findAll().size());
-        model.addAttribute("tongMonHoc", monHocService.findAll().size());
+        model.addAttribute("tongMonHoc",    monHocService.findAll().size());
         model.addAttribute("danhSachHocKy", hocKyService.findAll());
+
+        // Stat lien ket thuc te
+        long lopDangMo = lopHocPhanService.findAll().stream()
+            .filter(l -> vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.MO
+                             .equals(l.getTrangThai()))
+            .count();
+        long thiLaiChoDuyet   = thiLaiService.findByTrangThai("CHO_DUYET").size();
+        long nguyenVongChoDuyet = nguyenVongService.findAllKeHoach().stream()
+            .mapToLong(kh -> nguyenVongService.findDangKyByKeHoach(kh.getId()).stream()
+                .filter(d -> "CHO_DUYET".equals(d.getTrangThai())).count())
+            .sum();
+
+        model.addAttribute("lopDangMo",          lopDangMo);
+        model.addAttribute("thiLaiChoDuyet",      thiLaiChoDuyet);
+        model.addAttribute("nguyenVongChoDuyet",  nguyenVongChoDuyet);
         return "admin/dashboard";
     }
 
@@ -376,6 +391,38 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("errorMsg", "Co loi: " + e.getMessage());
         }
         return "redirect:/admin/lop-hoc-phan/sua/" + id;
+    }
+
+    /** Dong lop hoc phan (MO -> DONG) */
+    @PostMapping("/lop-hoc-phan/{id}/dong")
+    public String dongLop(@PathVariable Long id,
+                          @RequestParam(required = false) Long hocKyId,
+                          RedirectAttributes redirectAttributes) {
+        try {
+            LopHocPhan lhp = lopHocPhanService.findById(id);
+            lhp.setTrangThai(TrangThaiLopHocPhan.DONG);
+            lopHocPhanService.save(lhp);
+            redirectAttributes.addFlashAttribute("successMsg", "Đã đóng lớp " + lhp.getMaLopHp() + ".");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Co loi: " + e.getMessage());
+        }
+        return "redirect:/admin/lop-hoc-phan" + (hocKyId != null ? "?hocKyId=" + hocKyId : "");
+    }
+
+    /** Mo lai lop hoc phan (DONG -> MO) */
+    @PostMapping("/lop-hoc-phan/{id}/mo")
+    public String moLaiLop(@PathVariable Long id,
+                           @RequestParam(required = false) Long hocKyId,
+                           RedirectAttributes redirectAttributes) {
+        try {
+            LopHocPhan lhp = lopHocPhanService.findById(id);
+            lhp.setTrangThai(TrangThaiLopHocPhan.MO);
+            lopHocPhanService.save(lhp);
+            redirectAttributes.addFlashAttribute("successMsg", "Đã mở lại lớp " + lhp.getMaLopHp() + ".");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Co loi: " + e.getMessage());
+        }
+        return "redirect:/admin/lop-hoc-phan" + (hocKyId != null ? "?hocKyId=" + hocKyId : "");
     }
 
     // =================================================================

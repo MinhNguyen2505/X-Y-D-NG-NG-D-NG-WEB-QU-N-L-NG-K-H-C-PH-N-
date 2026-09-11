@@ -9,9 +9,7 @@
 </head>
 <body>
 <div class="layout">
-
   <div th:insert="~{fragments/sidebar :: sv('sv-kqht')}"></div>
-
   <div class="main">
     <header class="topbar">
       <div class="topbar-title">Kết quả học tập</div>
@@ -22,21 +20,41 @@
     </header>
     <div class="content">
 
-      <!-- GPA banner -->
-      <div style="background:linear-gradient(135deg,#15803d,#166534);border-radius:10px;
-                  padding:18px 24px;color:#fff;display:flex;align-items:center;gap:18px;
-                  margin-bottom:18px;box-shadow:0 4px 16px rgba(21,128,61,.3);">
-        <div style="font-size:44px;">🏆</div>
-        <div>
-          <div style="font-size:12px;opacity:.8;">Điểm trung bình tổng kết</div>
-          <div style="font-size:34px;font-weight:800;" th:text="${gpa}">0.00</div>
-          <div style="font-size:12px;opacity:.7;">Tính trên các môn có điểm tổng kết</div>
+      <!-- GPA + Tín chỉ banner -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+        <div style="background:linear-gradient(135deg,#15803d,#166534);border-radius:10px;
+                    padding:18px 24px;color:#fff;display:flex;align-items:center;gap:18px;">
+          <div style="font-size:44px;">🏆</div>
+          <div>
+            <div style="font-size:12px;opacity:.8;">Điểm trung bình tổng kết</div>
+            <div style="font-size:34px;font-weight:800;" th:text="${gpa}">0.00</div>
+            <div style="font-size:12px;opacity:.7;">Tính trên môn có điểm tổng kết</div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,#1a56db,#0c2494);border-radius:10px;
+                    padding:18px 24px;color:#fff;display:flex;align-items:center;gap:18px;">
+          <div style="font-size:44px;">📊</div>
+          <div>
+            <div style="font-size:12px;opacity:.8;">Tín chỉ tích lũy (môn đạt ≥ 5)</div>
+            <div style="font-size:34px;font-weight:800;" th:text="${tinChiTichLuy}">0</div>
+            <div style="font-size:12px;opacity:.7;">
+              <a th:href="@{/sinh-vien/tin-chi-tich-luy}" style="color:#93c5fd;">
+                Xem chi tiết →
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <span class="card-title"><i class="fa-solid fa-table" style="color:var(--primary);margin-right:6px;"></i>Lịch sử học tập</span>
+          <span class="card-title">
+            <i class="fa-solid fa-table" style="color:var(--primary);margin-right:6px;"></i>
+            Lịch sử học tập
+          </span>
+          <a th:href="@{/sinh-vien/dang-ky-thi-lai}" class="btn btn-outline btn-sm">
+            <i class="fa-solid fa-rotate-right"></i> Đăng ký thi lại
+          </a>
         </div>
         <div class="card-body" style="padding:0;">
           <div th:if="${lichSu == null or lichSu.empty}" class="empty-state">
@@ -44,24 +62,74 @@
           </div>
           <table th:if="${lichSu != null and !lichSu.empty}" class="table">
             <thead>
-              <tr><th>Học kỳ</th><th>Môn học</th><th>TC</th><th>Điểm GK</th><th>Điểm CK</th><th>Điểm TK</th><th>Kết quả</th></tr>
+              <tr>
+                <th>Học kỳ</th>
+                <th>Môn học</th>
+                <th style="text-align:center;">TC</th>
+                <th style="text-align:center;">Điểm GK</th>
+                <th style="text-align:center;">Điểm CK</th>
+                <th style="text-align:center;">Điểm TK</th>
+                <th style="text-align:center;">Kết quả</th>
+                <th style="text-align:center;">Thi lại</th>
+              </tr>
             </thead>
             <tbody>
-              <tr th:each="dk : ${lichSu}" th:if="${dk.trangThai.name() != 'DA_HUY'}">
-                <td style="white-space:nowrap;" th:text="${dk.lopHocPhan.hocKy.tenHocKy}"></td>
-                <td th:text="${dk.lopHocPhan.monHoc.tenMon}"></td>
-                <td th:text="${dk.lopHocPhan.monHoc.soTinChi}"></td>
-                <td th:text="${dk.diemGiuaKy != null ? dk.diemGiuaKy : '—'}"></td>
-                <td th:text="${dk.diemCuoiKy != null ? dk.diemCuoiKy : '—'}"></td>
+              <tr th:each="dk : ${lichSu}"
+                  th:if="${dk.trangThai.name() != 'DA_HUY'}"
+                  th:with="tl=${thiLaiMap != null ? thiLaiMap[dk.id] : null}">
+                <td style="white-space:nowrap;font-size:12px;"
+                    th:text="${dk.lopHocPhan.hocKy.tenHocKy}"></td>
                 <td>
-                  <b th:text="${dk.diemTongKet != null ? dk.diemTongKet : '—'}"
-                     th:style="${dk.diemTongKet != null and dk.diemTongKet < 5} ? 'color:var(--danger);' :
-                                (dk.diemTongKet != null ? 'color:var(--success);' : '')"></b>
+                  <span th:text="${dk.lopHocPhan.monHoc.tenMon}"></span><br/>
+                  <small class="text-muted" th:text="${dk.lopHocPhan.monHoc.maMon}"></small>
                 </td>
-                <td>
-                  <span th:if="${dk.diemTongKet == null}"              class="badge badge-secondary">Chưa có điểm</span>
-                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet >= 5}" class="badge badge-success">Đạt</span>
-                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet < 5}"  class="badge badge-danger">Không đạt</span>
+                <td style="text-align:center;" th:text="${dk.lopHocPhan.monHoc.soTinChi}"></td>
+                <td style="text-align:center;"
+                    th:text="${dk.diemGiuaKy != null ? dk.diemGiuaKy : '—'}"></td>
+                <td style="text-align:center;"
+                    th:text="${dk.diemCuoiKy != null ? dk.diemCuoiKy : '—'}"></td>
+                <td style="text-align:center;">
+                  <b th:text="${dk.diemTongKet != null ? dk.diemTongKet : '—'}"
+                     th:style="${dk.diemTongKet != null and dk.diemTongKet < 5}
+                               ? 'color:var(--danger);' :
+                               (dk.diemTongKet != null ? 'color:var(--success);' : '')"></b>
+                </td>
+                <td style="text-align:center;">
+                  <span th:if="${dk.diemTongKet == null}"
+                        class="badge badge-secondary">Chưa có điểm</span>
+                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet >= 5}"
+                        class="badge badge-success">Đạt</span>
+                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet < 5}"
+                        class="badge badge-danger">Không đạt</span>
+                </td>
+                <!-- Cột thi lại: chỉ hiện khi điểm < 5 -->
+                <td style="text-align:center;">
+                  <th:block th:if="${dk.diemTongKet != null and dk.diemTongKet < 5}">
+                    <!-- Đã đăng ký và còn hiệu lực -->
+                    <span th:if="${tl != null and tl.trangThai != 'DA_HUY'}">
+                      <span th:if="${tl.trangThai == 'CHO_DUYET'}"
+                            class="badge badge-warning" style="font-size:10px;">
+                        <i class="fa-solid fa-clock"></i> Chờ duyệt
+                      </span>
+                      <span th:if="${tl.trangThai == 'DA_DUYET'}"
+                            class="badge badge-success" style="font-size:10px;">
+                        <i class="fa-solid fa-check"></i> Đã duyệt
+                      </span>
+                    </span>
+                    <!-- Chưa đăng ký hoặc đã hủy: nút đăng ký -->
+                    <form th:if="${tl == null or tl.trangThai == 'DA_HUY'}"
+                          th:action="@{/sinh-vien/dang-ky-thi-lai}" method="post">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input type="hidden" name="dangKyHocPhanId" th:value="${dk.id}"/>
+                      <button type="submit" class="btn btn-danger btn-sm"
+                              style="font-size:11px;padding:3px 8px;">
+                        <i class="fa-solid fa-rotate-right"></i> Thi lại
+                      </button>
+                    </form>
+                  </th:block>
+                  <!-- Không cần thi lại hoặc chưa có điểm -->
+                  <span th:if="${dk.diemTongKet == null or dk.diemTongKet >= 5}"
+                        style="color:var(--gray-300);">—</span>
                 </td>
               </tr>
             </tbody>

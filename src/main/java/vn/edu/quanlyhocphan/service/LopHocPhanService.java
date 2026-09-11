@@ -9,6 +9,7 @@ import java.util.List;
 public interface LopHocPhanService {
     LopHocPhan findById(Long id);
     LopHocPhan findByMaLopHp(String maLopHp);
+    List<LopHocPhan> findAll();
     List<LopHocPhan> findByHocKyId(Long hocKyId, TrangThaiLopHocPhan trangThai);
     List<LopHocPhan> findByGiangVienIdAndHocKyId(Long giangVienId, Long hocKyId);
     LopHocPhan save(LopHocPhan lopHocPhan);
