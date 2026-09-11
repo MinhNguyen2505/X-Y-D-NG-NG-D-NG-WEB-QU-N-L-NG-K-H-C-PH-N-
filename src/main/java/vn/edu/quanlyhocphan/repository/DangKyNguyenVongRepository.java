@@ -51,6 +51,23 @@ public interface DangKyNguyenVongRepository extends JpaRepository<DangKyNguyenVo
             @Param("sinhVienId") Long sinhVienId,
             @Param("keHoachId") Long keHoachId);
 
+    /** Dem so dang ky nguyen vong CHO_DUYET cua 1 SV (dung cho badge sidebar). */
+    @Query("SELECT COUNT(d) FROM DangKyNguyenVong d " +
+           "WHERE d.sinhVien.id = :sinhVienId AND d.trangThai = 'CHO_DUYET'")
+    long countChoDuyetBySinhVienId(@Param("sinhVienId") Long sinhVienId);
+
+    /**
+     * Lay Set<monHocId> cua cac mon co nguyen vong DA_DUYET trong 1 hoc ky.
+     * Dung cho trang dang ky LHP de danh dau lop "goi y theo nguyen vong".
+     */
+    @Query("SELECT d.nguyenVongMonHoc.monHoc.id FROM DangKyNguyenVong d " +
+           "WHERE d.sinhVien.id = :sinhVienId " +
+           "AND d.nguyenVongMonHoc.keHoachNguyenVong.hocKy.id = :hocKyId " +
+           "AND d.trangThai = 'DA_DUYET'")
+    Set<Long> findMonNguyenVongDuyetIds(
+            @Param("sinhVienId") Long sinhVienId,
+            @Param("hocKyId") Long hocKyId);
+
     Optional<DangKyNguyenVong> findBySinhVienIdAndNguyenVongMonHocId(
             Long sinhVienId, Long nguyenVongMonHocId);
 

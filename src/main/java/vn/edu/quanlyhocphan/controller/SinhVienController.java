@@ -48,6 +48,8 @@ public class SinhVienController {
     private final LichThiRepository lichThiRepo;
     private final NganhRepository nganhRepo;
     private final ThiLaiService thiLaiService;
+    private final vn.edu.quanlyhocphan.repository.DangKyNguyenVongRepository dangKyNvRepo;
+    private final vn.edu.quanlyhocphan.repository.DangKyThiLaiRepository thiLaiRepo;
 
     // -----------------------------------------------------------------
     // Helper: lay SinhVien tu Principal (email la username)
@@ -80,19 +82,14 @@ public class SinhVienController {
             tinChiDaDangKy = dangKyRepo.tinhTongTinChiDaDangKy(sv.getId(), hocKyHienTai.getId());
         }
 
-        // Dang ky gan day (tat ca hoc ky, 10 ban ghi moi nhat)
+        // Dang ky gan day — 1 query, dung luon cho tinChiTichLuy
         List<DangKyHocPhan> dangKyGanDay = dangKyService.layLichSuDangKy(sv.getId());
 
-        // Nguyen vong dang cho duyet
-        long nguyenVongChoDuyet = nguyenVongService.findAllKeHoach().stream()
-            .flatMap(kh -> nguyenVongService.findLichSuDangKy(sv.getId(), kh.getId()).stream())
-            .filter(d -> "CHO_DUYET".equals(d.getTrangThai()))
-            .count();
+        // Nguyen vong CHO_DUYET — 1 COUNT query, khong load ca list
+        long nguyenVongChoDuyet = dangKyNvRepo.countChoDuyetBySinhVienId(sv.getId());
 
-        // Thi lai dang cho duyet
-        long thiLaiChoDuyet = thiLaiService.layLichSu(sv.getId()).stream()
-            .filter(t -> "CHO_DUYET".equals(t.getTrangThai()))
-            .count();
+        // Thi lai CHO_DUYET — 1 COUNT query
+        long thiLaiChoDuyet = thiLaiRepo.countChoDuyetBySinhVienId(sv.getId());
 
         // Dinh huong dang active
         DangKyDinhHuong dinhHuongActive = null;
@@ -102,8 +99,8 @@ public class SinhVienController {
                 .orElse(null);
         }
 
-        // Tin chi tich luy tong (mon dat >= 5)
-        int tinChiTichLuy = dangKyService.layLichSuDangKy(sv.getId()).stream()
+        // Tin chi tich luy — tinh tu danh sach da load, khong query them
+        int tinChiTichLuy = dangKyGanDay.stream()
             .filter(dk -> dk.getDiemTongKet() != null
                        && dk.getDiemTongKet().doubleValue() >= 5.0)
             .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
@@ -171,22 +168,12 @@ public class SinhVienController {
                 .map(dk -> dk.getLopHocPhan().getId())
                 .collect(Collectors.toSet());
 
-            // Set monHocId cua cac mon SV da HOAN_THANH (khong cho dang ky lai)
-            Set<Long> monDaHoanThanhIds = dangKyService.layLichSuDangKy(sv.getId()).stream()
-                .filter(dk -> dk.getTrangThai() != null
-                           && "HOAN_THANH".equals(dk.getTrangThai().name()))
-                .map(dk -> dk.getLopHocPhan().getMonHoc().getId())
-                .collect(Collectors.toSet());
+            // Set monHocId cua mon da HOAN_THANH — 1 COUNT query thay vi stream toan bo lich su
+            Set<Long> monDaHoanThanhIds = dangKyRepo.findMonDaHoanThanhIds(sv.getId());
 
-            // Set monHocId cua cac mon co nguyen vong DA_DUYET trong hoc ky nay
-            // -> de danh dau lop "goi y theo nguyen vong"
-            Set<Long> monNguyenVongDuyetIds = new java.util.HashSet<>();
-            nguyenVongService.findAllKeHoach().stream()
-                .filter(kh -> kh.getHocKy() != null && kh.getHocKy().getId().equals(hocKyId))
-                .forEach(kh -> nguyenVongService.findDangKyCuaSinhVien(sv.getId(), kh.getId())
-                    .stream()
-                    .filter(d -> "DA_DUYET".equals(d.getTrangThai()))
-                    .forEach(d -> monNguyenVongDuyetIds.add(d.getNguyenVongMonHoc().getMonHoc().getId())));
+            // Set monHocId co nguyen vong DA_DUYET trong hoc ky nay — 1 query thay vi loop
+            Set<Long> monNguyenVongDuyetIds = dangKyNvRepo
+                .findMonNguyenVongDuyetIds(sv.getId(), hocKyId);
 
             model.addAttribute("hocKyChon", hocKy);
             model.addAttribute("danhSachLop", danhSachLop);

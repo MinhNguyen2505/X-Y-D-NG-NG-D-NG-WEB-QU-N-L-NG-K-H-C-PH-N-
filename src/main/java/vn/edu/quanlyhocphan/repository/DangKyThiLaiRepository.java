@@ -50,4 +50,9 @@ public interface DangKyThiLaiRepository extends JpaRepository<DangKyThiLai, Long
         ORDER BY d.ngayDangKy DESC
         """)
     List<DangKyThiLai> findByTrangThai(@Param("trangThai") String trangThai);
+
+    /** Dem so dang ky thi lai CHO_DUYET cua 1 SV (dung cho badge sidebar). */
+    @Query("SELECT COUNT(d) FROM DangKyThiLai d " +
+           "WHERE d.sinhVien.id = :svId AND d.trangThai = 'CHO_DUYET'")
+    long countChoDuyetBySinhVienId(@Param("svId") Long svId);
 }

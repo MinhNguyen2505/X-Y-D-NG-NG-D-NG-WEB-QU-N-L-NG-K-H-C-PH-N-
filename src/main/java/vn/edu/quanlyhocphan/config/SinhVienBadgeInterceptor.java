@@ -9,22 +9,21 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import vn.edu.quanlyhocphan.entity.SinhVien;
-import vn.edu.quanlyhocphan.repository.DangKyThiLaiRepository;
 import vn.edu.quanlyhocphan.repository.DangKyNguyenVongRepository;
+import vn.edu.quanlyhocphan.repository.DangKyThiLaiRepository;
 import vn.edu.quanlyhocphan.service.SinhVienService;
-import vn.edu.quanlyhocphan.service.NguyenVongService;
 
 /**
- * Interceptor: inject badge counts vao model cho tat ca request /sinh-vien/**
- * De sidebar hien duoc so luong nguyen vong + thi lai cho duyet.
+ * Inject badge counts vao model cho tat ca request /sinh-vien/**
+ * Dung 2 COUNT query nhe thay vi load toan bo list roi dem.
  */
 @Component
 @RequiredArgsConstructor
 public class SinhVienBadgeInterceptor implements HandlerInterceptor {
 
-    private final SinhVienService sinhVienService;
-    private final vn.edu.quanlyhocphan.service.ThiLaiService thiLaiService;
-    private final NguyenVongService nguyenVongService;
+    private final SinhVienService            sinhVienService;
+    private final DangKyNguyenVongRepository dangKyNvRepo;
+    private final DangKyThiLaiRepository     thiLaiRepo;
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response,
@@ -32,7 +31,8 @@ public class SinhVienBadgeInterceptor implements HandlerInterceptor {
         if (mav == null) return;
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) return;
+        if (auth == null || !auth.isAuthenticated()
+                || "anonymousUser".equals(auth.getPrincipal())) return;
 
         String uri = request.getRequestURI();
         if (!uri.startsWith("/sinh-vien")) return;
@@ -40,21 +40,17 @@ public class SinhVienBadgeInterceptor implements HandlerInterceptor {
         try {
             SinhVien sv = sinhVienService.findByEmail(auth.getName());
 
-            // Dem thi lai cho duyet
-            long badgeThiLai = thiLaiService.layLichSu(sv.getId()).stream()
-                .filter(t -> "CHO_DUYET".equals(t.getTrangThai()))
-                .count();
-
-            // Dem nguyen vong cho duyet (across all ke hoach)
-            long badgeNguyenVong = nguyenVongService.findAllKeHoach().stream()
-                .flatMap(kh -> nguyenVongService.findLichSuDangKy(sv.getId(), kh.getId()).stream())
-                .filter(d -> "CHO_DUYET".equals(d.getTrangThai()))
-                .count();
+            // 2 COUNT queries — nhe hon nhieu so voi flatMap loop truoc day
+            long badgeThiLai     = thiLaiRepo.countChoDuyetBySinhVienId(sv.getId());
+            long badgeNguyenVong = dangKyNvRepo.countChoDuyetBySinhVienId(sv.getId());
 
             mav.addObject("badgeThiLai",     badgeThiLai);
             mav.addObject("badgeNguyenVong", badgeNguyenVong);
-            mav.addObject("sinhVien",        mav.getModel().containsKey("sinhVien")
-                                             ? mav.getModel().get("sinhVien") : sv);
+
+            // Neu sinhVien chua duoc set boi controller thi set o day
+            if (!mav.getModel().containsKey("sinhVien")) {
+                mav.addObject("sinhVien", sv);
+            }
         } catch (Exception ignored) {
             // SV chua ton tai hoac loi khac -> bo qua, khong lam hong request
         }
