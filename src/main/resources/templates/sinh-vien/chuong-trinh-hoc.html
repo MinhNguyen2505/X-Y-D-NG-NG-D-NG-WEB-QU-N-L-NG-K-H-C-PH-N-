@@ -206,8 +206,7 @@
 
                   <!-- Separator học kỳ: in khi đây là dòng đầu tiên hoặc HK thay đổi -->
                   <tr class="hk-sep"
-                      th:if="${st.first or
-                               danhSachCTDT[__${st.index - 1}__].hocKyThu != c.hocKyThu}">
+                      th:if="${hkSeparatorIds != null and hkSeparatorIds.contains(c.id)}">
                     <td colspan="13">
                       <i class="fa-solid fa-calendar-week"></i>
                       Học kỳ <span th:text="${c.hocKyThu}"></span>

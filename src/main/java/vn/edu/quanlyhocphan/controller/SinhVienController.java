@@ -539,11 +539,23 @@ public class SinhVienController {
         long soBatBuoc = danhSachCTDT.stream().filter(c -> Boolean.TRUE.equals(c.getBatBuoc())).count();
         long soTuChon  = danhSachCTDT.stream().filter(c -> !Boolean.TRUE.equals(c.getBatBuoc())).count();
 
-        model.addAttribute("danhSachCTDT", danhSachCTDT);
-        model.addAttribute("tienQuyetMap", tienQuyetMap);
-        model.addAttribute("tongTC",       tongTC);
-        model.addAttribute("soBatBuoc",    soBatBuoc);
-        model.addAttribute("soTuChon",     soTuChon);
+        // Tinh san set id cua ban ghi dau tien moi hoc ky
+        // -> template chi can check hkSeparatorIds.contains(c.id) thay vi dung index trick
+        java.util.Set<Long> hkSeparatorIds = new java.util.LinkedHashSet<>();
+        int prevHk = -1;
+        for (ChuongTrinhDaoTao c : danhSachCTDT) {
+            if (c.getHocKyThu() != prevHk) {
+                hkSeparatorIds.add(c.getId());
+                prevHk = c.getHocKyThu();
+            }
+        }
+
+        model.addAttribute("danhSachCTDT",   danhSachCTDT);
+        model.addAttribute("tienQuyetMap",   tienQuyetMap);
+        model.addAttribute("hkSeparatorIds", hkSeparatorIds);
+        model.addAttribute("tongTC",         tongTC);
+        model.addAttribute("soBatBuoc",      soBatBuoc);
+        model.addAttribute("soTuChon",       soTuChon);
 
         return "sinh-vien/chuong-trinh-hoc";
     }
@@ -653,6 +665,14 @@ public class SinhVienController {
         model.addAttribute("tongTichLuy",  tongTichLuy);
         model.addAttribute("tongYeuCau",   tongYeuCau);
         model.addAttribute("tongBatBuoc",  tongBatBuoc);
+
+        // Tinh san phan tram de tranh #numbers.formatDecimal trong Thymeleaf SpEL
+        String phanTramTichLuy = tongYeuCau > 0
+            ? String.format("%.1f%%", tongTichLuy * 100.0 / tongYeuCau)
+            : "0%";
+        int phanTramInt = tongYeuCau > 0 ? tongTichLuy * 100 / tongYeuCau : 0;
+        model.addAttribute("phanTramTichLuy", phanTramTichLuy);
+        model.addAttribute("phanTramInt",     phanTramInt);
         return "sinh-vien/tin-chi-tich-luy";
     }
 
