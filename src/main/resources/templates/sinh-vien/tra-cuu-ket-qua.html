@@ -95,6 +95,10 @@
             <div class="stat-mini-val" style="color:var(--success);" th:text="${daDuyet}">0</div>
             <div class="stat-mini-lbl">Đã duyệt</div>
           </div>
+          <div class="stat-mini-item">
+            <div class="stat-mini-val" style="color:var(--danger);" th:text="${daHuy ?: 0}">0</div>
+            <div class="stat-mini-lbl">Đã hủy</div>
+          </div>
         </div>
 
         <!-- Bảng kết quả -->

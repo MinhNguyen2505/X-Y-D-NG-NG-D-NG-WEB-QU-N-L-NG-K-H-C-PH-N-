@@ -115,6 +115,12 @@ public class NguyenVongServiceImpl implements NguyenVongService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<DangKyNguyenVong> findLichSuDangKy(Long sinhVienId, Long keHoachId) {
+        return dangKyNvRepo.findAllBySinhVienAndKeHoach(sinhVienId, keHoachId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Set<Long> findDaDangKyIds(Long sinhVienId, Long keHoachId) {
         return dangKyNvRepo.findDaDangKyIds(sinhVienId, keHoachId);
     }

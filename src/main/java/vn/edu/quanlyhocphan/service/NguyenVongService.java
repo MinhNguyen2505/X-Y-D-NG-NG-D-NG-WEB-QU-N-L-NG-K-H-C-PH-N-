@@ -30,7 +30,10 @@ public interface NguyenVongService {
 
     // ---- Sinh vien ----
     List<KeHoachNguyenVong> findKeHoachDangMo();
+    /** Lay lich su dang ky con hieu luc (loai DA_HUY) — dung cho trang dang ky moi */
     List<DangKyNguyenVong> findDangKyCuaSinhVien(Long sinhVienId, Long keHoachId);
+    /** Lay TOAN BO lich su dang ky (ke ca DA_HUY) — dung cho trang tra cuu */
+    List<DangKyNguyenVong> findLichSuDangKy(Long sinhVienId, Long keHoachId);
     Set<Long> findDaDangKyIds(Long sinhVienId, Long keHoachId);
     void dangKy(Long sinhVienId, Long nguyenVongMonHocId);
     void huyDangKy(Long sinhVienId, Long nguyenVongMonHocId);

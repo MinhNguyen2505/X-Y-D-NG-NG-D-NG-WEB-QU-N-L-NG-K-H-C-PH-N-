@@ -250,7 +250,8 @@ public class SinhVienController {
         if (keHoachId != null) {
             var keHoach = nguyenVongService.findKeHoachById(keHoachId);
             var daDangKyIds = nguyenVongService.findDaDangKyIds(sv.getId(), keHoachId);
-            var daDangKy = nguyenVongService.findDangKyCuaSinhVien(sv.getId(), keHoachId);
+            // Bảng "đã đăng ký": hiện TẤT CẢ lịch sử kể cả DA_HUY
+            var daDangKy = nguyenVongService.findLichSuDangKy(sv.getId(), keHoachId);
             model.addAttribute("keHoachChon", keHoach);
             model.addAttribute("daDangKyIds", daDangKyIds);
             model.addAttribute("daDangKy", daDangKy);
@@ -320,16 +321,19 @@ public class SinhVienController {
 
         if (keHoachId != null) {
             var keHoach = nguyenVongService.findKeHoachById(keHoachId);
-            var danhSachDangKy = nguyenVongService.findDangKyCuaSinhVien(sv.getId(), keHoachId);
+            // Tra cuu: lay TOAN BO lich su (ca DA_HUY) de SV biet toan trang
+            var danhSachDangKy = nguyenVongService.findLichSuDangKy(sv.getId(), keHoachId);
 
-            // Thong ke
+            // Thong ke (chi dem cac ban ghi con hieu luc)
             long choDuyet = danhSachDangKy.stream().filter(d -> "CHO_DUYET".equals(d.getTrangThai())).count();
             long daDuyet  = danhSachDangKy.stream().filter(d -> "DA_DUYET".equals(d.getTrangThai())).count();
+            long daHuy    = danhSachDangKy.stream().filter(d -> "DA_HUY".equals(d.getTrangThai())).count();
 
             model.addAttribute("keHoachChon", keHoach);
             model.addAttribute("danhSachDangKy", danhSachDangKy);
             model.addAttribute("choDuyet", choDuyet);
             model.addAttribute("daDuyet",  daDuyet);
+            model.addAttribute("daHuy",    daHuy);
         }
         return "sinh-vien/tra-cuu-ket-qua";
     }
@@ -396,9 +400,22 @@ public class SinhVienController {
     @GetMapping("/dang-ky-thi-lai")
     public String dangKyThiLai(@AuthenticationPrincipal UserDetails principal, Model model) {
         SinhVien sv = laySinhVienHienTai(principal);
+        List<DangKyHocPhan> monChuaDat = thiLaiService.layMonChuaDat(sv.getId());
+        List<vn.edu.quanlyhocphan.entity.DangKyThiLai> lichSuThiLai = thiLaiService.layLichSu(sv.getId());
+
+        // Build map: dangKyHocPhanId -> DangKyThiLai (bản ghi mới nhất)
+        // Dùng trong template để kiểm tra từng môn đã đăng ký thi lại chưa
+        java.util.Map<Long, vn.edu.quanlyhocphan.entity.DangKyThiLai> thiLaiMap = new java.util.LinkedHashMap<>();
+        for (vn.edu.quanlyhocphan.entity.DangKyThiLai tl : lichSuThiLai) {
+            Long dkhpId = tl.getDangKyHocPhan().getId();
+            // Giữ bản ghi mới nhất (list đã được sort ngayDangKy DESC từ repo)
+            thiLaiMap.putIfAbsent(dkhpId, tl);
+        }
+
         model.addAttribute("sinhVien", sv);
-        model.addAttribute("monChuaDat",   thiLaiService.layMonChuaDat(sv.getId()));
-        model.addAttribute("lichSuThiLai", thiLaiService.layLichSu(sv.getId()));
+        model.addAttribute("monChuaDat",   monChuaDat);
+        model.addAttribute("lichSuThiLai", lichSuThiLai);
+        model.addAttribute("thiLaiMap",    thiLaiMap);
         return "sinh-vien/dang-ky-thi-lai";
     }
 
