@@ -98,35 +98,18 @@ public class SinhVienController {
 
     @GetMapping("/chuong-trinh-dao-tao")
     public String xemChuongTrinhDaoTao(
-            @AuthenticationPrincipal UserDetails principal,
-            @RequestParam(required = false, defaultValue = "") String keyword,
-            Model model) {
+            @AuthenticationPrincipal UserDetails principal, Model model) {
         SinhVien sv = laySinhVienHienTai(principal);
         model.addAttribute("sinhVien", sv);
-        model.addAttribute("keyword", keyword);
 
         if (sv.getNganh() == null) {
             model.addAttribute("error", "Ban chua duoc gan nganh hoc.");
             return "sinh-vien/chuong-trinh-dao-tao";
         }
 
-        Long nganhId = sv.getNganh().getId();
-
-        // CTDT voi search
         List<ChuongTrinhDaoTao> ctdt =
-            chuongTrinhDaoTaoRepo.searchByNganhId(nganhId, keyword);
+            chuongTrinhDaoTaoRepo.findByNganhIdWithMonHoc(sv.getNganh().getId());
         model.addAttribute("danhSachCTDT", ctdt);
-
-        // Tin chi tich luy
-        var danhSachKhoi = tinChiTichLuyService.tinhTinChiTheoKhoi(sv.getId(), nganhId);
-        int tongTichLuy  = tinChiTichLuyService.tongTinChiDaTichLuy(sv.getId(), nganhId);
-        int tongYeuCau   = danhSachKhoi.stream().mapToInt(k -> k.getTongSoTinChi()).sum();
-        int tongBatBuoc  = danhSachKhoi.stream().mapToInt(k -> k.getTinChiBatBuoc()).sum();
-        model.addAttribute("danhSachKhoi", danhSachKhoi);
-        model.addAttribute("tongTichLuy",  tongTichLuy);
-        model.addAttribute("tongYeuCau",   tongYeuCau);
-        model.addAttribute("tongBatBuoc",  tongBatBuoc);
-
         return "sinh-vien/chuong-trinh-dao-tao";
     }
 
@@ -456,62 +439,47 @@ public class SinhVienController {
     @GetMapping("/chuong-trinh-hoc")
     public String xemChuongTrinhHoc(
             @AuthenticationPrincipal UserDetails principal,
-            @RequestParam(required = false) Long nganhId,
             @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "ctdt") String tab,
             Model model) {
 
         SinhVien sv = laySinhVienHienTai(principal);
         model.addAttribute("sinhVien", sv);
-
-        // Lay tat ca nganh de hien thi dropdown
-        List<vn.edu.quanlyhocphan.entity.Nganh> danhSachNganh = nganhRepo.findAll();
-        model.addAttribute("danhSachNganh", danhSachNganh);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("tab", tab);
 
-        // Mac dinh chon nganh cua SV neu chua chon
-        Long nganhIdChon = nganhId;
-        if (nganhIdChon == null && sv.getNganh() != null) {
-            nganhIdChon = sv.getNganh().getId();
+        if (sv.getNganh() == null) {
+            model.addAttribute("errorMsg", "Bạn chưa được gán ngành học.");
+            return "sinh-vien/chuong-trinh-hoc";
         }
-        model.addAttribute("nganhIdChon", nganhIdChon);
 
-        if (nganhIdChon != null) {
-            List<ChuongTrinhDaoTao> danhSachCTDT =
-                chuongTrinhDaoTaoRepo.searchByNganhId(nganhIdChon, keyword);
+        Long nganhId = sv.getNganh().getId();
+        model.addAttribute("nganhChon", sv.getNganh());
 
-            // Tinh tong so tin chi
-            int tongTC = danhSachCTDT.stream()
-                .mapToInt(c -> c.getMonHoc().getSoTinChi())
-                .sum();
+        // Tab 1: CTDT (chuong trinh dao tao)
+        List<ChuongTrinhDaoTao> danhSachCTDT =
+            chuongTrinhDaoTaoRepo.searchByNganhId(nganhId, keyword);
 
-            // Dem so mon bat buoc / tu chon
-            long soBatBuoc = danhSachCTDT.stream().filter(c -> Boolean.TRUE.equals(c.getBatBuoc())).count();
-            long soTuChon  = danhSachCTDT.stream().filter(c -> !Boolean.TRUE.equals(c.getBatBuoc())).count();
+        int tongTC    = danhSachCTDT.stream().mapToInt(c -> c.getMonHoc().getSoTinChi()).sum();
+        long soBatBuoc = danhSachCTDT.stream().filter(c -> Boolean.TRUE.equals(c.getBatBuoc())).count();
+        long soTuChon  = danhSachCTDT.stream().filter(c -> !Boolean.TRUE.equals(c.getBatBuoc())).count();
 
-            model.addAttribute("danhSachCTDT", danhSachCTDT);
-            model.addAttribute("tongTC", tongTC);
-            model.addAttribute("soBatBuoc", soBatBuoc);
-            model.addAttribute("soTuChon", soTuChon);
+        model.addAttribute("danhSachCTDT", danhSachCTDT);
+        model.addAttribute("tongTC",    tongTC);
+        model.addAttribute("soBatBuoc", soBatBuoc);
+        model.addAttribute("soTuChon",  soTuChon);
 
-            // ---- Tin chi tich luy (ghep vao cung trang) ----
-            if (sv.getNganh() != null) {
-                var danhSachKhoi = tinChiTichLuyService.tinhTinChiTheoKhoi(
-                        sv.getId(), sv.getNganh().getId());
-                int tongTichLuy = tinChiTichLuyService.tongTinChiDaTichLuy(
-                        sv.getId(), sv.getNganh().getId());
-                int tongYeuCau  = danhSachKhoi.stream().mapToInt(k -> k.getTongSoTinChi()).sum();
-                int tongBatBuoc = danhSachKhoi.stream().mapToInt(k -> k.getTinChiBatBuoc()).sum();
+        // Tab 2: Lich su hoc tap — nhom theo hoc ky thuc te
+        List<DangKyHocPhan> lichSu = dangKyService.layLichSuDangKy(sv.getId());
 
-                model.addAttribute("danhSachKhoi", danhSachKhoi);
-                model.addAttribute("tongTichLuy",  tongTichLuy);
-                model.addAttribute("tongYeuCau",   tongYeuCau);
-                model.addAttribute("tongBatBuoc",  tongBatBuoc);
-            }
-
-            // Lay ten nganh duoc chon
-            nganhRepo.findById(nganhIdChon).ifPresent(n ->
-                model.addAttribute("nganhChon", n));
+        // Nhom theo hoc ky (nam_hoc + ky)
+        java.util.Map<String, List<DangKyHocPhan>> lichSuTheoHK = new java.util.LinkedHashMap<>();
+        for (DangKyHocPhan dk : lichSu) {
+            String hkKey = dk.getLopHocPhan().getHocKy().getTenHocKy();
+            lichSuTheoHK.computeIfAbsent(hkKey, k -> new java.util.ArrayList<>()).add(dk);
         }
+        model.addAttribute("lichSuTheoHK", lichSuTheoHK);
+
         return "sinh-vien/chuong-trinh-hoc";
     }
 
