@@ -287,8 +287,8 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<DangKyHocPhan> layDangKyTheoHocKy(Long sinhVienId, Long hocKyId) {
-        return dangKyRepo.findDangKyTheoHocKy(sinhVienId, hocKyId);
+    public List<DangKyHocPhan> layDangKyThoiKhoaBieu(Long sinhVienId, Long hocKyId) {
+        return dangKyRepo.findDangKyThoiKhoaBieu(sinhVienId, hocKyId);
     }
 
     @Override

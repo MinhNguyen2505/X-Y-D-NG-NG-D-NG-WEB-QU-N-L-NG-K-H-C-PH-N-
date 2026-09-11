@@ -25,11 +25,8 @@ public interface DangKyHocPhanService {
     /** Lay danh sach dang ky hien tai cua SV trong 1 hoc ky (trang thai DA_DANG_KY). */
     List<DangKyHocPhan> layDangKyHienTai(Long sinhVienId, Long hocKyId);
 
-    /**
-     * Lay danh sach dang ky cua SV trong 1 hoc ky — ca DA_DANG_KY lan HOAN_THANH.
-     * Dung cho Thoi khoa bieu (hoc ky cu da HOAN_THANH van can hien lich hoc/lich thi).
-     */
-    List<DangKyHocPhan> layDangKyTheoHocKy(Long sinhVienId, Long hocKyId);
+    /** Lay tat ca dang ky cua SV trong 1 hoc ky (DA_DANG_KY + HOAN_THANH) — dung cho TKB. */
+    List<DangKyHocPhan> layDangKyThoiKhoaBieu(Long sinhVienId, Long hocKyId);
 
     /** Lay toan bo lich su dang ky + ket qua cua SV (tat ca hoc ky). */
     List<DangKyHocPhan> layLichSuDangKy(Long sinhVienId);

@@ -188,11 +188,10 @@
           <div th:if="${danhSachDangKy != null and !danhSachDangKy.empty}">
 
             <div th:each="dk, si : ${danhSachDangKy}" class="mon-card">
-              <!-- Header: click để mở/đóng -->
-              <div class="mon-header"
+              <!-- Header: click để mở/đóng — tất cả mở mặc định -->
+              <div class="mon-header open"
                    th:id="'hdr-' + ${si.index}"
-                   th:onclick="'toggleMon(' + ${si.index} + ')'"
-                   th:classappend="${si.index == 0} ? ' open'">
+                   th:onclick="'toggleMon(' + ${si.index} + ')'">
                 <!-- Tên môn -->
                 <div>
                   <div class="mon-name" th:text="${dk.lopHocPhan.monHoc.tenMon}"></div>
@@ -209,23 +208,41 @@
                   <i class="fa-solid fa-chalkboard-user" style="color:var(--gray-400);margin-right:3px;"></i>
                   <span th:text="${dk.lopHocPhan.giangVien?.hoTen ?: 'Chưa phân công'}"></span>
                 </span>
+                <!-- Trạng thái -->
+                <span th:if="${dk.trangThai.name() == 'HOAN_THANH'}"
+                      style="font-size:11px;background:#dcfce7;color:#16a34a;
+                             font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0;">
+                  <i class="fa-solid fa-check"></i> Hoàn thành
+                  <span th:if="${dk.diemTongKet != null}"
+                        th:text="'· ' + ${dk.diemTongKet}"></span>
+                </span>
+                <span th:if="${dk.trangThai.name() == 'DA_DANG_KY'}"
+                      style="font-size:11px;background:#dbeafe;color:#1d4ed8;
+                             font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0;">
+                  <i class="fa-solid fa-spinner"></i> Đang học
+                </span>
                 <!-- Số buổi -->
-                <span style="font-size:11px;color:var(--gray-400);">
+                <span style="font-size:11px;color:var(--gray-400);flex-shrink:0;">
                   <span th:text="${dk.lopHocPhan.lichHocs.size()}"></span> buổi/tuần
                 </span>
                 <!-- Toggle icon -->
                 <i class="fa-solid fa-chevron-down toggle-icon"></i>
               </div>
 
-              <!-- Body: danh sách buổi học -->
-              <div class="mon-body"
-                   th:id="'body-' + ${si.index}"
-                   th:classappend="${si.index == 0} ? ' open'">
+              <!-- Body: danh sách buổi học — tất cả mở mặc định -->
+              <div class="mon-body open"
+                   th:id="'body-' + ${si.index}">
 
                 <!-- Không có lịch -->
                 <div th:if="${dk.lopHocPhan.lichHocs.empty}"
                      style="padding:14px 18px;color:var(--gray-400);font-style:italic;">
-                  <i class="fa-solid fa-circle-info"></i> Chưa xếp lịch cho lớp này.
+                  <i class="fa-solid fa-circle-info"></i>
+                  <span th:if="${dk.trangThai.name() == 'HOAN_THANH'}">
+                    Học kỳ đã kết thúc — không có lịch học.
+                  </span>
+                  <span th:if="${dk.trangThai.name() != 'HOAN_THANH'}">
+                    Chưa xếp lịch cho lớp này.
+                  </span>
                 </div>
 
                 <!-- Từng buổi học -->

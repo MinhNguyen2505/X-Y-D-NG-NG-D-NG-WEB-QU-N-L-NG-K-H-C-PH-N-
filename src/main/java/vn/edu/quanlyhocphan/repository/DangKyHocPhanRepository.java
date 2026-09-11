@@ -15,6 +15,7 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Lo
     Optional<DangKyHocPhan> findBySinhVienIdAndLopHocPhanId(
             Long sinhVienId, Long lopHocPhanId);
 
+    /** Lay dang ky theo hoc ky, theo trang thai cu the (DA_DANG_KY). */
     @Query("SELECT dkhp FROM DangKyHocPhan dkhp " +
            "JOIN FETCH dkhp.lopHocPhan lhp " +
            "JOIN FETCH lhp.monHoc " +
@@ -28,17 +29,19 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Lo
             @Param("trangThai") TrangThaiDangKy trangThai);
 
     /**
-     * Lay dang ky cua SV trong 1 hoc ky — ca DA_DANG_KY lan HOAN_THANH.
-     * Dung cho Thoi khoa bieu: HK cu da HOAN_THANH van can hien.
+     * Lay tat ca dang ky cua SV trong 1 hoc ky (DA_DANG_KY + HOAN_THANH).
+     * Dung cho TKB — hoc ky cu co trang thai HOAN_THANH cung phai hien.
      */
     @Query("SELECT dkhp FROM DangKyHocPhan dkhp " +
            "JOIN FETCH dkhp.lopHocPhan lhp " +
            "JOIN FETCH lhp.monHoc " +
+           "LEFT JOIN FETCH lhp.giangVien " +
            "LEFT JOIN FETCH lhp.lichHocs " +
            "WHERE dkhp.sinhVien.id = :sinhVienId " +
            "AND lhp.hocKy.id = :hocKyId " +
-           "AND dkhp.trangThai IN ('DA_DANG_KY','HOAN_THANH')")
-    List<DangKyHocPhan> findDangKyTheoHocKy(
+           "AND dkhp.trangThai IN ('DA_DANG_KY', 'HOAN_THANH') " +
+           "ORDER BY lhp.monHoc.tenMon ASC")
+    List<DangKyHocPhan> findDangKyThoiKhoaBieu(
             @Param("sinhVienId") Long sinhVienId,
             @Param("hocKyId") Long hocKyId);
 
