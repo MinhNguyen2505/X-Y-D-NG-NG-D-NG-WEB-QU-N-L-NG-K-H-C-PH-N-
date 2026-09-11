@@ -98,18 +98,35 @@ public class SinhVienController {
 
     @GetMapping("/chuong-trinh-dao-tao")
     public String xemChuongTrinhDaoTao(
-            @AuthenticationPrincipal UserDetails principal, Model model) {
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            Model model) {
         SinhVien sv = laySinhVienHienTai(principal);
         model.addAttribute("sinhVien", sv);
+        model.addAttribute("keyword", keyword);
 
         if (sv.getNganh() == null) {
             model.addAttribute("error", "Ban chua duoc gan nganh hoc.");
             return "sinh-vien/chuong-trinh-dao-tao";
         }
 
+        Long nganhId = sv.getNganh().getId();
+
+        // CTDT voi search
         List<ChuongTrinhDaoTao> ctdt =
-            chuongTrinhDaoTaoRepo.findByNganhIdWithMonHoc(sv.getNganh().getId());
+            chuongTrinhDaoTaoRepo.searchByNganhId(nganhId, keyword);
         model.addAttribute("danhSachCTDT", ctdt);
+
+        // Tin chi tich luy
+        var danhSachKhoi = tinChiTichLuyService.tinhTinChiTheoKhoi(sv.getId(), nganhId);
+        int tongTichLuy  = tinChiTichLuyService.tongTinChiDaTichLuy(sv.getId(), nganhId);
+        int tongYeuCau   = danhSachKhoi.stream().mapToInt(k -> k.getTongSoTinChi()).sum();
+        int tongBatBuoc  = danhSachKhoi.stream().mapToInt(k -> k.getTinChiBatBuoc()).sum();
+        model.addAttribute("danhSachKhoi", danhSachKhoi);
+        model.addAttribute("tongTichLuy",  tongTichLuy);
+        model.addAttribute("tongYeuCau",   tongYeuCau);
+        model.addAttribute("tongBatBuoc",  tongBatBuoc);
+
         return "sinh-vien/chuong-trinh-dao-tao";
     }
 
