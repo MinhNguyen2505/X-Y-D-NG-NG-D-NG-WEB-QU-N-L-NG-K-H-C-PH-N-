@@ -296,3 +296,9 @@ INSERT INTO dang_ky_hoc_phan (sinh_vien_id,lop_hoc_phan_id,trang_thai,diem_giua_
 ((SELECT id FROM sinh_vien WHERE mssv='SV001'),(SELECT id FROM lop_hoc_phan WHERE ma_lop_hp='IT2030-01'), 'HOAN_THANH', 7.0, 7.5, 7.2),
 ((SELECT id FROM sinh_vien WHERE mssv='SV001'),(SELECT id FROM lop_hoc_phan WHERE ma_lop_hp='IT2040-01'), 'HOAN_THANH', 8.0, 8.5, 8.3),
 ((SELECT id FROM sinh_vien WHERE mssv='SV001'),(SELECT id FROM lop_hoc_phan WHERE ma_lop_hp='IT2060-01'), 'HOAN_THANH', 7.5, 8.0, 7.8);
+
+-- =============================================================
+-- 16. ADMIN (password: 123456)
+-- =============================================================
+INSERT INTO admin (email, mat_khau, ho_ten) VALUES
+('admin@email.com', '$2a$10$bT28j9LV6ccKA5D3razdEOTbAWbKbE1TJDoxaep4m2uL0rBYktiny', 'Quan tri vien');

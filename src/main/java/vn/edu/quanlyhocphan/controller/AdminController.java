@@ -38,6 +38,7 @@ public class AdminController {
     private final NganhRepository nganhRepo;
     private final NguyenVongService nguyenVongService;
     private final DinhHuongService dinhHuongService;
+    private final vn.edu.quanlyhocphan.service.ThiLaiService thiLaiService;
 
     // =================================================================
     // DASHBOARD
@@ -461,6 +462,88 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
         }
         return "redirect:/admin/nguyen-vong/" + keHoachId;
+    }
+
+    /** Duyet 1 dang ky nguyen vong */
+    @PostMapping("/nguyen-vong/{keHoachId}/duyet/{dangKyId}")
+    public String duyetDangKy(@PathVariable Long keHoachId,
+                               @PathVariable Long dangKyId,
+                               RedirectAttributes ra) {
+        try {
+            nguyenVongService.duyetDangKy(dangKyId);
+            ra.addFlashAttribute("successMsg", "Da duyet dang ky nguyen vong.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/admin/nguyen-vong/" + keHoachId;
+    }
+
+    /** Tu choi 1 dang ky nguyen vong */
+    @PostMapping("/nguyen-vong/{keHoachId}/tu-choi/{dangKyId}")
+    public String tuChoiDangKy(@PathVariable Long keHoachId,
+                                @PathVariable Long dangKyId,
+                                RedirectAttributes ra) {
+        try {
+            nguyenVongService.tuChoiDangKy(dangKyId);
+            ra.addFlashAttribute("successMsg", "Da tu choi dang ky nguyen vong.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/admin/nguyen-vong/" + keHoachId;
+    }
+
+    /** Duyet tat ca CHO_DUYET trong ke hoach */
+    @PostMapping("/nguyen-vong/{id}/duyet-tat-ca")
+    public String duyetTatCa(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            int so = nguyenVongService.duyetTatCa(id);
+            ra.addFlashAttribute("successMsg", "Da duyet " + so + " dang ky nguyen vong.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/admin/nguyen-vong/" + id;
+    }
+
+    // =================================================================
+    // QUAN LY DANG KY THI LAI
+    // =================================================================
+
+    @GetMapping("/thi-lai")
+    public String danhSachThiLai(
+            @RequestParam(defaultValue = "CHO_DUYET") String trangThai,
+            Model model) {
+        model.addAttribute("danhSach", thiLaiService.findByTrangThai(trangThai));
+        model.addAttribute("trangThaiFilter", trangThai);
+        return "admin/thi-lai/danh-sach";
+    }
+
+    @PostMapping("/thi-lai/{id}/duyet")
+    public String duyetThiLai(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            thiLaiService.duyet(id);
+            ra.addFlashAttribute("successMsg", "Đã duyệt đăng ký thi lại.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/admin/thi-lai";
+    }
+
+    @PostMapping("/thi-lai/{id}/tu-choi")
+    public String tuChoiThiLai(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            thiLaiService.tuChoi(id);
+            ra.addFlashAttribute("successMsg", "Đã từ chối đăng ký thi lại.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/admin/thi-lai";
+    }
+
+    @PostMapping("/thi-lai/duyet-tat-ca")
+    public String duyetTatCaThiLai(RedirectAttributes ra) {
+        int so = thiLaiService.duyetTatCa();
+        ra.addFlashAttribute("successMsg", "Đã duyệt " + so + " đăng ký thi lại.");
+        return "redirect:/admin/thi-lai";
     }
 
     // =================================================================

@@ -5,43 +5,47 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import vn.edu.quanlyhocphan.entity.Admin;
 import vn.edu.quanlyhocphan.entity.GiangVien;
 import vn.edu.quanlyhocphan.entity.SinhVien;
+import vn.edu.quanlyhocphan.repository.AdminRepository;
 import vn.edu.quanlyhocphan.repository.GiangVienRepository;
 import vn.edu.quanlyhocphan.repository.SinhVienRepository;
 
 import java.util.Optional;
 
 /**
- * Trien khai UserDetailsService de Spring Security co the xac thuc
- * nguoi dung tu 3 nguon khac nhau: Admin (hardcode/cấu hình), SinhVien (DB), GiangVien (DB).
+ * Xac thuc nguoi dung tu 3 nguon trong DB:
+ * Admin, SinhVien, GiangVien.
+ * KHONG con hardcode — tat ca lay tu bang admin trong DB.
  */
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final SinhVienRepository sinhVienRepository;
+    private final AdminRepository     adminRepository;
+    private final SinhVienRepository  sinhVienRepository;
     private final GiangVienRepository giangVienRepository;
-    // Bỏ inject PasswordEncoder ở đây để tránh circular dependency. PasswordEncoder được gọi ở config
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // 1. Kiem tra tai khoan Admin (Trong thuc te co the query tu bang Admin, o day dung hardcode cho don gian)
-        if ("admin@email.com".equalsIgnoreCase(email)) {
+
+        // 1. Kiem tra trong bang Admin
+        Optional<Admin> adminOpt = adminRepository.findByEmail(email);
+        if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
             return User.builder()
-                    .username("admin@email.com")
-                    // pass là: 123456 đã được mã hoá BCrypt
-                    .password("$2a$10$bT28j9LV6ccKA5D3razdEOTbAWbKbE1TJDoxaep4m2uL0rBYktiny")
+                    .username(admin.getEmail())
+                    .password(admin.getMatKhau())
                     .roles("ADMIN")
                     .build();
         }
 
         // 2. Kiem tra trong bang SinhVien
-        Optional<SinhVien> sinhVienOpt = sinhVienRepository.findByEmail(email);
-        if (sinhVienOpt.isPresent()) {
-            SinhVien sv = sinhVienOpt.get();
+        Optional<SinhVien> svOpt = sinhVienRepository.findByEmail(email);
+        if (svOpt.isPresent()) {
+            SinhVien sv = svOpt.get();
             return User.builder()
                     .username(sv.getEmail())
                     .password(sv.getMatKhau())
@@ -50,9 +54,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         // 3. Kiem tra trong bang GiangVien
-        Optional<GiangVien> giangVienOpt = giangVienRepository.findByEmail(email);
-        if (giangVienOpt.isPresent()) {
-            GiangVien gv = giangVienOpt.get();
+        Optional<GiangVien> gvOpt = giangVienRepository.findByEmail(email);
+        if (gvOpt.isPresent()) {
+            GiangVien gv = gvOpt.get();
             return User.builder()
                     .username(gv.getEmail())
                     .password(gv.getMatKhau())
@@ -60,7 +64,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .build();
         }
 
-        // Neu khong tim thay
-        throw new UsernameNotFoundException("Không tìm thấy tài khoản với email: " + email);
+        throw new UsernameNotFoundException("Khong tim thay tai khoan: " + email);
     }
 }

@@ -19,6 +19,15 @@ public interface NguyenVongService {
     void xoaMonKhoiKeHoach(Long nguyenVongMonHocId);
     List<DangKyNguyenVong> findDangKyByKeHoach(Long keHoachId);
 
+    /** Duyet 1 dang ky nguyen vong (CHO_DUYET -> DA_DUYET) */
+    void duyetDangKy(Long dangKyId);
+
+    /** Tu choi 1 dang ky nguyen vong (CHO_DUYET/DA_DUYET -> DA_HUY) */
+    void tuChoiDangKy(Long dangKyId);
+
+    /** Duyet tat ca CHO_DUYET trong 1 ke hoach */
+    int duyetTatCa(Long keHoachId);
+
     // ---- Sinh vien ----
     List<KeHoachNguyenVong> findKeHoachDangMo();
     List<DangKyNguyenVong> findDangKyCuaSinhVien(Long sinhVienId, Long keHoachId);

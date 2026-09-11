@@ -330,3 +330,32 @@ ALTER TABLE chuong_trinh_dao_tao
     ADD COLUMN IF NOT EXISTS so_tiet_th           INT          NOT NULL DEFAULT 0,
     ADD COLUMN IF NOT EXISTS btl_damh             INT          NOT NULL DEFAULT 0,
     ADD COLUMN IF NOT EXISTS tt_da_kltn           INT          NOT NULL DEFAULT 0;
+
+-- =============================================================
+-- 20. ADMIN (thay hardcode trong CustomUserDetailsService)
+-- =============================================================
+CREATE TABLE IF NOT EXISTS admin (
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email      VARCHAR(255) NOT NULL,
+    mat_khau   VARCHAR(255) NOT NULL,
+    ho_ten     VARCHAR(255) NOT NULL,
+    CONSTRAINT uq_admin_email UNIQUE (email)
+);
+
+-- =============================================================
+-- 21. DANG_KY_THI_LAI
+-- SV dang ky thi lai mon chua dat (diem_tong_ket < 5)
+-- trang_thai: CHO_DUYET / DA_DUYET / DA_HUY
+-- =============================================================
+CREATE TABLE IF NOT EXISTS dang_ky_thi_lai (
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    sinh_vien_id     BIGINT      NOT NULL,
+    dang_ky_hp_id    BIGINT      NOT NULL,
+    ngay_dang_ky     DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    trang_thai       VARCHAR(20) NOT NULL DEFAULT 'CHO_DUYET',
+    ghi_chu          TEXT,
+    CONSTRAINT uq_dktl UNIQUE (sinh_vien_id, dang_ky_hp_id),
+    CONSTRAINT chk_dktl_tt CHECK (trang_thai IN ('CHO_DUYET','DA_DUYET','DA_HUY')),
+    CONSTRAINT fk_dktl_sv   FOREIGN KEY (sinh_vien_id)  REFERENCES sinh_vien(id),
+    CONSTRAINT fk_dktl_dkhp FOREIGN KEY (dang_ky_hp_id) REFERENCES dang_ky_hoc_phan(id)
+);

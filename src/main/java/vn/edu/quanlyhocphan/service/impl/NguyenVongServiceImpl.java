@@ -166,4 +166,44 @@ public class NguyenVongServiceImpl implements NguyenVongService {
         dangKyNvRepo.save(dk);
         log.info("SV [{}] huy dang ky nguyen vong mon [{}]", sinhVienId, nguyenVongMonHocId);
     }
+
+    // ================================================================
+    // DUYET / TU CHOI (Admin)
+    // ================================================================
+
+    @Override
+    @Transactional
+    public void duyetDangKy(Long dangKyId) {
+        DangKyNguyenVong dk = dangKyNvRepo.findById(dangKyId)
+            .orElseThrow(() -> new ResourceNotFoundException("DangKyNguyenVong", dangKyId));
+        if ("DA_HUY".equals(dk.getTrangThai())) {
+            throw new NghiepVuException("Khong the duyet ban ghi da huy.");
+        }
+        dk.setTrangThai("DA_DUYET");
+        dangKyNvRepo.save(dk);
+        log.info("Admin duyet dang ky nguyen vong id={}", dangKyId);
+    }
+
+    @Override
+    @Transactional
+    public void tuChoiDangKy(Long dangKyId) {
+        DangKyNguyenVong dk = dangKyNvRepo.findById(dangKyId)
+            .orElseThrow(() -> new ResourceNotFoundException("DangKyNguyenVong", dangKyId));
+        dk.setTrangThai("DA_HUY");
+        dangKyNvRepo.save(dk);
+        log.info("Admin tu choi dang ky nguyen vong id={}", dangKyId);
+    }
+
+    @Override
+    @Transactional
+    public int duyetTatCa(Long keHoachId) {
+        List<DangKyNguyenVong> choDuyet = dangKyNvRepo.findByKeHoach(keHoachId)
+            .stream()
+            .filter(dk -> "CHO_DUYET".equals(dk.getTrangThai()))
+            .toList();
+        choDuyet.forEach(dk -> dk.setTrangThai("DA_DUYET"));
+        dangKyNvRepo.saveAll(choDuyet);
+        log.info("Admin duyet tat ca {} ban ghi trong ke hoach {}", choDuyet.size(), keHoachId);
+        return choDuyet.size();
+    }
 }

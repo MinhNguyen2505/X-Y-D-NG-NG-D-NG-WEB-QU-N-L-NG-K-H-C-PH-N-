@@ -18,6 +18,7 @@ import vn.edu.quanlyhocphan.service.*;
 import vn.edu.quanlyhocphan.service.NguyenVongService;
 import vn.edu.quanlyhocphan.service.DinhHuongService;
 import vn.edu.quanlyhocphan.service.TinChiTichLuyService;
+import vn.edu.quanlyhocphan.service.ThiLaiService;
 import vn.edu.quanlyhocphan.repository.LichThiRepository;
 
 import java.util.List;
@@ -46,6 +47,7 @@ public class SinhVienController {
     private final TinChiTichLuyService tinChiTichLuyService;
     private final LichThiRepository lichThiRepo;
     private final NganhRepository nganhRepo;
+    private final ThiLaiService thiLaiService;
 
     // -----------------------------------------------------------------
     // Helper: lay SinhVien tu Principal (email la username)
@@ -389,19 +391,45 @@ public class SinhVienController {
     }
 
     // =================================================================
-    // DANG KY THI LAI (placeholder)
+    // DANG KY THI LAI
     // =================================================================
     @GetMapping("/dang-ky-thi-lai")
     public String dangKyThiLai(@AuthenticationPrincipal UserDetails principal, Model model) {
         SinhVien sv = laySinhVienHienTai(principal);
-        // Hiển thị các môn có điểm < 5 để SV đăng ký thi lại
-        List<DangKyHocPhan> monKhongDat = dangKyService.layLichSuDangKy(sv.getId())
-            .stream()
-            .filter(dk -> dk.getDiemTongKet() != null && dk.getDiemTongKet().doubleValue() < 5.0)
-            .collect(Collectors.toList());
         model.addAttribute("sinhVien", sv);
-        model.addAttribute("monKhongDat", monKhongDat);
+        model.addAttribute("monChuaDat",   thiLaiService.layMonChuaDat(sv.getId()));
+        model.addAttribute("lichSuThiLai", thiLaiService.layLichSu(sv.getId()));
         return "sinh-vien/dang-ky-thi-lai";
+    }
+
+    @PostMapping("/dang-ky-thi-lai")
+    public String thucHienDangKyThiLai(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam Long dangKyHocPhanId,
+            RedirectAttributes ra) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        try {
+            thiLaiService.dangKy(sv.getId(), dangKyHocPhanId);
+            ra.addFlashAttribute("successMsg", "Đăng ký thi lại thành công! Chờ Phòng Đào tạo xác nhận.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/sinh-vien/dang-ky-thi-lai";
+    }
+
+    @PostMapping("/huy-thi-lai")
+    public String huyThiLai(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam Long dangKyHocPhanId,
+            RedirectAttributes ra) {
+        SinhVien sv = laySinhVienHienTai(principal);
+        try {
+            thiLaiService.huy(sv.getId(), dangKyHocPhanId);
+            ra.addFlashAttribute("successMsg", "Đã hủy đăng ký thi lại.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        }
+        return "redirect:/sinh-vien/dang-ky-thi-lai";
     }
 
     // =================================================================
@@ -500,16 +528,29 @@ public class SinhVienController {
         SinhVien sv = laySinhVienHienTai(principal);
         List<DangKyHocPhan> lichSu = dangKyService.layLichSuDangKy(sv.getId());
 
-        // Tinh GPA trung binh diem tong ket cac mon co diem
-        double gpa = lichSu.stream()
+        // GPA theo weighted average: sum(diem * soTinChi) / sum(soTinChi)
+        double tongDiemNhanTC = lichSu.stream()
             .filter(dk -> dk.getDiemTongKet() != null)
-            .mapToDouble(dk -> dk.getDiemTongKet().doubleValue())
-            .average()
-            .orElse(0.0);
+            .mapToDouble(dk -> dk.getDiemTongKet().doubleValue()
+                             * dk.getLopHocPhan().getMonHoc().getSoTinChi())
+            .sum();
+        int tongTinChi = lichSu.stream()
+            .filter(dk -> dk.getDiemTongKet() != null)
+            .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
+            .sum();
+        double gpa = tongTinChi > 0 ? tongDiemNhanTC / tongTinChi : 0.0;
+
+        // Tinh tong tin chi tich luy (mon dat >= 5)
+        int tinChiTichLuy = lichSu.stream()
+            .filter(dk -> dk.getDiemTongKet() != null
+                       && dk.getDiemTongKet().doubleValue() >= 5.0)
+            .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
+            .sum();
 
         model.addAttribute("sinhVien", sv);
         model.addAttribute("lichSu", lichSu);
         model.addAttribute("gpa", String.format("%.2f", gpa));
+        model.addAttribute("tinChiTichLuy", tinChiTichLuy);
         return "sinh-vien/ket-qua-hoc-tap";
     }
 }
