@@ -472,40 +472,59 @@ public class SinhVienController {
         // Tab 2: Lich su hoc tap — nhom theo hoc ky thuc te
         List<DangKyHocPhan> lichSu = dangKyService.layLichSuDangKy(sv.getId());
 
-        // Nhom theo hoc ky, tinh GPA tung ky
-        java.util.Map<String, List<DangKyHocPhan>> lichSuTheoHK = new java.util.LinkedHashMap<>();
-        java.util.Map<String, String>   gpaTheoHK   = new java.util.LinkedHashMap<>();
-        java.util.Map<String, Integer>  tcTheoHK    = new java.util.LinkedHashMap<>();
-
+        // Build DTO theo hoc ky
+        java.util.Map<String, List<DangKyHocPhan>> rawMap = new java.util.LinkedHashMap<>();
         for (DangKyHocPhan dk : lichSu) {
             String hkKey = dk.getLopHocPhan().getHocKy().getTenHocKy();
-            lichSuTheoHK.computeIfAbsent(hkKey, k -> new java.util.ArrayList<>()).add(dk);
+            rawMap.computeIfAbsent(hkKey, k -> new java.util.ArrayList<>()).add(dk);
         }
 
-        for (java.util.Map.Entry<String, List<DangKyHocPhan>> e : lichSuTheoHK.entrySet()) {
+        List<vn.edu.quanlyhocphan.dto.LichSuHocKyDto> danhSachHocKy = new java.util.ArrayList<>();
+        for (java.util.Map.Entry<String, List<DangKyHocPhan>> e : rawMap.entrySet()) {
             List<DangKyHocPhan> dkList = e.getValue();
-            // Tong tin chi trong ky
-            int tc = dkList.stream()
-                .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
-                .sum();
-            tcTheoHK.put(e.getKey(), tc);
-            // GPA weighted average
+            int tongTCKy = dkList.stream()
+                .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi()).sum();
             double tongDiem = dkList.stream()
                 .filter(dk -> dk.getDiemTongKet() != null)
                 .mapToDouble(dk -> dk.getDiemTongKet().doubleValue()
-                                 * dk.getLopHocPhan().getMonHoc().getSoTinChi())
-                .sum();
+                                 * dk.getLopHocPhan().getMonHoc().getSoTinChi()).sum();
             int tcCoDiem = dkList.stream()
                 .filter(dk -> dk.getDiemTongKet() != null)
-                .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
-                .sum();
-            gpaTheoHK.put(e.getKey(), tcCoDiem > 0
-                ? String.format("%.2f", tongDiem / tcCoDiem) : "—");
+                .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi()).sum();
+            String gpa = tcCoDiem > 0 ? String.format("%.2f", tongDiem / tcCoDiem) : "—";
+
+            List<vn.edu.quanlyhocphan.dto.LichSuHocKyDto.MonHocKyDto> dsMon = new java.util.ArrayList<>();
+            int stt = 1;
+            for (DangKyHocPhan dk : dkList) {
+                java.math.BigDecimal dtk = dk.getDiemTongKet();
+                dsMon.add(vn.edu.quanlyhocphan.dto.LichSuHocKyDto.MonHocKyDto.builder()
+                    .stt(stt++)
+                    .maMon(dk.getLopHocPhan().getMonHoc().getMaMon())
+                    .tenMon(dk.getLopHocPhan().getMonHoc().getTenMon())
+                    .soTinChi(dk.getLopHocPhan().getMonHoc().getSoTinChi())
+                    .diemGiuaKy(dk.getDiemGiuaKy() != null
+                        ? String.format("%.1f", dk.getDiemGiuaKy().doubleValue()) : "—")
+                    .diemCuoiKy(dk.getDiemCuoiKy() != null
+                        ? String.format("%.1f", dk.getDiemCuoiKy().doubleValue()) : "—")
+                    .diemTongKet(dtk != null
+                        ? String.format("%.1f", dtk.doubleValue()) : "—")
+                    .diemChu(vn.edu.quanlyhocphan.dto.LichSuHocKyDto.tinhDiemChu(dtk))
+                    .mauDiem(vn.edu.quanlyhocphan.dto.LichSuHocKyDto.tinhMauDiem(dtk))
+                    .ketQua(vn.edu.quanlyhocphan.dto.LichSuHocKyDto.tinhKetQua(dtk))
+                    .mauKetQua(vn.edu.quanlyhocphan.dto.LichSuHocKyDto.tinhMauKetQua(dtk))
+                    .build());
+            }
+
+            danhSachHocKy.add(vn.edu.quanlyhocphan.dto.LichSuHocKyDto.builder()
+                .tenHocKy(e.getKey())
+                .soMon(dkList.size())
+                .tongTinChi(tongTCKy)
+                .gpa(gpa)
+                .danhSachMon(dsMon)
+                .build());
         }
 
-        model.addAttribute("lichSuTheoHK",  lichSuTheoHK);
-        model.addAttribute("gpaTheoHK",     gpaTheoHK);
-        model.addAttribute("tcTheoHK",      tcTheoHK);
+        model.addAttribute("danhSachHocKy", danhSachHocKy);
 
         return "sinh-vien/chuong-trinh-hoc";
     }

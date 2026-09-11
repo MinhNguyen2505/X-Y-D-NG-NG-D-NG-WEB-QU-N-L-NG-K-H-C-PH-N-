@@ -283,39 +283,34 @@
         <!-- ======================== TAB LỊCH SỬ ======================== -->
         <div class="tab-panel" th:classappend="${tab == 'lich-su'} ? ' active'">
 
-          <div th:if="${lichSuTheoHK == null or lichSuTheoHK.empty}" class="empty-state">
+          <div th:if="${danhSachHocKy == null or danhSachHocKy.empty}" class="empty-state">
             <i class="fa-solid fa-clock-rotate-left"></i>Chưa có lịch sử học tập.
           </div>
 
-          <div th:if="${lichSuTheoHK != null and !lichSuTheoHK.empty}">
-            <!-- Tổng quan nhanh -->
+          <div th:if="${danhSachHocKy != null and !danhSachHocKy.empty}">
             <div class="chips" style="margin-bottom:16px;">
               <div class="chip">
                 <i class="fa-solid fa-calendar"></i>
-                <span><b th:text="${lichSuTheoHK.size()}"></b> học kỳ đã học</span>
+                <span><b th:text="${danhSachHocKy.size()}"></b> học kỳ đã học</span>
               </div>
             </div>
 
             <!-- Mỗi học kỳ 1 card -->
-            <div th:each="entry : ${lichSuTheoHK}" class="hk-card">
-              <!-- Header học kỳ -->
+            <div th:each="hk : ${danhSachHocKy}" class="hk-card">
               <div class="hk-card-header">
-                <div>
-                  <div class="hk-title">
-                    <i class="fa-solid fa-calendar-week"></i>
-                    <span th:text="${entry.key}"></span>
-                  </div>
+                <div class="hk-title">
+                  <i class="fa-solid fa-calendar-week"></i>
+                  <span th:text="${hk.tenHocKy}"></span>
                 </div>
                 <div class="hk-stat">
-                  <span th:text="${entry.value.size()} + ' môn'"></span>
+                  <span th:text="${hk.soMon} + ' môn'"></span>
                   &nbsp;|&nbsp;
-                  <span th:text="${tcTheoHK[entry.key]} + ' TC'"></span>
+                  <span th:text="${hk.tongTinChi} + ' TC'"></span>
                   &nbsp;|&nbsp;
-                  GPA: <b th:text="${gpaTheoHK[entry.key]}"></b>
+                  GPA: <b th:text="${hk.gpa}"></b>
                 </div>
               </div>
 
-              <!-- Bảng môn trong học kỳ -->
               <div class="hk-card-body">
                 <table class="table" style="margin:0;">
                   <thead>
@@ -327,66 +322,36 @@
                       <th style="text-align:center;width:70px;">Điểm GK</th>
                       <th style="text-align:center;width:70px;">Điểm CK</th>
                       <th style="text-align:center;width:70px;">Điểm TK</th>
-                      <th style="text-align:center;width:70px;">Điểm chữ</th>
-                      <th style="text-align:center;width:80px;">Kết quả</th>
+                      <th style="text-align:center;width:60px;">Chữ</th>
+                      <th style="text-align:center;width:100px;">Kết quả</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr th:each="dk, i : ${entry.value}">
-                      <td style="text-align:center;color:var(--gray-500);" th:text="${i.count}"></td>
-                      <td><code style="font-size:11px;" th:text="${dk.lopHocPhan.monHoc.maMon}"></code></td>
-                      <td style="font-weight:500;" th:text="${dk.lopHocPhan.monHoc.tenMon}"></td>
+                    <tr th:each="mon : ${hk.danhSachMon}">
+                      <td style="text-align:center;color:var(--gray-500);" th:text="${mon.stt}"></td>
+                      <td><code style="font-size:11px;" th:text="${mon.maMon}"></code></td>
+                      <td style="font-weight:500;" th:text="${mon.tenMon}"></td>
                       <td style="text-align:center;">
-                        <span class="badge badge-secondary" th:text="${dk.lopHocPhan.monHoc.soTinChi}"></span>
+                        <span class="badge badge-secondary" th:text="${mon.soTinChi}"></span>
                       </td>
-                      <td style="text-align:center;" th:text="${dk.diemGiuaKy != null ? #numbers.formatDecimal(dk.diemGiuaKy,1,'DEFAULT',1,'DEFAULT') : '—'}"></td>
-                      <td style="text-align:center;" th:text="${dk.diemCuoiKy != null ? #numbers.formatDecimal(dk.diemCuoiKy,1,'DEFAULT',1,'DEFAULT') : '—'}"></td>
-                      <!-- Điểm tổng kết có màu -->
+                      <td style="text-align:center;" th:text="${mon.diemGiuaKy}"></td>
+                      <td style="text-align:center;" th:text="${mon.diemCuoiKy}"></td>
                       <td style="text-align:center;">
-                        <span th:if="${dk.diemTongKet != null}"
-                              th:class="${dk.diemTongKet.doubleValue() >= 8.5} ? 'd-a'
-                                       : ${dk.diemTongKet.doubleValue() >= 7.0} ? 'd-b'
-                                       : ${dk.diemTongKet.doubleValue() >= 6.0} ? 'd-c'
-                                       : ${dk.diemTongKet.doubleValue() >= 5.0} ? 'd-d'
-                                       : 'd-f'"
-                              th:text="${#numbers.formatDecimal(dk.diemTongKet,1,'DEFAULT',1,'DEFAULT')}">
-                        </span>
-                        <span th:if="${dk.diemTongKet == null}" class="d-null">—</span>
+                        <span th:class="${mon.mauDiem}" th:text="${mon.diemTongKet}"></span>
                       </td>
-                      <!-- Điểm chữ -->
                       <td style="text-align:center;font-weight:800;">
-                        <span th:if="${dk.diemTongKet != null}"
-                              th:class="${dk.diemTongKet.doubleValue() >= 8.5} ? 'd-a'
-                                       : ${dk.diemTongKet.doubleValue() >= 7.0} ? 'd-b'
-                                       : ${dk.diemTongKet.doubleValue() >= 6.0} ? 'd-c'
-                                       : ${dk.diemTongKet.doubleValue() >= 5.0} ? 'd-d'
-                                       : 'd-f'"
-                              th:text="${dk.diemTongKet.doubleValue() >= 9.0} ? 'A+'
-                                      : ${dk.diemTongKet.doubleValue() >= 8.5} ? 'A'
-                                      : ${dk.diemTongKet.doubleValue() >= 8.0} ? 'B+'
-                                      : ${dk.diemTongKet.doubleValue() >= 7.0} ? 'B'
-                                      : ${dk.diemTongKet.doubleValue() >= 6.5} ? 'C+'
-                                      : ${dk.diemTongKet.doubleValue() >= 6.0} ? 'C'
-                                      : ${dk.diemTongKet.doubleValue() >= 5.5} ? 'D+'
-                                      : ${dk.diemTongKet.doubleValue() >= 5.0} ? 'D'
-                                      : 'F'">
-                        </span>
-                        <span th:if="${dk.diemTongKet == null}" class="d-null">—</span>
+                        <span th:class="${mon.mauDiem}" th:text="${mon.diemChu}"></span>
                       </td>
-                      <!-- Kết quả -->
                       <td style="text-align:center;">
-                        <span th:if="${dk.diemTongKet == null}"
-                              style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">Đang học</span>
-                        <span th:if="${dk.diemTongKet != null and dk.diemTongKet.doubleValue() >= 5.0}"
-                              style="background:#dcfce7;color:#16a34a;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">Hoàn thành</span>
-                        <span th:if="${dk.diemTongKet != null and dk.diemTongKet.doubleValue() < 5.0}"
-                              style="background:#fee2e2;color:#dc2626;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">Không đạt</span>
+                        <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;"
+                              th:style="${mon.mauKetQua} + 'font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;'"
+                              th:text="${mon.ketQua}"></span>
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-            </div><!-- /hk-card -->
+            </div>
           </div>
 
         </div><!-- /tab lich-su -->
