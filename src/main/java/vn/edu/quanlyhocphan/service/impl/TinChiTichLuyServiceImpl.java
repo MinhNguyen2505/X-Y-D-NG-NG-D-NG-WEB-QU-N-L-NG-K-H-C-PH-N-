@@ -83,7 +83,8 @@ public class TinChiTichLuyServiceImpl implements TinChiTichLuyService {
         List<TinChiKhoiDto> result = new ArrayList<>();
         for (Map.Entry<String, List<ChuongTrinhDaoTao>> entry : byMaKhoi.entrySet()) {
             List<ChuongTrinhDaoTao> monList = entry.getValue();
-            if (monList.isEmpty()) continue;
+            // Bo qua nhom "KHAC" neu trong
+            if (monList.isEmpty() && entry.getKey().equals("KHAC")) continue;
 
             String maKhoi = entry.getKey();
             KhoiKienThuc khoi = danhSachKhoi.stream()
@@ -148,9 +149,8 @@ public class TinChiTichLuyServiceImpl implements TinChiTichLuyService {
 
     @Override
     public int tongTinChiDaTichLuy(Long sinhVienId, Long nganhId) {
-        return tinhTinChiTheoKhoi(sinhVienId, nganhId).stream()
-            .mapToInt(TinChiKhoiDto::getTinChiDaTichLuy)
-            .sum();
+        // Lay tu DB truc tiep, khong goi lai tinhTinChiTheoKhoi de tranh double query
+        return dkhpRepo.tinhTongTinChiTichLuy(sinhVienId);
     }
 
     private static BigDecimal diemQuyDoi(BigDecimal d) {
