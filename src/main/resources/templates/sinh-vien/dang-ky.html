@@ -62,8 +62,7 @@
           <!-- Tín chỉ đã đăng ký / tối đa -->
           <span style="font-size:13px;font-weight:700;color:var(--navy);">
             TC đã ĐK:
-            <span th:text="${daDangKy?.size() > 0 ?
-              daDangKy.stream().mapToInt(dk -> dk.lopHocPhan.monHoc.soTinChi).sum() : 0}">0</span>
+            <span th:text="${tinChiDaChonHK ?: 0}">0</span>
             / <span th:text="${hocKyChon.tinChiToiDa}">25</span>
           </span>
         </div>
@@ -165,7 +164,7 @@
             <i class="fa-solid fa-check-circle" style="color:var(--success);margin-right:6px;"></i>
             Đã đăng ký trong học kỳ này
             (<span th:text="${daDangKy.size()}"></span> lớp —
-            <span th:text="${daDangKy.stream().mapToInt(dk -> dk.lopHocPhan.monHoc.soTinChi).sum()}"></span> TC)
+            <span th:text="${tinChiDaChonHK ?: 0}"></span> TC)
           </span>
         </div>
         <div class="card-body" style="padding:0;">

@@ -181,6 +181,12 @@ public class SinhVienController {
             model.addAttribute("daDangKyLopIds", daDangKyLopIds);
             model.addAttribute("monDaHoanThanhIds", monDaHoanThanhIds);
             model.addAttribute("monNguyenVongDuyetIds", monNguyenVongDuyetIds);
+
+            // Tinh tong TC da dang ky trong HK hien tai (tranh lambda trong Thymeleaf)
+            int tinChiDaChonHK = daDangKy.stream()
+                .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
+                .sum();
+            model.addAttribute("tinChiDaChonHK", tinChiDaChonHK);
         }
         return "sinh-vien/dang-ky";
     }

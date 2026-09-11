@@ -100,9 +100,15 @@ public class GiangVienController {
         List<DangKyHocPhan> danhSachSV =
             dangKyService.layDanhSachSinhVienTrongLop(lopHocPhanId);
 
+        // Tinh san so SV da co diem (tranh lambda trong Thymeleaf SpEL)
+        long soDaCoDiem = danhSachSV.stream()
+            .filter(dk -> dk.getDiemTongKet() != null)
+            .count();
+
         model.addAttribute("giangVien", gv);
         model.addAttribute("lopHocPhan", lhp);
         model.addAttribute("danhSachSV", danhSachSV);
+        model.addAttribute("soDaCoDiem", soDaCoDiem);
         return "giang-vien/nhap-diem";
     }
 

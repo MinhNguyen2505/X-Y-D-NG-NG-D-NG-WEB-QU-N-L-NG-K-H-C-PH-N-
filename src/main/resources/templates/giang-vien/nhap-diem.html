@@ -62,7 +62,7 @@
           <!-- Thống kê nhanh -->
           <span style="font-size:12px;color:var(--gray-500);">
             Đã có điểm:
-            <span th:text="${danhSachSV?.stream()?.filter(dk -> dk.diemTongKet != null)?.count() ?: 0}">0</span>
+            <span th:text="${soDaCoDiem ?: 0}">0</span>
             /
             <span th:text="${danhSachSV?.size() ?: 0}">0</span>
           </span>
