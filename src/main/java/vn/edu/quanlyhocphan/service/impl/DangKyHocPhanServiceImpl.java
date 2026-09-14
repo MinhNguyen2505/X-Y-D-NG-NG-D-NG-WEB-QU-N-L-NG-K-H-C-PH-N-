@@ -73,6 +73,9 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
         // [#5] Kiem tra trung lop
         kiemTraTrungLop(sinhVienId, lopHocPhanId, lhp.getMaLopHp());
 
+        // [#5b] Kiem tra da dang ky mon nay trong HK nay chua (lop khac cung mon)
+        kiemTraTrungMonTrongHocKy(sinhVienId, lhp.getMonHoc().getId(), hocKy.getId());
+
         // [#3] Kiem tra mon tien quyet
         kiemTraMonTienQuyet(sinhVienId, lhp.getMonHoc().getId());
 
@@ -130,6 +133,18 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
                         + "Lien he phong dao tao de duoc ho tro.");
                 }
             });
+    }
+
+    // =================================================================
+    // RANG BUOC #5b — Kiem tra trung mon trong cung hoc ky
+    // =================================================================
+
+    private void kiemTraTrungMonTrongHocKy(Long sinhVienId, Long monHocId, Long hocKyId) {
+        boolean daDangKy = dangKyRepo.kiemTraDaDangKyMonTrongHocKy(sinhVienId, monHocId, hocKyId);
+        if (daDangKy) {
+            throw new TrungLopException(
+                "Ban da dang ky lop khac cua mon hoc nay trong hoc ky nay roi.");
+        }
     }
 
     // =================================================================

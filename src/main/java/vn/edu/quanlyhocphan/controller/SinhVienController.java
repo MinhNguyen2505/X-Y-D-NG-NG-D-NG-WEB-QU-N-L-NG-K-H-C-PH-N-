@@ -82,10 +82,13 @@ public class SinhVienController {
             tinChiDaDangKy = dangKyRepo.tinhTongTinChiDaDangKy(sv.getId(), hocKyHienTai.getId());
         }
 
-        // Dang ky gan day — 1 query, dung luon cho tinChiTichLuy
+        // Dang ky gan day (hien thi bảng)
         List<DangKyHocPhan> dangKyGanDay = dangKyService.layLichSuDangKy(sv.getId());
 
-        // Nguyen vong CHO_DUYET — 1 COUNT query, khong load ca list
+        // Tin chi tich luy — dung DB query (HOAN_THANH + diem >= 5), dong nhat voi trang Tin chi
+        int tinChiTichLuy = dangKyRepo.tinhTongTinChiTichLuy(sv.getId());
+
+        // Nguyen vong CHO_DUYET — 1 COUNT query
         long nguyenVongChoDuyet = dangKyNvRepo.countChoDuyetBySinhVienId(sv.getId());
 
         // Thi lai CHO_DUYET — 1 COUNT query
@@ -98,13 +101,6 @@ public class SinhVienController {
                 .findActiveByNganh(sv.getId(), sv.getNganh().getId())
                 .orElse(null);
         }
-
-        // Tin chi tich luy — tinh tu danh sach da load, khong query them
-        int tinChiTichLuy = dangKyGanDay.stream()
-            .filter(dk -> dk.getDiemTongKet() != null
-                       && dk.getDiemTongKet().doubleValue() >= 5.0)
-            .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
-            .sum();
 
         model.addAttribute("sinhVien", sv);
         model.addAttribute("hocKyDangMo", hocKyDangMo);
@@ -160,8 +156,10 @@ public class SinhVienController {
             HocKy hocKy = hocKyService.findById(hocKyId);
             List<LopHocPhan> danhSachLop =
                 lopHocPhanService.findByHocKyId(hocKyId, TrangThaiLopHocPhan.MO);
+            // Lay ca DA_DANG_KY lan HOAN_THANH trong HK nay
+            // -> daDangKyLopIds block nút Hủy, tinChiDaChonHK tính đúng dù đã có điểm
             List<DangKyHocPhan> daDangKy =
-                dangKyService.layDangKyHienTai(sv.getId(), hocKyId);
+                dangKyService.layDangKyThoiKhoaBieu(sv.getId(), hocKyId);
 
             // Set id cac lop da dang ky (de template kiem tra nhanh)
             Set<Long> daDangKyLopIds = daDangKy.stream()
@@ -686,24 +684,22 @@ public class SinhVienController {
         SinhVien sv = laySinhVienHienTai(principal);
         List<DangKyHocPhan> lichSu = dangKyService.layLichSuDangKy(sv.getId());
 
-        // GPA theo weighted average
+        // Chỉ tính GPA trên môn HOAN_THANH có điểm (loại DA_HUY và DA_DANG_KY chưa có điểm)
         double tongDiemNhanTC = lichSu.stream()
-            .filter(dk -> dk.getDiemTongKet() != null)
+            .filter(dk -> dk.getTrangThai() == vn.edu.quanlyhocphan.enums.TrangThaiDangKy.HOAN_THANH
+                       && dk.getDiemTongKet() != null)
             .mapToDouble(dk -> dk.getDiemTongKet().doubleValue()
                              * dk.getLopHocPhan().getMonHoc().getSoTinChi())
             .sum();
         int tongTinChi = lichSu.stream()
-            .filter(dk -> dk.getDiemTongKet() != null)
+            .filter(dk -> dk.getTrangThai() == vn.edu.quanlyhocphan.enums.TrangThaiDangKy.HOAN_THANH
+                       && dk.getDiemTongKet() != null)
             .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
             .sum();
         double gpa = tongTinChi > 0 ? tongDiemNhanTC / tongTinChi : 0.0;
 
-        // Tong tin chi tich luy (mon dat >= 5)
-        int tinChiTichLuy = lichSu.stream()
-            .filter(dk -> dk.getDiemTongKet() != null
-                       && dk.getDiemTongKet().doubleValue() >= 5.0)
-            .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
-            .sum();
+        // Tổng tín chỉ tích lũy từ DB — đồng nhất với trang Tín chỉ tích lũy
+        int tinChiTichLuy = dangKyRepo.tinhTongTinChiTichLuy(sv.getId());
 
         // Build thiLaiMap: dangKyHocPhanId -> DangKyThiLai (ban ghi moi nhat)
         // De template kiem tra moi mon co dang ky thi lai chua

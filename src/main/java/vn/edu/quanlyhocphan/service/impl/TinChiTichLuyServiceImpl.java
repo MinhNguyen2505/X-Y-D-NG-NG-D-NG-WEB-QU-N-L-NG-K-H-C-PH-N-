@@ -39,10 +39,13 @@ public class TinChiTichLuyServiceImpl implements TinChiTichLuyService {
         // Query 3: lich su dang ky cua SV
         List<DangKyHocPhan> lichSu = dkhpRepo.findLichSuDangKy(sinhVienId);
 
-        // Build map: monHocId -> diem tong ket tot nhat
+        // Build map: monHocId -> diem tong ket tot nhat (chi tinh HOAN_THANH, loai DA_HUY)
         Map<Long, BigDecimal> diemMap = new HashMap<>();
         Map<Long, String>     trangThaiMap = new HashMap<>();
         for (DangKyHocPhan dk : lichSu) {
+            // Bỏ qua bản ghi DA_HUY — không tính vào tích lũy
+            if (dk.getTrangThai() == vn.edu.quanlyhocphan.enums.TrangThaiDangKy.DA_HUY) continue;
+
             Long monId = dk.getLopHocPhan().getMonHoc().getId();
             BigDecimal diem = dk.getDiemTongKet();
             // Giu diem cao nhat
@@ -106,9 +109,8 @@ public class TinChiTichLuyServiceImpl implements TinChiTichLuyService {
 
                 Long       monId    = c.getMonHoc().getId();
                 BigDecimal diem     = diemMap.get(monId);
-                BigDecimal ngưỡng   = c.getDiemDat() != null
-                    ? c.getDiemDat() : new BigDecimal("5.0");
-                boolean    dat      = diem != null && diem.compareTo(ngưỡng) >= 0;
+                // Dung nguong 5.0 co dinh — dong nhat voi tinhTongTinChiTichLuy() trong DB
+                boolean    dat      = diem != null && diem.compareTo(new BigDecimal("5.0")) >= 0;
 
                 if (dat) tichLuyTC += tc;
 

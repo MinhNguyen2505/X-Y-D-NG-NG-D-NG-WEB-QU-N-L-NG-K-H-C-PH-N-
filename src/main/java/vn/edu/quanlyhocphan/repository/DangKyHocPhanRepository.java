@@ -82,6 +82,21 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Lo
             @Param("lopHocPhanId") Long lopHocPhanId);
 
     /**
+     * Kiem tra SV da dang ky mon nay trong hoc ky nay chua (DA_DANG_KY hoac HOAN_THANH).
+     * Dung de chặn đăng ký 2 lớp khác nhau của cùng môn học trong cùng HK.
+     */
+    @Query("SELECT COUNT(dkhp) > 0 FROM DangKyHocPhan dkhp " +
+           "JOIN dkhp.lopHocPhan lhp " +
+           "WHERE dkhp.sinhVien.id = :sinhVienId " +
+           "AND lhp.monHoc.id = :monHocId " +
+           "AND lhp.hocKy.id = :hocKyId " +
+           "AND dkhp.trangThai IN ('DA_DANG_KY', 'HOAN_THANH')")
+    boolean kiemTraDaDangKyMonTrongHocKy(
+            @Param("sinhVienId") Long sinhVienId,
+            @Param("monHocId") Long monHocId,
+            @Param("hocKyId") Long hocKyId);
+
+    /**
      * Lay Set<monHocId> cua cac mon SV da HOAN_THANH va dat diem >= 5.
      * Dung de chặn đăng ký lại môn đã hoàn thành — 1 query nhẹ thay vì
      * load toàn bộ lịch sử rồi stream/filter.
