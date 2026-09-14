@@ -152,6 +152,22 @@ public class SinhVienController {
         model.addAttribute("sinhVien", sv);
         model.addAttribute("danhSachHocKy", danhSachHocKy);
 
+        // % hoan thanh CTDT = tinChiTichLuy / tongTCCTDT — hien thi bat ke chon HK hay chua
+        int tinChiTichLuy = dangKyRepo.tinhTongTinChiTichLuy(sv.getId());
+        int tongTCCtdt = 0;
+        if (sv.getNganh() != null) {
+            tongTCCtdt = chuongTrinhDaoTaoRepo.searchByNganhId(sv.getNganh().getId(), "")
+                .stream().mapToInt(c -> c.getMonHoc().getSoTinChi()).sum();
+        }
+        int phanTramCtdt = tongTCCtdt > 0 ? tinChiTichLuy * 100 / tongTCCtdt : 0;
+        String mauCtdt = phanTramCtdt >= 75 ? "#15803d"
+                       : phanTramCtdt >= 40 ? "#1a56db"
+                       : "#6d28d9";
+        model.addAttribute("tinChiTichLuy", tinChiTichLuy);
+        model.addAttribute("tongTCCtdt",    tongTCCtdt);
+        model.addAttribute("phanTramCtdt",  phanTramCtdt);
+        model.addAttribute("mauCtdt",       mauCtdt);
+
         if (hocKyId != null) {
             HocKy hocKy = hocKyService.findById(hocKyId);
             List<LopHocPhan> danhSachLop =

@@ -47,6 +47,71 @@
         </div>
       </div>
 
+      <!-- Widget % hoàn thành CTĐT — luôn hiện dù chưa chọn HK -->
+      <div th:if="${sinhVien?.nganh != null}"
+           style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+
+        <!-- % hoàn thành CTĐT tổng -->
+        <div class="card">
+          <div class="card-body" style="padding:14px 18px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <div>
+                <div style="font-size:12px;color:var(--gray-500);font-weight:600;">
+                  <i class="fa-solid fa-graduation-cap" style="margin-right:4px;"></i>
+                  Tiến độ chương trình đào tạo
+                </div>
+                <div style="font-size:11px;color:var(--gray-400);"
+                     th:text="${sinhVien.nganh.tenNganh}"></div>
+              </div>
+              <div style="font-size:28px;font-weight:800;"
+                   th:text="${phanTramCtdt} + '%'"
+                   th:style="'color:' + ${mauCtdt}">0%</div>
+            </div>
+            <div style="background:var(--gray-200);border-radius:20px;height:10px;overflow:hidden;margin-bottom:5px;">
+              <div style="height:100%;border-radius:20px;transition:width .6s ease;"
+                   th:style="'width:' + ${phanTramCtdt} + '%;background:' + ${mauCtdt}"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-400);">
+              <span>
+                <b th:text="${tinChiTichLuy}"
+                   th:style="'color:' + ${mauCtdt}">0</b>
+                / <span th:text="${tongTCCtdt}">0</span> TC tích lũy
+              </span>
+              <span th:text="${tongTCCtdt - tinChiTichLuy} + ' TC còn lại'"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trạng thái HK hiện tại -->
+        <div class="card">
+          <div class="card-body" style="padding:14px 18px;">
+            <div style="font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:8px;">
+              <i class="fa-solid fa-calendar-check" style="margin-right:4px;"></i>
+              Tín chỉ học kỳ này
+            </div>
+            <div th:if="${hocKyChon != null}">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-size:13px;color:var(--gray-600);" th:text="${hocKyChon.tenHocKy}"></span>
+                <span style="font-size:24px;font-weight:800;"
+                      th:text="${tinChiDaChonHK ?: 0} + '/' + ${hocKyChon.tinChiToiDa}"
+                      th:style="${(tinChiDaChonHK ?: 0) >= hocKyChon.tinChiToiDa} ? 'color:var(--danger);' : 'color:var(--primary);'"></span>
+              </div>
+              <div style="background:var(--gray-200);border-radius:20px;height:8px;overflow:hidden;">
+                <div style="height:100%;border-radius:20px;"
+                     th:style="'width:' + ${phanTramDK ?: 0} + '%;background:' + ${mauProgress ?: '#1a56db'}"></div>
+              </div>
+              <div style="font-size:11px;color:var(--gray-400);margin-top:4px;text-align:right;"
+                   th:text="${phanTramDK ?: 0} + '% giới hạn HK'"></div>
+            </div>
+            <div th:if="${hocKyChon == null}"
+                 style="color:var(--gray-400);font-size:13px;text-align:center;padding:16px 0;">
+              <i class="fa-solid fa-hand-pointer"></i> Chọn HK để xem
+            </div>
+          </div>
+        </div>
+
+      </div>
+
       <!-- Danh sách lớp đang mở -->
       <div th:if="${hocKyChon != null}" class="card" style="margin-bottom:14px;">
         <div class="card-header">
@@ -61,7 +126,7 @@
           </span>
         </div>
 
-        <!-- Progress bar tín chỉ -->
+        <!-- Progress bar tín chỉ HK -->
         <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
             <div style="font-size:13px;font-weight:700;color:var(--navy);">
