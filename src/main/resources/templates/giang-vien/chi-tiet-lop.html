@@ -5,179 +5,358 @@
   <title>Chi tiết lớp</title>
   <link rel="stylesheet" th:href="@{/css/app.css}"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .tab-bar { display:flex; gap:4px; border-bottom:2px solid var(--gray-200); margin-bottom:18px; }
+    .tab-btn {
+      padding:10px 24px; text-decoration:none; font-size:14px; font-weight:600;
+      color:var(--gray-500); border-bottom:3px solid transparent; margin-bottom:-2px;
+      display:inline-flex; align-items:center; gap:7px;
+    }
+    .tab-btn:hover  { color:var(--primary); background:var(--gray-50); }
+    .tab-btn.active { color:var(--primary); border-bottom-color:var(--primary); background:#eff6ff; }
+
+    .lop-strip {
+      background:linear-gradient(135deg,#7c3aed,#5b21b6); border-radius:10px;
+      color:#fff; padding:16px 22px; margin-bottom:16px;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    }
+    .lop-strip .ls-title { font-size:18px; font-weight:800; }
+    .lop-strip .ls-sub   { font-size:12px; opacity:.8; margin-top:3px; }
+    .ls-chip {
+      background:rgba(255,255,255,.2); border-radius:20px;
+      padding:4px 12px; font-size:12px; font-weight:700;
+    }
+
+    /* Điểm danh radio */
+    .dd-group { display:flex; gap:6px; }
+    .dd-radio  { display:none; }
+    .dd-label  { cursor:pointer; font-size:11px; padding:3px 9px; border-radius:20px;
+                 border:1px solid var(--gray-300); user-select:none; }
+    .dd-radio:checked + .dd-co-mat    { background:#dcfce7; color:#16a34a; border-color:#16a34a; font-weight:700; }
+    .dd-radio:checked + .dd-vang-phep { background:#fef3c7; color:#92400e; border-color:#d97706; font-weight:700; }
+    .dd-radio:checked + .dd-vang-k    { background:#fee2e2; color:#dc2626; border-color:#dc2626; font-weight:700; }
+
+    /* Điểm input */
+    .diem-input { width:70px; text-align:center; padding:4px 6px; }
+    .diem-f { border-color:var(--danger) !important; color:var(--danger); }
+
+    /* Buổi học badge */
+    .buoi-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      background:#eff6ff; border:1px solid #bfdbfe;
+      border-radius:8px; padding:8px 14px; font-size:13px; font-weight:600; color:#1d4ed8;
+    }
+    .no-buoi {
+      background:#fef3c7; border:1px solid #fde68a;
+      border-radius:8px; padding:10px 14px; font-size:13px; color:#92400e;
+    }
+  </style>
 </head>
 <body>
 <div class="layout">
   <div th:insert="~{fragments/sidebar :: gv('gv-lop')}"></div>
+
   <div class="main">
     <header class="topbar">
-      <div class="topbar-title">Chi tiết lớp — <span th:text="${lopHocPhan.maLopHp}"></span></div>
+      <div class="topbar-title">
+        <span th:text="${lopHocPhan.maLopHp}"></span>
+        <span style="font-size:13px;font-weight:400;color:var(--gray-500);margin-left:8px;"
+              th:text="${lopHocPhan.monHoc.tenMon}"></span>
+      </div>
       <div class="topbar-user">
         <div class="topbar-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">G</div>
         <span class="topbar-name" th:text="${giangVien?.hoTen ?: #authentication.name}">GV</span>
       </div>
     </header>
+
     <div class="content">
 
-      <div th:if="${successMsg}" class="flash flash-success"><i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span></div>
-      <div th:if="${errorMsg}"   class="flash flash-danger"><i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span></div>
+      <div th:if="${successMsg}" class="flash flash-success">
+        <i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span>
+      </div>
+      <div th:if="${errorMsg}" class="flash flash-danger">
+        <i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span>
+      </div>
 
-      <!-- Header + action buttons -->
-      <div class="page-hd">
+      <!-- Banner lớp -->
+      <div class="lop-strip">
         <div>
-          <div class="page-hd-title" th:text="${lopHocPhan.monHoc.tenMon}"></div>
-          <div class="page-hd-sub"
-               th:text="'Lớp: ' + ${lopHocPhan.maLopHp}
-                        + ' | HK: ' + ${lopHocPhan.hocKy.tenHocKy}
-                        + ' | Sĩ số: ' + ${lopHocPhan.siSoHienTai} + '/' + ${lopHocPhan.siSoToiDa}"></div>
+          <div class="ls-title" th:text="${lopHocPhan.monHoc.tenMon}"></div>
+          <div class="ls-sub">
+            Lớp <b th:text="${lopHocPhan.maLopHp}"></b> ·
+            <span th:text="${lopHocPhan.hocKy.tenHocKy}"></span>
+          </div>
         </div>
-        <div class="flex" style="gap:8px;">
-          <a th:href="@{/giang-vien/diem-danh/{id}(id=${lopHocPhan.id})}"
-             class="btn btn-primary">
-            <i class="fa-solid fa-clipboard-list"></i> Điểm danh
-          </a>
-          <a th:href="@{/giang-vien/nhap-diem/{id}(id=${lopHocPhan.id})}"
-             class="btn btn-success">
-            <i class="fa-solid fa-pen"></i> Nhập điểm
-          </a>
-          <a th:href="@{/giang-vien/xuat-diem/{id}(id=${lopHocPhan.id})}"
-             class="btn btn-outline">
-            <i class="fa-solid fa-file-excel" style="color:#16a34a;"></i> Xuất Excel
-          </a>
-          <a th:href="@{/giang-vien/danh-sach-lop}" class="btn btn-outline">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <span class="ls-chip" th:text="${lopHocPhan.monHoc.soTinChi} + ' TC'"></span>
+          <span class="ls-chip" th:text="${lopHocPhan.siSoHienTai} + '/' + ${lopHocPhan.siSoToiDa} + ' SV'"></span>
+          <span class="ls-chip" th:text="${lopHocPhan.trangThai.name() == 'MO' ? 'Đang mở' : 'Đã đóng'}"></span>
+          <a th:href="@{/giang-vien/danh-sach-lop}"
+             style="background:rgba(255,255,255,.15);color:#fff;border-radius:20px;
+                    padding:4px 12px;font-size:12px;text-decoration:none;">
             <i class="fa-solid fa-arrow-left"></i> Quay lại
           </a>
         </div>
       </div>
 
-      <!-- Thông tin lớp + lịch học -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+      <!-- 2 Tab: chỉ lịch dạy & điểm danh -->
+      <div class="tab-bar">
+        <a th:href="@{/giang-vien/lop/{id}(id=${lopHocPhan.id})}"
+           class="tab-btn active">
+          <i class="fa-solid fa-calendar-check"></i> Lịch dạy &amp; Điểm danh
+        </a>
+        <a th:href="@{/giang-vien/nhap-diem/{id}(id=${lopHocPhan.id})}"
+           class="tab-btn">
+          <i class="fa-solid fa-pen-to-square"></i> Nhập điểm →
+        </a>
+      </div>
 
-        <!-- Thông tin lớp -->
-        <div class="card">
+      <!-- ====================================================
+           TAB 1: LỊCH DẠY & ĐIỂM DANH
+      ==================================================== -->
+      <div th:if="${tab == 'lich-diem-danh' or tab == null}">
+
+        <!-- Lịch học cố định + chọn ngày -->
+        <div class="card" style="margin-bottom:14px;">
           <div class="card-header">
-            <span class="card-title"><i class="fa-solid fa-circle-info" style="color:var(--primary);margin-right:6px;"></i>Thông tin lớp</span>
+            <span class="card-title">
+              <i class="fa-solid fa-calendar-week" style="color:var(--primary);margin-right:6px;"></i>
+              Lịch học cố định
+            </span>
           </div>
-          <div class="card-body" style="font-size:13px;display:grid;grid-template-columns:130px 1fr;gap:6px 12px;">
-            <span style="color:var(--gray-500);">Mã lớp</span>
-            <span><code th:text="${lopHocPhan.maLopHp}"></code></span>
-            <span style="color:var(--gray-500);">Môn học</span>
-            <span th:text="${lopHocPhan.monHoc.tenMon}"></span>
-            <span style="color:var(--gray-500);">Mã môn</span>
-            <span><code th:text="${lopHocPhan.monHoc.maMon}"></code></span>
-            <span style="color:var(--gray-500);">Tín chỉ</span>
-            <span th:text="${lopHocPhan.monHoc.soTinChi} + ' TC'"></span>
-            <span style="color:var(--gray-500);">Học kỳ</span>
-            <span th:text="${lopHocPhan.hocKy.tenHocKy}"></span>
-            <span style="color:var(--gray-500);">Sĩ số</span>
-            <span th:text="${lopHocPhan.siSoHienTai} + '/' + ${lopHocPhan.siSoToiDa} + ' SV'"></span>
-            <span style="color:var(--gray-500);">Trạng thái</span>
-            <span>
-              <span th:if="${lopHocPhan.trangThai.name() == 'MO'}" class="badge badge-success">Đang mở</span>
-              <span th:if="${lopHocPhan.trangThai.name() == 'DONG'}" class="badge badge-secondary">Đã đóng</span>
-            </span>
-            <span style="color:var(--gray-500);">Đã có điểm</span>
-            <span>
-              <b th:text="${soDaCoDiem}"></b> / <span th:text="${danhSachSV?.size() ?: 0}"></span> SV
-            </span>
+          <div class="card-body">
+
+            <!-- Các buổi học trong tuần -->
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+              <div th:if="${lopHocPhan.lichHocs.empty}"
+                   style="color:var(--gray-400);font-style:italic;font-size:13px;">
+                Chưa có lịch học.
+              </div>
+              <div th:each="lh : ${lopHocPhan.lichHocs}"
+                   style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;
+                          padding:10px 16px;font-size:13px;color:#1d4ed8;">
+                <div style="font-weight:700;font-size:14px;"
+                     th:text="${lh.thu == 2 ? 'Thứ Hai' : lh.thu == 3 ? 'Thứ Ba'
+                              : lh.thu == 4 ? 'Thứ Tư'  : lh.thu == 5 ? 'Thứ Năm'
+                              : lh.thu == 6 ? 'Thứ Sáu' : lh.thu == 7 ? 'Thứ Bảy' : 'CN'}"></div>
+                <div>Tiết <span th:text="${lh.tietBatDau}"></span>–<span th:text="${lh.tietKetThuc}"></span>
+                  (<span th:text="${lh.tietKetThuc - lh.tietBatDau + 1}"></span> tiết)
+                </div>
+                <div th:if="${lh.phong}" style="font-size:11px;opacity:.8;"
+                     th:text="'Phòng ' + ${lh.phong}"></div>
+              </div>
+            </div>
+
+            <!-- Chọn ngày để điểm danh — chỉ cần chọn ngày, hệ thống tự tìm buổi -->
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+              <label style="font-size:13px;font-weight:600;color:var(--gray-700);">
+                <i class="fa-solid fa-calendar-day" style="color:var(--primary);margin-right:4px;"></i>
+                Chọn ngày điểm danh:
+              </label>
+              <form th:action="@{/giang-vien/lop/{id}(id=${lopHocPhan.id})}" method="get"
+                    style="display:flex;gap:8px;align-items:center;">
+                <input type="hidden" name="tab" value="lich-diem-danh"/>
+                <input type="date" name="ngayHoc" class="form-control"
+                       th:value="${ngayChon}" style="width:170px;"
+                       th:min="${lopHocPhan.hocKy.ngayBatDauHoc}"
+                       th:max="${lopHocPhan.hocKy.ngayKetThucHoc}"/>
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="fa-solid fa-search"></i> Xem buổi học
+                </button>
+              </form>
+            </div>
+
           </div>
         </div>
 
-        <!-- Lịch học -->
-        <div class="card">
+        <!-- Kết quả sau khi chọn ngày -->
+        <div th:if="${ngayChon != null}">
+
+          <!-- Không có buổi học ngày này -->
+          <div th:if="${lichKhop == null}" class="no-buoi" style="margin-bottom:14px;">
+            <i class="fa-solid fa-circle-info"></i>
+            Ngày <b th:text="${#temporals.format(ngayChon,'dd/MM/yyyy')}"></b>
+            (<span th:text="${#temporals.format(ngayChon,'EEEE',new java.util.Locale('vi'))}"></span>)
+            <b>không có buổi học</b> của lớp này theo lịch cố định.
+          </div>
+
+          <!-- Có buổi học — hiện bảng điểm danh -->
+          <div th:if="${lichKhop != null}" class="card">
+            <div class="card-header">
+              <div>
+                <span class="card-title">
+                  <i class="fa-solid fa-clipboard-list" style="color:var(--primary);margin-right:6px;"></i>
+                  Điểm danh buổi
+                  <b th:text="${#temporals.format(ngayChon,'dd/MM/yyyy')}"></b>
+                </span>
+                <!-- Thông tin buổi học -->
+                <div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;">
+                  <span style="background:#dcfce7;color:#15803d;border-radius:6px;
+                               padding:3px 10px;font-size:12px;font-weight:600;">
+                    <i class="fa-solid fa-clock"></i>
+                    Tiết <span th:text="${lichKhop.tietBatDau}"></span>–<span th:text="${lichKhop.tietKetThuc}"></span>
+                    (<span th:text="${lichKhop.tietKetThuc - lichKhop.tietBatDau + 1}"></span> tiết)
+                  </span>
+                  <span th:if="${lichKhop.phong}"
+                        style="background:#dbeafe;color:#1d4ed8;border-radius:6px;
+                               padding:3px 10px;font-size:12px;font-weight:600;">
+                    <i class="fa-solid fa-door-open"></i>
+                    Phòng <span th:text="${lichKhop.phong}"></span>
+                  </span>
+                  <span th:text="${#temporals.format(ngayChon,'EEEE',new java.util.Locale('vi'))}"
+                        style="background:#f3e8ff;color:#7c3aed;border-radius:6px;
+                               padding:3px 10px;font-size:12px;font-weight:600;"></span>
+                </div>
+              </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+
+              <form th:action="@{/giang-vien/diem-danh/{id}(id=${lopHocPhan.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="ngayHoc"     th:value="${ngayChon}"/>
+                <input type="hidden" name="tietBatDau"  th:value="${lichKhop.tietBatDau}"/>
+                <input type="hidden" name="tietKetThuc" th:value="${lichKhop.tietKetThuc}"/>
+
+                <!-- Chọn nhanh tất cả -->
+                <div style="padding:10px 16px;background:var(--gray-50);border-bottom:1px solid var(--gray-100);
+                            display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                  <span style="font-size:12px;font-weight:600;color:var(--gray-600);">Chọn nhanh:</span>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="setAll('CO_MAT')">
+                    <i class="fa-solid fa-check" style="color:#16a34a;"></i> Có mặt tất cả
+                  </button>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="setAll('VANG_CO_PHEP')">
+                    <i class="fa-solid fa-clock" style="color:#d97706;"></i> Vắng có phép
+                  </button>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="setAll('VANG_KHONG_PHEP')">
+                    <i class="fa-solid fa-xmark" style="color:#dc2626;"></i> Vắng không phép
+                  </button>
+                  <button type="submit" class="btn btn-success btn-sm" style="margin-left:auto;">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu điểm danh
+                  </button>
+                </div>
+
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th style="width:36px;text-align:center;">STT</th>
+                      <th>MSSV</th>
+                      <th>Họ và tên</th>
+                      <th>Trạng thái</th>
+                      <th style="text-align:center;width:90px;">Tổng vắng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="dk, i : ${danhSachSV}"
+                        th:with="dd=${diemDanhMap != null ? diemDanhMap[dk.id] : null}">
+                      <td style="text-align:center;color:var(--gray-400);" th:text="${i.count}"></td>
+                      <td><code th:text="${dk.sinhVien.mssv}"></code></td>
+                      <td th:text="${dk.sinhVien.hoTen}"></td>
+                      <td>
+                        <div class="dd-group">
+                          <input type="radio" class="dd-radio"
+                                 th:id="'cm-'+${dk.id}" th:name="'dd_'+${dk.id}" value="CO_MAT"
+                                 th:checked="${dd == null or dd.trangThai == 'CO_MAT'}"/>
+                          <label th:for="'cm-'+${dk.id}" class="dd-label dd-co-mat">
+                            <i class="fa-solid fa-check"></i> Có mặt
+                          </label>
+                          <input type="radio" class="dd-radio"
+                                 th:id="'vp-'+${dk.id}" th:name="'dd_'+${dk.id}" value="VANG_CO_PHEP"
+                                 th:checked="${dd != null and dd.trangThai == 'VANG_CO_PHEP'}"/>
+                          <label th:for="'vp-'+${dk.id}" class="dd-label dd-vang-phep">
+                            <i class="fa-solid fa-clock"></i> Vắng phép
+                          </label>
+                          <input type="radio" class="dd-radio"
+                                 th:id="'vk-'+${dk.id}" th:name="'dd_'+${dk.id}" value="VANG_KHONG_PHEP"
+                                 th:checked="${dd != null and dd.trangThai == 'VANG_KHONG_PHEP'}"/>
+                          <label th:for="'vk-'+${dk.id}" class="dd-label dd-vang-k">
+                            <i class="fa-solid fa-xmark"></i> Vắng KP
+                          </label>
+                        </div>
+                      </td>
+                      <td style="text-align:center;">
+                        <span th:with="sv=${soVangMap != null ? soVangMap[dk.id] : 0}"
+                              th:text="${sv != null ? sv : 0}"
+                              th:style="${sv != null and sv > 0}
+                                        ? 'color:var(--danger);font-weight:700;' : ''"></span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div style="padding:10px 16px;text-align:right;border-top:1px solid var(--gray-100);">
+                  <button type="submit" class="btn btn-success">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu điểm danh
+                  </button>
+                </div>
+              </form>
+
+            </div>
+          </div>
+
+        </div>
+        <!-- /ngayChon -->
+
+        <!-- Tổng hợp chuyên cần -->
+        <div class="card" style="margin-top:14px;">
           <div class="card-header">
-            <span class="card-title"><i class="fa-solid fa-calendar-week" style="color:var(--primary);margin-right:6px;"></i>Lịch học</span>
+            <span class="card-title">
+              <i class="fa-solid fa-chart-bar" style="color:var(--primary);margin-right:5px;"></i>
+              Tổng hợp chuyên cần
+            </span>
           </div>
           <div class="card-body" style="padding:0;">
-            <div th:if="${lopHocPhan.lichHocs.empty}" class="empty-state">
-              <i class="fa-solid fa-calendar-xmark"></i>Chưa có lịch học.
+            <div th:if="${danhSachSV == null or danhSachSV.empty}" class="empty-state">
+              <i class="fa-solid fa-users"></i>Chưa có sinh viên.
             </div>
-            <table th:if="${!lopHocPhan.lichHocs.empty}" class="table">
-              <thead><tr><th>Thứ</th><th>Tiết</th><th>Số tiết</th><th>Phòng</th></tr></thead>
+            <table th:if="${danhSachSV != null and !danhSachSV.empty}" class="table">
+              <thead>
+                <tr>
+                  <th style="width:36px;text-align:center;">STT</th>
+                  <th>MSSV</th><th>Họ và tên</th>
+                  <th style="text-align:center;">Buổi vắng</th>
+                  <th style="text-align:center;">Trạng thái</th>
+                </tr>
+              </thead>
               <tbody>
-                <tr th:each="lh : ${lopHocPhan.lichHocs}">
-                  <td th:text="${lh.thu == 2 ? 'Thứ Hai' : lh.thu == 3 ? 'Thứ Ba'
-                               : lh.thu == 4 ? 'Thứ Tư' : lh.thu == 5 ? 'Thứ Năm'
-                               : lh.thu == 6 ? 'Thứ Sáu' : lh.thu == 7 ? 'Thứ Bảy' : 'CN'}"></td>
-                  <td th:text="${lh.tietBatDau} + ' → ' + ${lh.tietKetThuc}"></td>
-                  <td th:text="${lh.tietKetThuc - lh.tietBatDau + 1} + ' tiết'"></td>
-                  <td th:text="${lh.phong ?: '—'}"></td>
+                <tr th:each="dk, i : ${danhSachSV}">
+                  <td style="text-align:center;color:var(--gray-400);" th:text="${i.count}"></td>
+                  <td><code th:text="${dk.sinhVien.mssv}"></code></td>
+                  <td th:text="${dk.sinhVien.hoTen}"></td>
+                  <td style="text-align:center;">
+                    <span th:with="sv=${soVangMap != null ? soVangMap[dk.id] : 0}">
+                      <span th:if="${sv != null and sv > 0}"
+                            class="badge badge-danger" style="font-size:11px;"
+                            th:text="${sv} + ' buổi'"></span>
+                      <span th:if="${sv == null or sv == 0}"
+                            class="badge badge-success" style="font-size:11px;">Đầy đủ</span>
+                    </span>
+                  </td>
+                  <td style="text-align:center;">
+                    <span th:if="${dk.trangThai.name() == 'DA_DANG_KY'}" class="badge badge-secondary" style="font-size:10px;">Đang học</span>
+                    <span th:if="${dk.trangThai.name() == 'HOAN_THANH'}" class="badge badge-primary" style="font-size:10px;">Hoàn thành</span>
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-      </div>
 
-      <!-- Danh sách sinh viên -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">
-            <i class="fa-solid fa-users" style="color:var(--primary);margin-right:6px;"></i>
-            Danh sách sinh viên
-            <span style="font-size:12px;color:var(--gray-500);margin-left:6px;"
-                  th:text="'(' + ${danhSachSV?.size() ?: 0} + ' SV)'"></span>
-          </span>
-          <a th:href="@{/giang-vien/xuat-diem/{id}(id=${lopHocPhan.id})}"
-             class="btn btn-outline btn-sm">
-            <i class="fa-solid fa-file-excel" style="color:#16a34a;"></i> Xuất Excel
-          </a>
-        </div>
-        <div class="card-body" style="padding:0;">
-          <div th:if="${danhSachSV == null or danhSachSV.empty}" class="empty-state">
-            <i class="fa-solid fa-user-slash"></i>Chưa có sinh viên đăng ký.
-          </div>
-          <table th:if="${danhSachSV != null and !danhSachSV.empty}" class="table">
-            <thead>
-              <tr>
-                <th style="width:36px;text-align:center;">STT</th>
-                <th>MSSV</th><th>Họ và tên</th>
-                <th style="text-align:center;">Điểm GK</th>
-                <th style="text-align:center;">Điểm CK</th>
-                <th style="text-align:center;">Điểm TK</th>
-                <th style="text-align:center;">Kết quả</th>
-                <th style="text-align:center;">Buổi vắng</th>
-                <th style="text-align:center;">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="dk, i : ${danhSachSV}"
-                  th:style="${dk.diemTongKet != null and dk.diemTongKet < 5} ? 'background:#fff5f5;' : ''">
-                <td style="text-align:center;color:var(--gray-400);" th:text="${i.count}"></td>
-                <td><code th:text="${dk.sinhVien.mssv}"></code></td>
-                <td th:text="${dk.sinhVien.hoTen}"></td>
-                <td style="text-align:center;"
-                    th:text="${dk.diemGiuaKy != null ? dk.diemGiuaKy : '—'}"></td>
-                <td style="text-align:center;"
-                    th:text="${dk.diemCuoiKy != null ? dk.diemCuoiKy : '—'}"></td>
-                <td style="text-align:center;">
-                  <b th:if="${dk.diemTongKet != null}"
-                     th:text="${dk.diemTongKet}"
-                     th:style="${dk.diemTongKet < 5} ? 'color:var(--danger);' : 'color:var(--success);'"></b>
-                  <span th:if="${dk.diemTongKet == null}" class="text-muted">—</span>
-                </td>
-                <td style="text-align:center;">
-                  <span th:if="${dk.diemTongKet == null}" class="badge badge-secondary" style="font-size:10px;">Chưa có điểm</span>
-                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet >= 5}" class="badge badge-success" style="font-size:10px;">Đạt</span>
-                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet < 5}" class="badge badge-danger" style="font-size:10px;">Không đạt</span>
-                </td>
-                <td style="text-align:center;">
-                  <span th:with="sv=${soVangMap != null ? soVangMap[dk.id] : 0}"
-                        th:text="${sv != null ? sv : 0}"
-                        th:style="${sv != null and sv > 0} ? 'color:var(--danger);font-weight:700;' : ''"></span>
-                </td>
-                <td style="text-align:center;">
-                  <span th:if="${dk.trangThai.name() == 'DA_DANG_KY'}" class="badge badge-success" style="font-size:10px;">Đang học</span>
-                  <span th:if="${dk.trangThai.name() == 'HOAN_THANH'}" class="badge badge-primary" style="font-size:10px;">Hoàn thành</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </div>
+      <!-- /tab lich-diem-danh -->
 
     </div>
   </div>
 </div>
+
+<script>
+  function setAll(val) {
+    document.querySelectorAll('input[type="radio"][value="' + val + '"]')
+      .forEach(r => r.checked = true);
+  }
+  function highlightDiem(input) {
+    const v = parseFloat(input.value);
+    input.classList.toggle('diem-f', !isNaN(v) && v < 5);
+  }
+</script>
 </body>
 </html>

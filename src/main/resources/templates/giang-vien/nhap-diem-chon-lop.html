@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Nhập điểm</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .lop-row { cursor:pointer; transition:background .12s; }
+    .lop-row:hover { background:#eff6ff !important; }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <div th:insert="~{fragments/sidebar :: gv('gv-nhap-diem')}"></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Nhập điểm</div>
+      <div class="topbar-user">
+        <div class="topbar-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">G</div>
+        <span class="topbar-name" th:text="${giangVien?.hoTen ?: #authentication.name}">GV</span>
+      </div>
+    </header>
+    <div class="content">
+
+      <!-- Chọn học kỳ -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-body" style="padding:14px 18px;">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <label style="font-size:13px;font-weight:600;color:var(--gray-700);white-space:nowrap;">
+              <i class="fa-solid fa-calendar" style="color:var(--primary);margin-right:4px;"></i>
+              Chọn học kỳ:
+            </label>
+            <select class="form-control" style="min-width:280px;max-width:400px;"
+                    onchange="window.location.href='/giang-vien/nhap-diem?hocKyId=' + this.value">
+              <option value="">-- Chọn học kỳ --</option>
+              <option th:each="hk : ${danhSachHocKy}"
+                      th:value="${hk.id}"
+                      th:text="${hk.tenHocKy} + ' (' + ${hk.namHoc} + ')'"
+                      th:selected="${hocKyChon?.id == hk.id}"></option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danh sách lớp — click để nhập điểm -->
+      <div th:if="${hocKyChon != null}" class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <i class="fa-solid fa-pen-to-square" style="color:var(--primary);margin-right:6px;"></i>
+            Chọn lớp để nhập điểm — <span th:text="${hocKyChon.tenHocKy}"></span>
+          </span>
+          <span style="font-size:12px;color:var(--gray-400);">
+            <i class="fa-solid fa-hand-pointer"></i> Bấm vào lớp để nhập điểm
+          </span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${danhSachLop == null or danhSachLop.empty}" class="empty-state">
+            <i class="fa-solid fa-chalkboard"></i>
+            Bạn không phụ trách lớp nào trong học kỳ này.
+          </div>
+          <table th:if="${danhSachLop != null and !danhSachLop.empty}" class="table">
+            <thead>
+              <tr>
+                <th style="width:36px;text-align:center;">STT</th>
+                <th>Mã lớp</th>
+                <th>Môn học</th>
+                <th style="text-align:center;width:46px;">TC</th>
+                <th style="text-align:center;width:90px;">Sĩ số</th>
+                <th style="text-align:center;width:110px;">Đã có điểm</th>
+                <th style="text-align:center;width:100px;">Trạng thái</th>
+                <th style="text-align:center;width:50px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="lhp, i : ${danhSachLop}"
+                  class="lop-row"
+                  th:onclick="'window.location.href=\'/giang-vien/nhap-diem/' + ${lhp.id} + '\''">
+                <td style="text-align:center;color:var(--gray-400);" th:text="${i.count}"></td>
+                <td><code style="font-weight:700;" th:text="${lhp.maLopHp}"></code></td>
+                <td>
+                  <div style="font-weight:600;" th:text="${lhp.monHoc.tenMon}"></div>
+                  <small class="text-muted" th:text="${lhp.monHoc.maMon}"></small>
+                </td>
+                <td style="text-align:center;">
+                  <span class="badge badge-secondary" th:text="${lhp.monHoc.soTinChi}"></span>
+                </td>
+                <td style="text-align:center;" th:text="${lhp.siSoHienTai} + '/' + ${lhp.siSoToiDa}"></td>
+                <!-- Số SV đã có điểm TK -->
+                <td style="text-align:center;">
+                  <span style="color:var(--gray-400);">—</span>
+                </td>
+                <td style="text-align:center;">
+                  <span class="badge"
+                        th:classappend="${lhp.trangThai.name()=='MO'}?' badge-success':' badge-secondary'"
+                        th:text="${lhp.trangThai.name() == 'MO' ? 'Đang mở' : 'Đã đóng'}"></span>
+                </td>
+                <td style="text-align:center;">
+                  <i class="fa-solid fa-chevron-right" style="color:var(--gray-400);"></i>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Chưa chọn HK -->
+      <div th:if="${hocKyChon == null}" class="empty-state" style="min-height:200px;">
+        <i class="fa-solid fa-hand-pointer"></i>
+        Chọn học kỳ ở trên để xem danh sách lớp cần nhập điểm.
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

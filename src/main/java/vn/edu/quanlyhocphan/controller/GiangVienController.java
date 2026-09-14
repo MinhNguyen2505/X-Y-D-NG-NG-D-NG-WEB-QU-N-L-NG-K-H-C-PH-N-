@@ -115,7 +115,33 @@ public class GiangVienController {
     // NHAP DIEM
     // =================================================================
 
-    /** Trang xem danh sach SV trong 1 lop de nhap diem */
+    // =================================================================
+    // NHAP DIEM — trang chon lop
+    // =================================================================
+
+    /** Trang chon lop de nhap diem — dropdown chon HK truoc, sau do chon lop */
+    @GetMapping("/nhap-diem")
+    public String trangChonLopNhapDiem(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam(required = false) Long hocKyId,
+            Model model) {
+
+        GiangVien gv = layGiangVienHienTai(principal);
+        List<HocKy> danhSachHocKy = hocKyService.findAll();
+        model.addAttribute("giangVien", gv);
+        model.addAttribute("danhSachHocKy", danhSachHocKy);
+
+        if (hocKyId != null) {
+            HocKy hocKy = hocKyService.findById(hocKyId);
+            List<LopHocPhan> danhSachLop =
+                lopHocPhanService.findByGiangVienIdAndHocKyId(gv.getId(), hocKyId);
+            model.addAttribute("hocKyChon", hocKy);
+            model.addAttribute("danhSachLop", danhSachLop);
+        }
+        return "giang-vien/nhap-diem-chon-lop";
+    }
+
+    /** Trang nhap diem cho 1 lop cu the */
     @GetMapping("/nhap-diem/{lopHocPhanId}")
     public String trangNhapDiem(
             @AuthenticationPrincipal UserDetails principal,
@@ -190,6 +216,8 @@ public class GiangVienController {
     public String chiTietLop(
             @AuthenticationPrincipal UserDetails principal,
             @PathVariable Long lopHocPhanId,
+            @RequestParam(defaultValue = "lich-diem-danh") String tab,
+            @RequestParam(required = false) String ngayHoc,
             Model model) {
 
         GiangVien gv = layGiangVienHienTai(principal);
@@ -216,6 +244,41 @@ public class GiangVienController {
         model.addAttribute("danhSachSV", danhSachSV);
         model.addAttribute("soVangMap", soVangMap);
         model.addAttribute("soDaCoDiem", soDaCoDiem);
+        model.addAttribute("tab", tab);
+
+        // Xu ly ngay hoc va tim lich khop
+        LocalDate ngay = null;
+        vn.edu.quanlyhocphan.entity.LichHoc lichKhop = null;
+        java.util.Map<Long, DiemDanh> diemDanhMap = new java.util.LinkedHashMap<>();
+
+        if (ngayHoc != null && !ngayHoc.isBlank()) {
+            try {
+                ngay = LocalDate.parse(ngayHoc, DateTimeFormatter.ISO_LOCAL_DATE);
+                // DayOfWeek: MON=1..SUN=7, truong dung thu: 2=Hai..8=CN
+                // MON->2, TUE->3, WED->4, THU->5, FRI->6, SAT->7, SUN->8
+                final int thuTrongTuan = ngay.getDayOfWeek().getValue() == 7
+                    ? 8 : ngay.getDayOfWeek().getValue() + 1;
+
+                // Tim lich hoc cua lop co thu khop voi ngay chon
+                lichKhop = lhp.getLichHocs().stream()
+                    .filter(lh -> lh.getThu() == thuTrongTuan)
+                    .findFirst().orElse(null);
+
+                if (lichKhop != null) {
+                    List<DiemDanh> ddList = diemDanhService.layDiemDanhTheoNgay(lopHocPhanId, ngay);
+                    for (DiemDanh dd : ddList) {
+                        diemDanhMap.put(dd.getDangKyHocPhan().getId(), dd);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Ngay hoc khong hop le: {}", ngayHoc);
+            }
+        }
+
+        model.addAttribute("ngayChon", ngay);
+        model.addAttribute("lichKhop", lichKhop);
+        model.addAttribute("diemDanhMap", diemDanhMap);
+
         return "giang-vien/chi-tiet-lop";
     }
 
@@ -290,7 +353,6 @@ public class GiangVienController {
 
         try {
             LocalDate ngay = LocalDate.parse(ngayHoc, DateTimeFormatter.ISO_LOCAL_DATE);
-            // Parse tung trang thai tu form: ten field = "dd_{dangKyId}"
             java.util.Map<Long, String> diemDanhData = new java.util.LinkedHashMap<>();
             for (Map.Entry<String, String> e : allParams.entrySet()) {
                 if (e.getKey().startsWith("dd_")) {
@@ -304,10 +366,8 @@ public class GiangVienController {
             log.error("Loi luu diem danh LHP [{}]", lopHocPhanId, e);
             ra.addFlashAttribute("errorMsg", "Lỗi: " + e.getMessage());
         }
-        return "redirect:/giang-vien/diem-danh/" + lopHocPhanId
-               + "?ngayHoc=" + ngayHoc
-               + "&tietBatDau=" + tietBatDau
-               + "&tietKetThuc=" + tietKetThuc;
+        return "redirect:/giang-vien/lop/" + lopHocPhanId
+               + "?tab=lich-diem-danh&ngayHoc=" + ngayHoc;
     }
 
     // =================================================================
