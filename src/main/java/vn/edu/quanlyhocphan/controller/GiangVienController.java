@@ -57,29 +57,28 @@ public class GiangVienController {
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal UserDetails principal, Model model) {
         GiangVien gv = layGiangVienHienTai(principal);
-        List<HocKy> danhSachHocKy = hocKyService.findAll();
 
-        // Dem tong so lop GV dang phu trach (tat ca HK)
-        long tongSoLop = lopHocPhanService.findAll().stream()
+        // Load 1 lan, filter tren memory — tranh goi findAll() nhieu lan
+        List<LopHocPhan> tatCaLop = lopHocPhanService.findAll().stream()
             .filter(l -> l.getGiangVien() != null && l.getGiangVien().getId().equals(gv.getId()))
-            .count();
+            .collect(java.util.stream.Collectors.toList());
 
-        // Dem so lop dang mo
-        long lopDangMo = lopHocPhanService.findAll().stream()
-            .filter(l -> l.getGiangVien() != null && l.getGiangVien().getId().equals(gv.getId())
-                      && vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.MO.equals(l.getTrangThai()))
-            .count();
+        long tongSoLop = tatCaLop.size();
 
-        // Dem tong SV chua co diem tong ket trong cac lop GV phu trach
-        long svChuaDiem = lopHocPhanService.findAll().stream()
-            .filter(l -> l.getGiangVien() != null && l.getGiangVien().getId().equals(gv.getId())
-                      && vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.MO.equals(l.getTrangThai()))
+        List<LopHocPhan> lopMo = tatCaLop.stream()
+            .filter(l -> vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.MO.equals(l.getTrangThai()))
+            .collect(java.util.stream.Collectors.toList());
+
+        long lopDangMo = lopMo.size();
+
+        // Dem SV chua co diem trong cac lop dang mo
+        long svChuaDiem = lopMo.stream()
             .flatMap(l -> dangKyService.layDanhSachSinhVienTrongLop(l.getId()).stream())
             .filter(dk -> dk.getDiemTongKet() == null)
             .count();
 
         model.addAttribute("giangVien", gv);
-        model.addAttribute("danhSachHocKy", danhSachHocKy);
+        model.addAttribute("danhSachHocKy", hocKyService.findAll());
         model.addAttribute("tongSoLop", tongSoLop);
         model.addAttribute("lopDangMo", lopDangMo);
         model.addAttribute("svChuaDiem", svChuaDiem);

@@ -185,6 +185,15 @@ public class SinhVienController {
                 .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
                 .sum();
             model.addAttribute("tinChiDaChonHK", tinChiDaChonHK);
+
+            // % cai thien = tinChiDaChonHK / tinChiToiDa * 100
+            int phanTramDK = hocKy.getTinChiToiDa() > 0
+                ? tinChiDaChonHK * 100 / hocKy.getTinChiToiDa() : 0;
+            model.addAttribute("phanTramDK", phanTramDK);
+
+            // Con co the dang ky them bao nhieu TC
+            int conLaiTC = Math.max(0, hocKy.getTinChiToiDa() - tinChiDaChonHK);
+            model.addAttribute("conLaiTC", conLaiTC);
         }
         return "sinh-vien/dang-ky";
     }

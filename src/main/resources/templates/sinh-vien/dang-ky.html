@@ -59,12 +59,55 @@
               <span th:text="${#temporals.format(hocKyChon.ngayKetThucDk,'dd/MM/yyyy')}"></span>
             </span>
           </span>
-          <!-- Tín chỉ đã đăng ký / tối đa -->
-          <span style="font-size:13px;font-weight:700;color:var(--navy);">
-            TC đã ĐK:
-            <span th:text="${tinChiDaChonHK ?: 0}">0</span>
-            / <span th:text="${hocKyChon.tinChiToiDa}">25</span>
-          </span>
+        </div>
+
+        <!-- Progress bar tín chỉ -->
+        <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">
+              <i class="fa-solid fa-graduation-cap" style="color:var(--primary);margin-right:4px;"></i>
+              Tín chỉ đã đăng ký:
+              <span th:text="${tinChiDaChonHK ?: 0}"
+                    th:style="${(tinChiDaChonHK ?: 0) >= hocKyChon.tinChiToiDa} ? 'color:var(--danger);' : 'color:var(--primary);'"></span>
+              / <span th:text="${hocKyChon.tinChiToiDa}">24</span> TC
+              <span style="background:#eff6ff;color:#1d4ed8;border-radius:20px;padding:2px 10px;
+                           font-size:12px;margin-left:8px;"
+                    th:text="${phanTramDK ?: 0} + '%'">0%</span>
+            </div>
+            <div>
+              <span th:if="${(conLaiTC ?: 0) > 0}"
+                    style="font-size:12px;color:var(--success);">
+                <i class="fa-solid fa-plus-circle"></i>
+                Có thể đăng ký thêm tối đa <b th:text="${conLaiTC}">0</b> TC
+              </span>
+              <span th:if="${(conLaiTC ?: 0) == 0}"
+                    style="font-size:12px;color:var(--danger);font-weight:700;">
+                <i class="fa-solid fa-ban"></i> Đã đạt giới hạn tín chỉ
+              </span>
+            </div>
+          </div>
+          <!-- Progress bar -->
+          <div style="background:var(--gray-200);border-radius:20px;height:10px;overflow:hidden;">
+            <div style="height:100%;border-radius:20px;transition:width .5s ease;"
+                 th:style="'width:' + ${phanTramDK ?: 0} + '%;background:'
+                           + (${(phanTramDK ?: 0) >= 100} ? '#dc2626'
+                           : ${(phanTramDK ?: 0) >= 75}  ? '#f59e0b'
+                           : '#1a56db')"></div>
+          </div>
+          <!-- Mốc TC tối thiểu -->
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-400);margin-top:3px;">
+            <span>0</span>
+            <span th:text="'Tối thiểu: ' + ${hocKyChon.tinChiToiThieu} + ' TC'"></span>
+            <span th:text="${hocKyChon.tinChiToiDa} + ' TC (tối đa)'"></span>
+          </div>
+        </div>
+
+        <!-- Cảnh báo khi gần đầy -->
+        <div th:if="${(conLaiTC ?: 0) > 0 and (conLaiTC ?: 0) <= 3}"
+             style="padding:8px 16px;background:#fffbeb;border-bottom:1px solid #fde68a;
+                    font-size:12px;color:#92400e;">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          Chỉ còn <b th:text="${conLaiTC}"></b> TC có thể đăng ký thêm trong học kỳ này.
         </div>
         <div class="card-body" style="padding:0;">
           <div th:if="${danhSachLop == null or danhSachLop.empty}" class="empty-state">
@@ -158,7 +201,7 @@
       </div>
 
       <!-- Đã đăng ký trong học kỳ này -->
-      <div th:if="${daDangKy != null and !daDangKy.empty}" class="card">
+      <div th:if="${daDangKy != null and !daDangKy.empty}" class="card" style="margin-bottom:14px;">
         <div class="card-header">
           <span class="card-title">
             <i class="fa-solid fa-check-circle" style="color:var(--success);margin-right:6px;"></i>
@@ -190,6 +233,65 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Lịch học dạng grid theo thứ -->
+      <div th:if="${daDangKy != null and !daDangKy.empty}" class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <i class="fa-solid fa-calendar-week" style="color:var(--primary);margin-right:6px;"></i>
+            Sắp xếp lịch học trong tuần
+          </span>
+        </div>
+        <div class="card-body" style="overflow-x:auto;padding:0;">
+          <table style="width:100%;border-collapse:collapse;min-width:700px;">
+            <thead>
+              <tr>
+                <th style="background:var(--gray-100);padding:8px 10px;font-size:12px;
+                            font-weight:700;border:1px solid var(--gray-200);width:60px;text-align:center;">Tiết</th>
+                <th th:each="thu : ${ {2,3,4,5,6,7,8} }"
+                    style="background:var(--gray-100);padding:8px;font-size:12px;font-weight:700;
+                           border:1px solid var(--gray-200);text-align:center;"
+                    th:text="${thu == 2 ? 'Thứ Hai' : thu == 3 ? 'Thứ Ba'
+                             : thu == 4 ? 'Thứ Tư'  : thu == 5 ? 'Thứ Năm'
+                             : thu == 6 ? 'Thứ Sáu' : thu == 7 ? 'Thứ Bảy' : 'CN'}"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Các hàng tiết 1-15 -->
+              <tr th:each="tiet : ${ {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15} }">
+                <td style="text-align:center;font-size:11px;color:var(--gray-500);
+                            border:1px solid var(--gray-100);padding:4px;background:var(--gray-50);"
+                    th:text="${tiet}"></td>
+                <!-- Mỗi thứ: check xem có lớp nào học tiết này không -->
+                <th:block th:each="thu : ${ {2,3,4,5,6,7,8} }">
+                  <td style="border:1px solid var(--gray-100);padding:2px;min-width:100px;vertical-align:top;">
+                    <th:block th:each="dk : ${daDangKy}">
+                      <th:block th:each="lh : ${dk.lopHocPhan.lichHocs}">
+                        <!-- Chỉ hiện ô đầu tiên của buổi (tietBatDau) -->
+                        <div th:if="${lh.thu == thu and lh.tietBatDau == tiet}"
+                             style="background:linear-gradient(135deg,#dbeafe,#eff6ff);
+                                    border-left:3px solid var(--primary);border-radius:4px;
+                                    padding:4px 6px;font-size:11px;margin:2px;">
+                          <div style="font-weight:700;color:var(--navy);font-size:11px;"
+                               th:text="${dk.lopHocPhan.monHoc.tenMon}"></div>
+                          <div style="color:var(--gray-500);font-size:10px;"
+                               th:text="${dk.lopHocPhan.maLopHp}
+                                        + (${lh.phong != null} ? ' · P.' + ${lh.phong} : '')"></div>
+                          <div style="color:var(--primary);font-size:10px;"
+                               th:text="'Tiết ' + ${lh.tietBatDau} + '–' + ${lh.tietKetThuc}"></div>
+                        </div>
+                      </th:block>
+                    </th:block>
+                  </td>
+                </th:block>
+              </tr>
+            </tbody>
+          </table>
+          <div style="padding:8px 14px;font-size:11px;color:var(--gray-400);">
+            * Mỗi tiết ≈ 50 phút. Tiết 1 bắt đầu từ 7:00. Lịch có thể thay đổi — theo dõi thông báo chính thức.
+          </div>
         </div>
       </div>
 
