@@ -15,10 +15,15 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Lo
     Optional<DangKyHocPhan> findBySinhVienIdAndLopHocPhanId(
             Long sinhVienId, Long lopHocPhanId);
 
-    /** Lay dang ky theo hoc ky, theo trang thai cu the (DA_DANG_KY). */
+    /**
+     * Lay dang ky theo HK + trang thai — dung cho trang dang ky LHP.
+     * Fetch day du: monHoc + hocKy + giangVien + lichHocs.
+     */
     @Query("SELECT dkhp FROM DangKyHocPhan dkhp " +
            "JOIN FETCH dkhp.lopHocPhan lhp " +
            "JOIN FETCH lhp.monHoc " +
+           "JOIN FETCH lhp.hocKy " +
+           "LEFT JOIN FETCH lhp.giangVien " +
            "LEFT JOIN FETCH lhp.lichHocs " +
            "WHERE dkhp.sinhVien.id = :sinhVienId " +
            "AND lhp.hocKy.id = :hocKyId " +
@@ -29,12 +34,13 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Lo
             @Param("trangThai") TrangThaiDangKy trangThai);
 
     /**
-     * Lay tat ca dang ky cua SV trong 1 hoc ky (DA_DANG_KY + HOAN_THANH).
-     * Dung cho TKB — hoc ky cu co trang thai HOAN_THANH cung phai hien.
+     * Lay tat ca dang ky DA_DANG_KY + HOAN_THANH cua SV trong 1 HK.
+     * Dung cho TKB va trang dang ky LHP (layDangKyThoiKhoaBieu).
      */
     @Query("SELECT dkhp FROM DangKyHocPhan dkhp " +
            "JOIN FETCH dkhp.lopHocPhan lhp " +
            "JOIN FETCH lhp.monHoc " +
+           "JOIN FETCH lhp.hocKy " +
            "LEFT JOIN FETCH lhp.giangVien " +
            "LEFT JOIN FETCH lhp.lichHocs " +
            "WHERE dkhp.sinhVien.id = :sinhVienId " +
@@ -65,25 +71,37 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Lo
             @Param("sinhVienId") Long sinhVienId,
             @Param("monHocId") Long monHocId);
 
+    /**
+     * Toan bo lich su dang ky (tat ca trang thai, tat ca HK).
+     * Fetch day du de dung cho ket-qua-hoc-tap, chuong-trinh-hoc, tin-chi-tich-luy.
+     */
     @Query("SELECT dkhp FROM DangKyHocPhan dkhp " +
            "JOIN FETCH dkhp.lopHocPhan lhp " +
            "JOIN FETCH lhp.monHoc " +
            "JOIN FETCH lhp.hocKy " +
+           "LEFT JOIN FETCH lhp.giangVien " +
            "WHERE dkhp.sinhVien.id = :sinhVienId " +
            "ORDER BY lhp.hocKy.namHoc DESC, lhp.hocKy.hocKyThu DESC")
     List<DangKyHocPhan> findLichSuDangKy(@Param("sinhVienId") Long sinhVienId);
 
+    /**
+     * Lay danh sach SV trong lop (GV nhap diem, Admin xem).
+     * Fetch sinhVien + lopHocPhan.monHoc de tranh LazyInit khi render.
+     */
     @Query("SELECT dkhp FROM DangKyHocPhan dkhp " +
-           "JOIN FETCH dkhp.sinhVien " +
+           "JOIN FETCH dkhp.sinhVien sv " +
+           "JOIN FETCH dkhp.lopHocPhan lhp " +
+           "JOIN FETCH lhp.monHoc " +
+           "JOIN FETCH lhp.hocKy " +
            "WHERE dkhp.lopHocPhan.id = :lopHocPhanId " +
            "AND dkhp.trangThai <> 'DA_HUY' " +
-           "ORDER BY dkhp.sinhVien.mssv ASC")
+           "ORDER BY sv.mssv ASC")
     List<DangKyHocPhan> findDanhSachSinhVienTrongLop(
             @Param("lopHocPhanId") Long lopHocPhanId);
 
     /**
-     * Kiem tra SV da dang ky mon nay trong hoc ky nay chua (DA_DANG_KY hoac HOAN_THANH).
-     * Dung de chặn đăng ký 2 lớp khác nhau của cùng môn học trong cùng HK.
+     * Kiem tra SV da dang ky mon nay trong HK nay chua.
+     * Chặn đăng ký 2 lớp khác nhau của cùng môn trong cùng HK.
      */
     @Query("SELECT COUNT(dkhp) > 0 FROM DangKyHocPhan dkhp " +
            "JOIN dkhp.lopHocPhan lhp " +
@@ -96,11 +114,7 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Lo
             @Param("monHocId") Long monHocId,
             @Param("hocKyId") Long hocKyId);
 
-    /**
-     * Lay Set<monHocId> cua cac mon SV da HOAN_THANH va dat diem >= 5.
-     * Dung de chặn đăng ký lại môn đã hoàn thành — 1 query nhẹ thay vì
-     * load toàn bộ lịch sử rồi stream/filter.
-     */
+    /** Lay Set<monHocId> da HOAN_THANH >= 5 — chặn đăng ký lại. */
     @Query("SELECT lhp.monHoc.id FROM DangKyHocPhan dkhp " +
            "JOIN dkhp.lopHocPhan lhp " +
            "WHERE dkhp.sinhVien.id = :sinhVienId " +
@@ -108,10 +122,7 @@ public interface DangKyHocPhanRepository extends JpaRepository<DangKyHocPhan, Lo
            "AND dkhp.diemTongKet >= 5.0")
     Set<Long> findMonDaHoanThanhIds(@Param("sinhVienId") Long sinhVienId);
 
-    /**
-     * Đếm tổng tín chỉ tích lũy (môn đạt >= 5, trạng thái HOAN_THANH).
-     * Dùng cho Dashboard và Kết quả học tập — 1 SUM query thay vì stream.
-     */
+    /** Dem tong tin chi tich luy (HOAN_THANH + diem >= 5). */
     @Query("SELECT COALESCE(SUM(lhp.monHoc.soTinChi), 0) FROM DangKyHocPhan dkhp " +
            "JOIN dkhp.lopHocPhan lhp " +
            "WHERE dkhp.sinhVien.id = :sinhVienId " +

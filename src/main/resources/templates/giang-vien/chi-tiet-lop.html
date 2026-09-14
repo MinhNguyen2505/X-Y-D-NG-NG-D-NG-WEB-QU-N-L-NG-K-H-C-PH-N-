@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Chi tiết lớp</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="layout">
+  <div th:insert="~{fragments/sidebar :: gv('gv-lop')}"></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Chi tiết lớp — <span th:text="${lopHocPhan.maLopHp}"></span></div>
+      <div class="topbar-user">
+        <div class="topbar-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">G</div>
+        <span class="topbar-name" th:text="${giangVien?.hoTen ?: #authentication.name}">GV</span>
+      </div>
+    </header>
+    <div class="content">
+
+      <div th:if="${successMsg}" class="flash flash-success"><i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span></div>
+      <div th:if="${errorMsg}"   class="flash flash-danger"><i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span></div>
+
+      <!-- Header + action buttons -->
+      <div class="page-hd">
+        <div>
+          <div class="page-hd-title" th:text="${lopHocPhan.monHoc.tenMon}"></div>
+          <div class="page-hd-sub"
+               th:text="'Lớp: ' + ${lopHocPhan.maLopHp}
+                        + ' | HK: ' + ${lopHocPhan.hocKy.tenHocKy}
+                        + ' | Sĩ số: ' + ${lopHocPhan.siSoHienTai} + '/' + ${lopHocPhan.siSoToiDa}"></div>
+        </div>
+        <div class="flex" style="gap:8px;">
+          <a th:href="@{/giang-vien/diem-danh/{id}(id=${lopHocPhan.id})}"
+             class="btn btn-primary">
+            <i class="fa-solid fa-clipboard-list"></i> Điểm danh
+          </a>
+          <a th:href="@{/giang-vien/nhap-diem/{id}(id=${lopHocPhan.id})}"
+             class="btn btn-success">
+            <i class="fa-solid fa-pen"></i> Nhập điểm
+          </a>
+          <a th:href="@{/giang-vien/xuat-diem/{id}(id=${lopHocPhan.id})}"
+             class="btn btn-outline">
+            <i class="fa-solid fa-file-excel" style="color:#16a34a;"></i> Xuất Excel
+          </a>
+          <a th:href="@{/giang-vien/danh-sach-lop}" class="btn btn-outline">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại
+          </a>
+        </div>
+      </div>
+
+      <!-- Thông tin lớp + lịch học -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+
+        <!-- Thông tin lớp -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fa-solid fa-circle-info" style="color:var(--primary);margin-right:6px;"></i>Thông tin lớp</span>
+          </div>
+          <div class="card-body" style="font-size:13px;display:grid;grid-template-columns:130px 1fr;gap:6px 12px;">
+            <span style="color:var(--gray-500);">Mã lớp</span>
+            <span><code th:text="${lopHocPhan.maLopHp}"></code></span>
+            <span style="color:var(--gray-500);">Môn học</span>
+            <span th:text="${lopHocPhan.monHoc.tenMon}"></span>
+            <span style="color:var(--gray-500);">Mã môn</span>
+            <span><code th:text="${lopHocPhan.monHoc.maMon}"></code></span>
+            <span style="color:var(--gray-500);">Tín chỉ</span>
+            <span th:text="${lopHocPhan.monHoc.soTinChi} + ' TC'"></span>
+            <span style="color:var(--gray-500);">Học kỳ</span>
+            <span th:text="${lopHocPhan.hocKy.tenHocKy}"></span>
+            <span style="color:var(--gray-500);">Sĩ số</span>
+            <span th:text="${lopHocPhan.siSoHienTai} + '/' + ${lopHocPhan.siSoToiDa} + ' SV'"></span>
+            <span style="color:var(--gray-500);">Trạng thái</span>
+            <span>
+              <span th:if="${lopHocPhan.trangThai.name() == 'MO'}" class="badge badge-success">Đang mở</span>
+              <span th:if="${lopHocPhan.trangThai.name() == 'DONG'}" class="badge badge-secondary">Đã đóng</span>
+            </span>
+            <span style="color:var(--gray-500);">Đã có điểm</span>
+            <span>
+              <b th:text="${soDaCoDiem}"></b> / <span th:text="${danhSachSV?.size() ?: 0}"></span> SV
+            </span>
+          </div>
+        </div>
+
+        <!-- Lịch học -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fa-solid fa-calendar-week" style="color:var(--primary);margin-right:6px;"></i>Lịch học</span>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div th:if="${lopHocPhan.lichHocs.empty}" class="empty-state">
+              <i class="fa-solid fa-calendar-xmark"></i>Chưa có lịch học.
+            </div>
+            <table th:if="${!lopHocPhan.lichHocs.empty}" class="table">
+              <thead><tr><th>Thứ</th><th>Tiết</th><th>Số tiết</th><th>Phòng</th></tr></thead>
+              <tbody>
+                <tr th:each="lh : ${lopHocPhan.lichHocs}">
+                  <td th:text="${lh.thu == 2 ? 'Thứ Hai' : lh.thu == 3 ? 'Thứ Ba'
+                               : lh.thu == 4 ? 'Thứ Tư' : lh.thu == 5 ? 'Thứ Năm'
+                               : lh.thu == 6 ? 'Thứ Sáu' : lh.thu == 7 ? 'Thứ Bảy' : 'CN'}"></td>
+                  <td th:text="${lh.tietBatDau} + ' → ' + ${lh.tietKetThuc}"></td>
+                  <td th:text="${lh.tietKetThuc - lh.tietBatDau + 1} + ' tiết'"></td>
+                  <td th:text="${lh.phong ?: '—'}"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danh sách sinh viên -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <i class="fa-solid fa-users" style="color:var(--primary);margin-right:6px;"></i>
+            Danh sách sinh viên
+            <span style="font-size:12px;color:var(--gray-500);margin-left:6px;"
+                  th:text="'(' + ${danhSachSV?.size() ?: 0} + ' SV)'"></span>
+          </span>
+          <a th:href="@{/giang-vien/xuat-diem/{id}(id=${lopHocPhan.id})}"
+             class="btn btn-outline btn-sm">
+            <i class="fa-solid fa-file-excel" style="color:#16a34a;"></i> Xuất Excel
+          </a>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${danhSachSV == null or danhSachSV.empty}" class="empty-state">
+            <i class="fa-solid fa-user-slash"></i>Chưa có sinh viên đăng ký.
+          </div>
+          <table th:if="${danhSachSV != null and !danhSachSV.empty}" class="table">
+            <thead>
+              <tr>
+                <th style="width:36px;text-align:center;">STT</th>
+                <th>MSSV</th><th>Họ và tên</th>
+                <th style="text-align:center;">Điểm GK</th>
+                <th style="text-align:center;">Điểm CK</th>
+                <th style="text-align:center;">Điểm TK</th>
+                <th style="text-align:center;">Kết quả</th>
+                <th style="text-align:center;">Buổi vắng</th>
+                <th style="text-align:center;">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="dk, i : ${danhSachSV}"
+                  th:style="${dk.diemTongKet != null and dk.diemTongKet < 5} ? 'background:#fff5f5;' : ''">
+                <td style="text-align:center;color:var(--gray-400);" th:text="${i.count}"></td>
+                <td><code th:text="${dk.sinhVien.mssv}"></code></td>
+                <td th:text="${dk.sinhVien.hoTen}"></td>
+                <td style="text-align:center;"
+                    th:text="${dk.diemGiuaKy != null ? dk.diemGiuaKy : '—'}"></td>
+                <td style="text-align:center;"
+                    th:text="${dk.diemCuoiKy != null ? dk.diemCuoiKy : '—'}"></td>
+                <td style="text-align:center;">
+                  <b th:if="${dk.diemTongKet != null}"
+                     th:text="${dk.diemTongKet}"
+                     th:style="${dk.diemTongKet < 5} ? 'color:var(--danger);' : 'color:var(--success);'"></b>
+                  <span th:if="${dk.diemTongKet == null}" class="text-muted">—</span>
+                </td>
+                <td style="text-align:center;">
+                  <span th:if="${dk.diemTongKet == null}" class="badge badge-secondary" style="font-size:10px;">Chưa có điểm</span>
+                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet >= 5}" class="badge badge-success" style="font-size:10px;">Đạt</span>
+                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet < 5}" class="badge badge-danger" style="font-size:10px;">Không đạt</span>
+                </td>
+                <td style="text-align:center;">
+                  <span th:with="sv=${soVangMap != null ? soVangMap[dk.id] : 0}"
+                        th:text="${sv != null ? sv : 0}"
+                        th:style="${sv != null and sv > 0} ? 'color:var(--danger);font-weight:700;' : ''"></span>
+                </td>
+                <td style="text-align:center;">
+                  <span th:if="${dk.trangThai.name() == 'DA_DANG_KY'}" class="badge badge-success" style="font-size:10px;">Đang học</span>
+                  <span th:if="${dk.trangThai.name() == 'HOAN_THANH'}" class="badge badge-primary" style="font-size:10px;">Hoàn thành</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>
