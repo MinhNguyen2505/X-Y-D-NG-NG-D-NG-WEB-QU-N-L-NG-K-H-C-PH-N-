@@ -191,9 +191,19 @@ public class SinhVienController {
                 ? tinChiDaChonHK * 100 / hocKy.getTinChiToiDa() : 0;
             model.addAttribute("phanTramDK", phanTramDK);
 
+            // Mau progress bar tinh san (tranh expression phuc tap trong Thymeleaf)
+            String mauProgress = phanTramDK >= 100 ? "#dc2626"
+                               : phanTramDK >= 75  ? "#f59e0b"
+                               : "#1a56db";
+            model.addAttribute("mauProgress", mauProgress);
+
             // Con co the dang ky them bao nhieu TC
             int conLaiTC = Math.max(0, hocKy.getTinChiToiDa() - tinChiDaChonHK);
             model.addAttribute("conLaiTC", conLaiTC);
+
+            // List thu va tiet de render grid lich hoc (tranh array literal trong Thymeleaf)
+            model.addAttribute("danhSachThu",  java.util.List.of(2,3,4,5,6,7,8));
+            model.addAttribute("danhSachTiet", java.util.List.of(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15));
         }
         return "sinh-vien/dang-ky";
     }
