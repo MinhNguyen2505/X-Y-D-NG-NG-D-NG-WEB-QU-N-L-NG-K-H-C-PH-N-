@@ -58,10 +58,13 @@ public interface LopHocPhanRepository extends JpaRepository<LopHocPhan, Long> {
             @Param("hocKyId") Long hocKyId);
 
     /**
-     * Lay lop hoc phan kem lich hoc (tranh N+1 khi can hien thi TKB).
+     * Lay lop hoc phan day du: monHoc + hocKy + giangVien + lichHocs.
+     * Dung cho trang nhap diem (can hien ten hoc ky, GV) va TKB.
      */
     @Query("SELECT DISTINCT lhp FROM LopHocPhan lhp " +
            "JOIN FETCH lhp.monHoc " +
+           "JOIN FETCH lhp.hocKy " +
+           "LEFT JOIN FETCH lhp.giangVien " +
            "LEFT JOIN FETCH lhp.lichHocs " +
            "WHERE lhp.id = :id")
     Optional<LopHocPhan> findByIdWithLichHoc(@Param("id") Long id);
