@@ -99,15 +99,11 @@
         </div>
       </div>
 
-      <!-- 2 Tab: chỉ lịch dạy & điểm danh -->
+      <!-- Tab bar: chỉ lịch dạy & điểm danh -->
       <div class="tab-bar">
         <a th:href="@{/giang-vien/lop/{id}(id=${lopHocPhan.id})}"
            class="tab-btn active">
           <i class="fa-solid fa-calendar-check"></i> Lịch dạy &amp; Điểm danh
-        </a>
-        <a th:href="@{/giang-vien/nhap-diem/{id}(id=${lopHocPhan.id})}"
-           class="tab-btn">
-          <i class="fa-solid fa-pen-to-square"></i> Nhập điểm →
         </a>
       </div>
 
