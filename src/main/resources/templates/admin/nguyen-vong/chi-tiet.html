@@ -105,6 +105,7 @@
                 <select name="monHocId" class="form-control" style="flex:1;" required>
                   <option value="">-- Thêm môn học vào kế hoạch --</option>
                   <option th:each="mh : ${tatCaMonHoc}"
+                          th:if="${monDaTrongKeHoach == null or !monDaTrongKeHoach.contains(mh.id)}"
                           th:value="${mh.id}"
                           th:text="${mh.maMon} + ' — ' + ${mh.tenMon}"></option>
                 </select>

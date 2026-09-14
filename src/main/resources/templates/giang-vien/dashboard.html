@@ -18,6 +18,8 @@
       </div>
     </header>
     <div class="content">
+
+      <!-- Banner -->
       <div style="background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:10px;
                   padding:20px 24px;color:#fff;display:flex;align-items:center;
                   justify-content:space-between;margin-bottom:18px;">
@@ -30,24 +32,72 @@
         <div style="font-size:48px;">👨‍🏫</div>
       </div>
 
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">
+        <div class="stat-card">
+          <div class="stat-icon si-purple">
+            <i class="fa-solid fa-layer-group" style="color:#7c3aed;"></i>
+          </div>
+          <div>
+            <div class="stat-label">Tổng lớp phụ trách</div>
+            <div class="stat-val" th:text="${tongSoLop}">0</div>
+          </div>
+        </div>
+        <div class="stat-card" th:style="${lopDangMo > 0} ? 'border-left:3px solid #15803d;' : ''">
+          <div class="stat-icon si-green">
+            <i class="fa-solid fa-chalkboard-user" style="color:#15803d;"></i>
+          </div>
+          <div>
+            <div class="stat-label">Lớp đang mở</div>
+            <div class="stat-val" th:text="${lopDangMo}"
+                 th:style="${lopDangMo > 0} ? 'color:#15803d;' : ''">0</div>
+          </div>
+          <a th:if="${lopDangMo > 0}" th:href="@{/giang-vien/danh-sach-lop}"
+             style="font-size:11px;color:#15803d;text-decoration:none;margin-left:auto;">Xem →</a>
+        </div>
+        <div class="stat-card" th:style="${svChuaDiem > 0} ? 'border-left:3px solid #f59e0b;' : ''">
+          <div class="stat-icon" style="background:#fef3c7;">
+            <i class="fa-solid fa-pen-to-square" style="color:#d97706;"></i>
+          </div>
+          <div>
+            <div class="stat-label">SV chờ nhập điểm</div>
+            <div class="stat-val" th:text="${svChuaDiem}"
+                 th:style="${svChuaDiem > 0} ? 'color:#d97706;' : ''">0</div>
+          </div>
+          <a th:if="${svChuaDiem > 0}" th:href="@{/giang-vien/danh-sach-lop}"
+             style="font-size:11px;color:#d97706;text-decoration:none;margin-left:auto;">Nhập →</a>
+        </div>
+      </div>
+
+      <!-- Bảng học kỳ -->
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Danh sách học kỳ</span>
+          <span class="card-title">
+            <i class="fa-solid fa-calendar" style="color:var(--primary);margin-right:6px;"></i>
+            Danh sách học kỳ
+          </span>
           <a th:href="@{/giang-vien/danh-sach-lop}" class="btn btn-primary btn-sm">
             <i class="fa-solid fa-eye"></i> Xem lớp của tôi
           </a>
         </div>
         <div class="card-body" style="padding:0;">
           <table class="table">
-            <thead><tr><th>Học kỳ</th><th>Năm học</th><th>Bắt đầu học</th><th>Kết thúc học</th><th></th></tr></thead>
+            <thead>
+              <tr>
+                <th>Học kỳ</th><th>Năm học</th>
+                <th>Bắt đầu học</th><th>Kết thúc học</th>
+                <th style="text-align:center;"></th>
+              </tr>
+            </thead>
             <tbody>
               <tr th:each="hk : ${danhSachHocKy}">
                 <td th:text="${hk.tenHocKy}"></td>
                 <td th:text="${hk.namHoc}"></td>
                 <td th:text="${#temporals.format(hk.ngayBatDauHoc,'dd/MM/yyyy')}"></td>
                 <td th:text="${#temporals.format(hk.ngayKetThucHoc,'dd/MM/yyyy')}"></td>
-                <td>
-                  <a th:href="@{/giang-vien/danh-sach-lop(hocKyId=${hk.id})}" class="btn btn-outline btn-sm">
+                <td style="text-align:center;">
+                  <a th:href="@{/giang-vien/danh-sach-lop(hocKyId=${hk.id})}"
+                     class="btn btn-outline btn-sm">
                     <i class="fa-solid fa-list"></i> Xem lớp
                   </a>
                 </td>
@@ -56,6 +106,7 @@
           </table>
         </div>
       </div>
+
     </div>
   </div>
 </div>

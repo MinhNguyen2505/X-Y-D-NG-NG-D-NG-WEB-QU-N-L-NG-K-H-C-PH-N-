@@ -13,7 +13,7 @@ import vn.edu.quanlyhocphan.service.*;
 import vn.edu.quanlyhocphan.service.NguyenVongService;
 import vn.edu.quanlyhocphan.service.DinhHuongService;
 
-import java.util.List;
+import java.util.List;import java.util.List;
 
 /**
  * Controller cho role ADMIN (Phong dao tao).
@@ -39,6 +39,7 @@ public class AdminController {
     private final NguyenVongService nguyenVongService;
     private final DinhHuongService dinhHuongService;
     private final vn.edu.quanlyhocphan.service.ThiLaiService thiLaiService;
+    private final vn.edu.quanlyhocphan.service.DangKyHocPhanService dangKyHocPhanService;
 
     // =================================================================
     // DASHBOARD
@@ -363,6 +364,9 @@ public class AdminController {
         model.addAttribute("danhSachHocKy", hocKyService.findAll());
         model.addAttribute("danhSachMonHoc", monHocService.findAll());
         model.addAttribute("danhSachGiangVien", giangVienService.findAll());
+        // Danh sach SV da dang ky lop nay (hien de admin kiem tra)
+        model.addAttribute("danhSachSV",
+            dangKyHocPhanService.layDanhSachSinhVienTrongLop(id));
         return "admin/lop-hoc-phan/form";
     }
 
@@ -457,8 +461,14 @@ public class AdminController {
 
     @GetMapping("/nguyen-vong/{id}")
     public String chiTietKeHoach(@PathVariable Long id, Model model) {
-        model.addAttribute("keHoach", nguyenVongService.findKeHoachById(id));
+        var keHoach = nguyenVongService.findKeHoachById(id);
+        // Lay id cac mon da co trong ke hoach de loc khoi dropdown
+        java.util.Set<Long> monDaTrongKeHoach = keHoach.getDanhSachMon().stream()
+            .map(m -> m.getMonHoc().getId())
+            .collect(java.util.stream.Collectors.toSet());
+        model.addAttribute("keHoach", keHoach);
         model.addAttribute("tatCaMonHoc", monHocService.findAll());
+        model.addAttribute("monDaTrongKeHoach", monDaTrongKeHoach);
         model.addAttribute("danhSachDangKy", nguyenVongService.findDangKyByKeHoach(id));
         return "admin/nguyen-vong/chi-tiet";
     }

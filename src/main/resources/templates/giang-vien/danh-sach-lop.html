@@ -18,43 +18,81 @@
       </div>
     </header>
     <div class="content">
-      <div th:if="${successMsg}" class="flash flash-success"><i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span></div>
-      <div th:if="${errorMsg}"   class="flash flash-danger"><i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span></div>
+      <div th:if="${successMsg}" class="flash flash-success">
+        <i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span>
+      </div>
+      <div th:if="${errorMsg}" class="flash flash-danger">
+        <i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span>
+      </div>
 
-      <div class="card">
-        <div class="card-header"><span class="card-title">Chọn học kỳ</span></div>
-        <div class="card-body">
-          <div class="flex-wrap">
-            <a th:each="hk : ${danhSachHocKy}"
-               th:href="@{/giang-vien/danh-sach-lop(hocKyId=${hk.id})}"
-               th:text="${hk.tenHocKy} + ' (' + ${hk.namHoc} + ')'"
-               th:class="${hocKyChon?.id == hk.id} ? 'btn btn-primary' : 'btn btn-outline'"></a>
+      <!-- Chọn học kỳ bằng dropdown -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-body" style="padding:14px 18px;">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <label style="font-size:13px;font-weight:600;color:var(--gray-700);white-space:nowrap;">
+              <i class="fa-solid fa-calendar" style="color:var(--primary);margin-right:4px;"></i>
+              Chọn học kỳ:
+            </label>
+            <select id="hkSelect" class="form-control" style="min-width:280px;max-width:400px;"
+                    onchange="window.location.href='/giang-vien/danh-sach-lop?hocKyId=' + this.value">
+              <option value="">-- Chọn học kỳ --</option>
+              <option th:each="hk : ${danhSachHocKy}"
+                      th:value="${hk.id}"
+                      th:text="${hk.tenHocKy} + ' (' + ${hk.namHoc} + ')'"
+                      th:selected="${hocKyChon?.id == hk.id}"></option>
+            </select>
           </div>
         </div>
       </div>
 
+      <!-- Danh sách lớp -->
       <div th:if="${hocKyChon != null}" class="card">
         <div class="card-header">
-          <span class="card-title">Lớp của tôi — <span th:text="${hocKyChon.tenHocKy}"></span></span>
+          <span class="card-title">
+            <i class="fa-solid fa-chalkboard-user" style="color:var(--primary);margin-right:6px;"></i>
+            Lớp của tôi — <span th:text="${hocKyChon.tenHocKy}"></span>
+            <span style="font-size:12px;color:var(--gray-500);margin-left:8px;"
+                  th:if="${danhSachLop != null}">
+              (<span th:text="${danhSachLop.size()}"></span> lớp)
+            </span>
+          </span>
         </div>
         <div class="card-body" style="padding:0;">
           <div th:if="${danhSachLop == null or danhSachLop.empty}" class="empty-state">
-            <i class="fa-solid fa-chalkboard"></i>Bạn không phụ trách lớp nào trong học kỳ này.
+            <i class="fa-solid fa-chalkboard"></i>
+            Bạn không phụ trách lớp nào trong học kỳ này.
           </div>
           <table th:if="${danhSachLop != null and !danhSachLop.empty}" class="table">
-            <thead><tr><th>Mã lớp</th><th>Môn học</th><th>TC</th><th>Sĩ số</th><th>Trạng thái</th><th></th></tr></thead>
+            <thead>
+              <tr>
+                <th>Mã lớp</th>
+                <th>Môn học</th>
+                <th style="text-align:center;">TC</th>
+                <th style="text-align:center;">Sĩ số</th>
+                <th style="text-align:center;">Đã có điểm</th>
+                <th style="text-align:center;">Trạng thái</th>
+                <th style="text-align:center;"></th>
+              </tr>
+            </thead>
             <tbody>
               <tr th:each="lhp : ${danhSachLop}">
                 <td><code th:text="${lhp.maLopHp}"></code></td>
-                <td th:text="${lhp.monHoc.tenMon}"></td>
-                <td th:text="${lhp.monHoc.soTinChi}"></td>
-                <td th:text="${lhp.siSoHienTai} + '/' + ${lhp.siSoToiDa}"></td>
                 <td>
-                  <span class="badge" th:classappend="${lhp.trangThai.name()=='MO'}?' badge-success':' badge-secondary'"
-                        th:text="${lhp.trangThai}"></span>
+                  <span th:text="${lhp.monHoc.tenMon}"></span><br/>
+                  <small class="text-muted" th:text="${lhp.monHoc.maMon}"></small>
                 </td>
-                <td>
-                  <a th:href="@{/giang-vien/nhap-diem/{id}(id=${lhp.id})}" class="btn btn-primary btn-sm">
+                <td style="text-align:center;" th:text="${lhp.monHoc.soTinChi}"></td>
+                <td style="text-align:center;" th:text="${lhp.siSoHienTai} + '/' + ${lhp.siSoToiDa}"></td>
+                <!-- Số SV đã có điểm — sẽ thêm sau nếu cần; hiện để — -->
+                <td style="text-align:center;color:var(--gray-400);">—</td>
+                <td style="text-align:center;">
+                  <span class="badge"
+                        th:classappend="${lhp.trangThai.name()=='MO'}?' badge-success':' badge-secondary'"
+                        th:text="${lhp.trangThai.name() == 'MO' ? 'Đang mở' : 'Đã đóng'}"></span>
+                </td>
+                <td style="text-align:center;">
+                  <a th:href="@{/giang-vien/nhap-diem/{id}(id=${lhp.id})}"
+                     class="btn btn-primary btn-sm">
                     <i class="fa-solid fa-pen"></i> Nhập điểm
                   </a>
                 </td>
@@ -63,6 +101,13 @@
           </table>
         </div>
       </div>
+
+      <!-- Chưa chọn HK -->
+      <div th:if="${hocKyChon == null}" class="empty-state" style="min-height:180px;">
+        <i class="fa-solid fa-hand-pointer"></i>
+        Chọn học kỳ ở trên để xem danh sách lớp.
+      </div>
+
     </div>
   </div>
 </div>

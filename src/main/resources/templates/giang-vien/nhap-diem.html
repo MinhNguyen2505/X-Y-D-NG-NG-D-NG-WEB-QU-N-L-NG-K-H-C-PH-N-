@@ -6,9 +6,10 @@
   <link rel="stylesheet" th:href="@{/css/app.css}"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-    .row-hoan-thanh { background:#f0fdf4; }
-    .row-hoan-thanh td { color:#374151; }
-    input.form-control { padding:4px 6px; }
+    .row-khong-dat { background:#fff5f5; }
+    input.diem-input { padding:4px 6px; text-align:center; }
+    input.diem-input:focus { border-color:var(--primary); }
+    input.diem-f { border-color:var(--danger); color:var(--danger); }
   </style>
 </head>
 <body>
@@ -32,12 +33,15 @@
         <i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span>
       </div>
 
+      <!-- Header lớp -->
       <div class="page-hd">
         <div>
           <div class="page-hd-title" th:text="${lopHocPhan?.monHoc?.tenMon}">Môn học</div>
           <div class="page-hd-sub">
             Lớp: <b th:text="${lopHocPhan?.maLopHp}"></b> |
             <span th:text="${danhSachSV?.size()}">0</span> sinh viên |
+            Đã có điểm: <b th:text="${soDaCoDiem}">0</b> /
+            <span th:text="${danhSachSV?.size()}">0</span> |
             Học kỳ: <span th:text="${lopHocPhan?.hocKy?.tenHocKy}"></span>
           </div>
         </div>
@@ -46,26 +50,18 @@
         </a>
       </div>
 
-      <!-- Ghi chú -->
+      <!-- Hướng dẫn -->
       <div class="card" style="background:#eff6ff;border:1px solid #bfdbfe;margin-bottom:14px;">
         <div class="card-body" style="padding:10px 16px;font-size:13px;color:#1e40af;">
           <i class="fa-solid fa-circle-info"></i>
-          <b>Hướng dẫn:</b> Nhập điểm từng sinh viên rồi nhấn <b>Lưu</b> cho từng dòng.
-          Sau khi nhập điểm tổng kết, trạng thái sẽ tự chuyển sang <b>Hoàn thành</b>.
-          Sinh viên không đạt (điểm TK &lt; 5) có thể đăng ký thi lại qua trang của mình.
+          Nhập điểm từng sinh viên rồi nhấn <b>Lưu</b>. Điểm tổng kết &lt; 5 sẽ được
+          highlight đỏ — sinh viên có thể đăng ký <b>thi lại</b> sau khi điểm được lưu.
         </div>
       </div>
 
       <div class="card">
         <div class="card-header">
           <span class="card-title">Danh sách sinh viên</span>
-          <!-- Thống kê nhanh -->
-          <span style="font-size:12px;color:var(--gray-500);">
-            Đã có điểm:
-            <span th:text="${soDaCoDiem ?: 0}">0</span>
-            /
-            <span th:text="${danhSachSV?.size() ?: 0}">0</span>
-          </span>
         </div>
         <div class="card-body" style="padding:0;">
           <div th:if="${danhSachSV == null or danhSachSV.empty}" class="empty-state">
@@ -80,37 +76,45 @@
                 <th style="text-align:center;width:90px;">Điểm GK</th>
                 <th style="text-align:center;width:90px;">Điểm CK</th>
                 <th style="text-align:center;width:90px;">Điểm TK</th>
-                <th style="text-align:center;">Trạng thái</th>
-                <th style="text-align:center;width:70px;"></th>
+                <th style="text-align:center;width:110px;">Kết quả</th>
+                <th style="text-align:center;width:110px;">Thi lại</th>
+                <th style="text-align:center;width:65px;"></th>
               </tr>
             </thead>
             <tbody>
               <tr th:each="dk, i : ${danhSachSV}"
-                  th:classappend="${dk.diemTongKet != null} ? ' row-hoan-thanh'">
+                  th:with="tl=${thiLaiMap != null ? thiLaiMap[dk.id] : null}"
+                  th:classappend="${dk.diemTongKet != null and dk.diemTongKet < 5} ? ' row-khong-dat'">
                 <form th:action="@{/giang-vien/nhap-diem/{id}(id=${lopHocPhan.id})}" method="post">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <input type="hidden" name="dangKyId" th:value="${dk.id}"/>
-                  <td style="text-align:center;" th:text="${i.count}"></td>
+
+                  <td style="text-align:center;color:var(--gray-400);" th:text="${i.count}"></td>
                   <td><code th:text="${dk.sinhVien.mssv}"></code></td>
                   <td th:text="${dk.sinhVien.hoTen}"></td>
+
+                  <!-- Điểm GK -->
                   <td style="text-align:center;">
                     <input type="number" name="diemGiuaKy" step="0.1" min="0" max="10"
-                           th:value="${dk.diemGiuaKy}" placeholder="—"
-                           style="width:72px;text-align:center;" class="form-control"/>
+                           class="form-control diem-input" style="width:72px;"
+                           th:value="${dk.diemGiuaKy}" placeholder="—"/>
                   </td>
+                  <!-- Điểm CK -->
                   <td style="text-align:center;">
                     <input type="number" name="diemCuoiKy" step="0.1" min="0" max="10"
-                           th:value="${dk.diemCuoiKy}" placeholder="—"
-                           style="width:72px;text-align:center;" class="form-control"/>
+                           class="form-control diem-input" style="width:72px;"
+                           th:value="${dk.diemCuoiKy}" placeholder="—"/>
                   </td>
+                  <!-- Điểm TK — highlight đỏ khi < 5 -->
                   <td style="text-align:center;">
                     <input type="number" name="diemTongKet" step="0.1" min="0" max="10"
+                           class="form-control diem-input" style="width:72px;"
                            th:value="${dk.diemTongKet}" placeholder="—"
-                           style="width:72px;text-align:center;" class="form-control"
-                           th:style="${dk.diemTongKet != null and dk.diemTongKet < 5}
-                                     ? 'border-color:var(--danger);color:var(--danger);width:72px;text-align:center;'
-                                     : 'width:72px;text-align:center;'"/>
+                           th:classappend="${dk.diemTongKet != null and dk.diemTongKet < 5} ? ' diem-f'"
+                           oninput="highlightDiem(this)"/>
                   </td>
+
+                  <!-- Kết quả -->
                   <td style="text-align:center;">
                     <span th:if="${dk.diemTongKet == null}"
                           class="badge badge-secondary" style="font-size:10px;">Chưa có điểm</span>
@@ -123,6 +127,22 @@
                       <i class="fa-solid fa-xmark"></i> Không đạt
                     </span>
                   </td>
+
+                  <!-- Trạng thái thi lại -->
+                  <td style="text-align:center;">
+                    <span th:if="${tl != null and tl.trangThai == 'CHO_DUYET'}"
+                          class="badge badge-warning" style="font-size:10px;">
+                      <i class="fa-solid fa-clock"></i> Chờ duyệt
+                    </span>
+                    <span th:if="${tl != null and tl.trangThai == 'DA_DUYET'}"
+                          class="badge badge-success" style="font-size:10px;">
+                      <i class="fa-solid fa-check"></i> Đã duyệt thi lại
+                    </span>
+                    <span th:if="${tl == null or tl.trangThai == 'DA_HUY'}"
+                          style="color:var(--gray-300);font-size:11px;">—</span>
+                  </td>
+
+                  <!-- Nút lưu -->
                   <td style="text-align:center;">
                     <button type="submit" class="btn btn-success btn-sm" title="Lưu điểm">
                       <i class="fa-solid fa-floppy-disk"></i>
@@ -134,8 +154,21 @@
           </table>
         </div>
       </div>
+
     </div>
   </div>
 </div>
+
+<script>
+  // Highlight ô điểm TK theo giá trị nhập
+  function highlightDiem(input) {
+    const val = parseFloat(input.value);
+    if (!isNaN(val) && val < 5) {
+      input.classList.add('diem-f');
+    } else {
+      input.classList.remove('diem-f');
+    }
+  }
+</script>
 </body>
 </html>
