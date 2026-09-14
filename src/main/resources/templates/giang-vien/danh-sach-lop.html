@@ -5,6 +5,12 @@
   <title>Danh sách lớp</title>
   <link rel="stylesheet" th:href="@{/css/app.css}"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    /* Hàng lớp có thể click */
+    .lop-row { cursor:pointer; transition:background .12s; }
+    .lop-row:hover { background:#eff6ff !important; }
+    .lop-row td { vertical-align:middle; }
+  </style>
 </head>
 <body>
 <div class="layout">
@@ -18,6 +24,7 @@
       </div>
     </header>
     <div class="content">
+
       <div th:if="${successMsg}" class="flash flash-success">
         <i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span>
       </div>
@@ -25,7 +32,7 @@
         <i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span>
       </div>
 
-      <!-- Chọn học kỳ bằng dropdown -->
+      <!-- Chọn học kỳ -->
       <div class="card" style="margin-bottom:14px;">
         <div class="card-body" style="padding:14px 18px;">
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -33,7 +40,7 @@
               <i class="fa-solid fa-calendar" style="color:var(--primary);margin-right:4px;"></i>
               Chọn học kỳ:
             </label>
-            <select id="hkSelect" class="form-control" style="min-width:280px;max-width:400px;"
+            <select class="form-control" style="min-width:280px;max-width:400px;"
                     onchange="window.location.href='/giang-vien/danh-sach-lop?hocKyId=' + this.value">
               <option value="">-- Chọn học kỳ --</option>
               <option th:each="hk : ${danhSachHocKy}"
@@ -45,7 +52,7 @@
         </div>
       </div>
 
-      <!-- Danh sách lớp -->
+      <!-- Danh sách lớp — click hàng để xem chi tiết -->
       <div th:if="${hocKyChon != null}" class="card">
         <div class="card-header">
           <span class="card-title">
@@ -56,64 +63,66 @@
               (<span th:text="${danhSachLop.size()}"></span> lớp)
             </span>
           </span>
+          <span style="font-size:12px;color:var(--gray-400);">
+            <i class="fa-solid fa-hand-pointer"></i> Bấm vào lớp để xem chi tiết
+          </span>
         </div>
         <div class="card-body" style="padding:0;">
+
           <div th:if="${danhSachLop == null or danhSachLop.empty}" class="empty-state">
             <i class="fa-solid fa-chalkboard"></i>
             Bạn không phụ trách lớp nào trong học kỳ này.
           </div>
+
           <table th:if="${danhSachLop != null and !danhSachLop.empty}" class="table">
             <thead>
               <tr>
+                <th style="width:36px;text-align:center;">STT</th>
                 <th>Mã lớp</th>
                 <th>Môn học</th>
-                <th style="text-align:center;">TC</th>
-                <th style="text-align:center;">Sĩ số</th>
-                <th style="text-align:center;">Đã có điểm</th>
-                <th style="text-align:center;">Trạng thái</th>
-                <th style="text-align:center;"></th>
+                <th style="text-align:center;width:46px;">TC</th>
+                <th style="text-align:center;width:90px;">Sĩ số</th>
+                <th style="text-align:center;width:100px;">Trạng thái</th>
+                <th style="text-align:center;width:50px;"></th>
               </tr>
             </thead>
             <tbody>
-              <tr th:each="lhp : ${danhSachLop}">
-                <td><code th:text="${lhp.maLopHp}"></code></td>
+              <tr th:each="lhp, i : ${danhSachLop}"
+                  class="lop-row"
+                  th:onclick="'window.location.href=\'/giang-vien/lop/' + ${lhp.id} + '\''">
+                <td style="text-align:center;color:var(--gray-400);" th:text="${i.count}"></td>
                 <td>
-                  <span th:text="${lhp.monHoc.tenMon}"></span><br/>
+                  <code style="font-weight:700;" th:text="${lhp.maLopHp}"></code>
+                </td>
+                <td>
+                  <div style="font-weight:600;" th:text="${lhp.monHoc.tenMon}"></div>
                   <small class="text-muted" th:text="${lhp.monHoc.maMon}"></small>
                 </td>
-                <td style="text-align:center;" th:text="${lhp.monHoc.soTinChi}"></td>
-                <td style="text-align:center;" th:text="${lhp.siSoHienTai} + '/' + ${lhp.siSoToiDa}"></td>
-                <!-- Số SV đã có điểm — sẽ thêm sau nếu cần; hiện để — -->
-                <td style="text-align:center;color:var(--gray-400);">—</td>
+                <td style="text-align:center;">
+                  <span class="badge badge-secondary" th:text="${lhp.monHoc.soTinChi}"></span>
+                </td>
+                <td style="text-align:center;">
+                  <span th:text="${lhp.siSoHienTai} + '/' + ${lhp.siSoToiDa}"
+                        th:style="${lhp.siSoHienTai >= lhp.siSoToiDa}
+                                  ? 'color:var(--danger);font-weight:700;' : ''"></span>
+                </td>
                 <td style="text-align:center;">
                   <span class="badge"
                         th:classappend="${lhp.trangThai.name()=='MO'}?' badge-success':' badge-secondary'"
                         th:text="${lhp.trangThai.name() == 'MO' ? 'Đang mở' : 'Đã đóng'}"></span>
                 </td>
                 <td style="text-align:center;">
-                  <div class="flex" style="justify-content:center;gap:4px;">
-                    <a th:href="@{/giang-vien/lop/{id}(id=${lhp.id})}"
-                       class="btn btn-primary btn-sm" title="Xem chi tiết">
-                      <i class="fa-solid fa-eye"></i> Chi tiết
-                    </a>
-                    <a th:href="@{/giang-vien/nhap-diem/{id}(id=${lhp.id})}"
-                       class="btn btn-success btn-sm" title="Nhập điểm">
-                      <i class="fa-solid fa-pen"></i>
-                    </a>
-                    <a th:href="@{/giang-vien/diem-danh/{id}(id=${lhp.id})}"
-                       class="btn btn-outline btn-sm" title="Điểm danh">
-                      <i class="fa-solid fa-clipboard-list"></i>
-                    </a>
-                  </div>
+                  <i class="fa-solid fa-chevron-right" style="color:var(--gray-400);"></i>
                 </td>
               </tr>
             </tbody>
           </table>
+
         </div>
       </div>
 
       <!-- Chưa chọn HK -->
-      <div th:if="${hocKyChon == null}" class="empty-state" style="min-height:180px;">
+      <div th:if="${hocKyChon == null}" class="empty-state" style="min-height:200px;">
         <i class="fa-solid fa-hand-pointer"></i>
         Chọn học kỳ ở trên để xem danh sách lớp.
       </div>
