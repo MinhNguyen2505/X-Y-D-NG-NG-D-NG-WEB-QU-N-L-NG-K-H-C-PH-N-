@@ -127,7 +127,9 @@
                     <td style="text-align:center;font-weight:800;">
                       <span th:if="${mon.diemChu != null and mon.diemChu != ''}"
                             th:text="${mon.diemChu}"
-                            th:class="${mon.mauDiem}"></span>
+                            th:style="${mon.diemChu == 'F'} ? 'color:#dc2626;'
+                                     : (${mon.diem != null and mon.diem >= 5}) ? 'color:#15803d;'
+                                     : 'color:#6b7280;'"></span>
                       <span th:if="${mon.diemChu == null or mon.diemChu == ''}"
                             style="color:var(--gray-400);">—</span>
                     </td>
