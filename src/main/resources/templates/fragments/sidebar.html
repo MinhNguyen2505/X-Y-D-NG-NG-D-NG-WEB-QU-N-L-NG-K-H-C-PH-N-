@@ -19,23 +19,11 @@
     <div class="sb-section">Đăng ký</div>
     <a th:href="@{/sinh-vien/dang-ky}"
        th:classappend="${activePage=='sv-dangky'}?' active'" class="sb-link">
-      <i class="fa-solid fa-pen-to-square"></i> Đăng ký học
-    </a>
-    <a th:href="@{/sinh-vien/dang-ky-nguyen-vong}"
-       th:classappend="${activePage=='sv-nguyen-vong'}?' active'" class="sb-link">
-      <i class="fa-solid fa-star"></i> Đăng ký nguyện vọng
+      <i class="fa-solid fa-pen-to-square"></i> Đăng ký tín chỉ
       <span th:if="${badgeNguyenVong != null and badgeNguyenVong > 0}"
             style="margin-left:auto;background:#f59e0b;color:#fff;border-radius:10px;
                    font-size:10px;padding:1px 6px;font-weight:700;"
             th:text="${badgeNguyenVong}"></span>
-    </a>
-    <a th:href="@{/sinh-vien/tra-cuu-ket-qua}"
-       th:classappend="${activePage=='sv-tra-cuu'}?' active'" class="sb-link">
-      <i class="fa-solid fa-magnifying-glass"></i> Tra cứu kết quả ĐK
-    </a>
-    <a th:href="@{/sinh-vien/dinh-huong-hoc-tap}"
-       th:classappend="${activePage=='sv-dinh-huong'}?' active'" class="sb-link">
-      <i class="fa-solid fa-compass"></i> Đăng ký định hướng HT
     </a>
     <a th:href="@{/sinh-vien/dang-ky-thi-lai}"
        th:classappend="${activePage=='sv-thi-lai'}?' active'" class="sb-link">

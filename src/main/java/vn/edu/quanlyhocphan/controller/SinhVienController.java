@@ -140,11 +140,13 @@ public class SinhVienController {
     // DANG KY HOC PHAN
     // =================================================================
 
-    /** Trang chon hoc ky va xem danh sach lop mo dang ky */
+    /** Trang dang ky tin chi: tab LHP + tab Nguyen vong + tab Ket qua NV */
     @GetMapping("/dang-ky")
     public String trangDangKy(
             @AuthenticationPrincipal UserDetails principal,
             @RequestParam(required = false) Long hocKyId,
+            @RequestParam(defaultValue = "lhp") String tab,
+            @RequestParam(required = false) Long keHoachId,
             Model model) {
 
         SinhVien sv = laySinhVienHienTai(principal);
@@ -221,6 +223,38 @@ public class SinhVienController {
             model.addAttribute("danhSachThu",  java.util.List.of(2,3,4,5,6,7,8));
             model.addAttribute("danhSachTiet", java.util.List.of(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15));
         }
+
+        // === TAB NGUYEN VONG ===
+        model.addAttribute("tab", tab);
+
+        // Danh sach ke hoach nguyen vong dang mo
+        var danhSachKeHoach = nguyenVongService.findKeHoachDangMo();
+        model.addAttribute("danhSachKeHoach", danhSachKeHoach);
+
+        if (keHoachId != null) {
+            var keHoachChon = nguyenVongService.findKeHoachById(keHoachId);
+            var daDangKyIds  = nguyenVongService.findDaDangKyIds(sv.getId(), keHoachId);
+            var daDangKyNV   = nguyenVongService.findLichSuDangKy(sv.getId(), keHoachId);
+            model.addAttribute("keHoachChon",  keHoachChon);
+            model.addAttribute("daDangKyIds",  daDangKyIds);
+            model.addAttribute("daDangKyNV",   daDangKyNV);
+        }
+
+        // Ket qua: lay tat ca ke hoach (ca dong) de xem lich su
+        model.addAttribute("tatCaKeHoach", nguyenVongService.findAllKeHoach());
+
+        // Tab ket-qua-nv: neu co keHoachId thi load data ket qua
+        if (keHoachId != null && ("ket-qua-nv".equals(tab) || "nguyen-vong".equals(tab))) {
+            var danhSachKQ = nguyenVongService.findLichSuDangKy(sv.getId(), keHoachId);
+            long choDuyet  = danhSachKQ.stream().filter(d -> "CHO_DUYET".equals(d.getTrangThai())).count();
+            long daDuyet   = danhSachKQ.stream().filter(d -> "DA_DUYET".equals(d.getTrangThai())).count();
+            long daHuy     = danhSachKQ.stream().filter(d -> "DA_HUY".equals(d.getTrangThai())).count();
+            model.addAttribute("danhSachKetQua", danhSachKQ);
+            model.addAttribute("choDuyet", choDuyet);
+            model.addAttribute("daDuyet",  daDuyet);
+            model.addAttribute("daHuy",    daHuy);
+        }
+
         return "sinh-vien/dang-ky";
     }
 
@@ -357,7 +391,7 @@ public class SinhVienController {
         if (loi > 0)
             redirectAttributes.addFlashAttribute("errorMsg",
                 loi + " nguyen vong bi loi (co the da dang ky truoc do).");
-        return "redirect:/sinh-vien/dang-ky-nguyen-vong?keHoachId=" + keHoachId;
+        return "redirect:/sinh-vien/dang-ky?tab=nguyen-vong&keHoachId=" + keHoachId;
     }
 
     @PostMapping("/huy-nguyen-vong")
@@ -373,7 +407,7 @@ public class SinhVienController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMsg", "Co loi: " + e.getMessage());
         }
-        return "redirect:/sinh-vien/dang-ky-nguyen-vong?keHoachId=" + keHoachId;
+        return "redirect:/sinh-vien/dang-ky?tab=nguyen-vong&keHoachId=" + keHoachId;
     }
 
     // =================================================================
