@@ -182,7 +182,8 @@
           </div>
 
           <div th:if="${danhSachCTDT != null and !danhSachCTDT.empty}"
-               class="card" style="overflow-x:auto;">
+               class="card">
+            <div style="overflow-x:auto;">
             <table class="table" style="min-width:860px;">
               <thead>
                 <tr>
@@ -287,6 +288,7 @@
                 </tr>
               </tbody>
             </table>
+            </div><!-- /overflow wrapper -->
           </div>
 
         </div><!-- /tab ctdt -->
@@ -383,3 +385,4 @@
 </div>
 </body>
 </html>
+

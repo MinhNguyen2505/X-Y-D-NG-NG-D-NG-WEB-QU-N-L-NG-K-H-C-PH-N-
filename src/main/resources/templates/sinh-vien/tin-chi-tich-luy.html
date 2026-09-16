@@ -201,8 +201,8 @@
 
             <div th:each="khoi, ks : ${danhSachKhoi}" class="khoi-card">
 
-              <!-- Header accordion -->
-              <div class="khoi-hd"
+              <!-- Header accordion — tất cả mở mặc định -->
+              <div class="khoi-hd open"
                    th:id="'hd-' + ${ks.index}"
                    th:onclick="'toggle(' + ${ks.index} + ')'">
                 <span class="kh-ma" th:text="${khoi.maKhoi}"></span>
@@ -215,8 +215,8 @@
                 <i class="fa-solid fa-chevron-down kh-icon"></i>
               </div>
 
-              <!-- Body accordion -->
-              <div class="khoi-body"
+              <!-- Body accordion — tất cả mở mặc định -->
+              <div class="khoi-body open"
                    th:id="'bd-' + ${ks.index}">
                 <table class="table" style="margin:0;">
                   <thead>
