@@ -718,8 +718,11 @@ public class SinhVienController {
 
         var danhSachKhoi = tinChiTichLuyService.tinhTinChiTheoKhoi(
                 sv.getId(), sv.getNganh().getId());
-        int tongTichLuy  = tinChiTichLuyService.tongTinChiDaTichLuy(
-                sv.getId(), sv.getNganh().getId());
+
+        // Dung tong tich luy tinh tu CTDT (tranh dem ca mon ngoai chuong trinh)
+        int tongTichLuy = danhSachKhoi.stream()
+                .mapToInt(k -> k.getTinChiDaTichLuy())
+                .sum();
 
         // Tong so tin chi yeu cau trong CTDT
         int tongYeuCau = danhSachKhoi.stream()
