@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -22,6 +22,55 @@
       font-size:13px; font-weight:700; color:var(--navy);
       padding:8px 0; border-bottom:2px solid var(--primary);
       margin-bottom:12px; display:flex; align-items:center; gap:8px;
+    }
+
+    /* Credit bar */
+    .credit-bar-wrap {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;
+      color: #fff; display: flex; align-items: center; gap: 20px;
+      flex-wrap: wrap;
+    }
+    .credit-bar-info { flex: 1; min-width: 200px; }
+    .credit-bar-title { font-size: 12px; opacity: .75; margin-bottom: 4px; }
+    .credit-bar-nums {
+      font-size: 24px; font-weight: 800; line-height: 1;
+      display: flex; align-items: baseline; gap: 6px;
+    }
+    .credit-bar-nums .used { font-size: 28px; }
+    .credit-bar-nums .sep { font-size: 16px; opacity: .6; }
+    .credit-bar-nums .max { font-size: 18px; opacity: .8; }
+    .credit-bar-track {
+      background: rgba(255,255,255,.25); border-radius: 20px;
+      height: 10px; overflow: hidden; margin-top: 8px;
+    }
+    .credit-bar-fill {
+      height: 100%; border-radius: 20px;
+      background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+      transition: width .4s cubic-bezier(.4,0,.2,1);
+    }
+    .credit-bar-pct { font-size: 11px; opacity: .7; text-align: right; margin-top: 3px; }
+    .credit-bar-detail {
+      display: flex; gap: 16px; flex-wrap: wrap;
+      font-size: 12px;
+    }
+    .credit-detail-item { display: flex; align-items: center; gap: 6px; opacity: .85; }
+    .credit-detail-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Selected preview chip */
+    .preview-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(255,255,255,.2); border-radius: 20px;
+      padding: 3px 10px; font-size: 11px; font-weight: 600;
+      transition: all .3s;
+    }
+    .preview-chip.adding { background: rgba(34,197,94,.35); }
+
+    /* Disabled register button */
+    button[disabled] { opacity: .5; cursor: not-allowed !important; pointer-events: none; }
+    .btn-full-msg {
+      font-size: 11px; color: var(--danger); font-weight: 600;
+      display: none; align-items: center; gap: 4px;
     }
   </style>
 </head>
@@ -63,7 +112,6 @@
 
             <span class="sv-info-label">Kế hoạch <span class="required-star">*</span></span>
             <span>
-              <!-- Dropdown chọn kế hoạch -->
               <div class="flex-wrap">
                 <span th:if="${danhSachKeHoach == null or danhSachKeHoach.empty}"
                       style="color:var(--gray-500);font-size:13px;">
@@ -83,10 +131,103 @@
       <!-- ===== NỘI DUNG KHI ĐÃ CHỌN KẾ HOẠCH ===== -->
       <div th:if="${keHoachChon != null}">
 
+        <!-- ===== THANH TÍN CHỈ REAL-TIME ===== -->
+        <div class="credit-bar-wrap" id="creditBarWrap"
+             th:attr="data-used=${tinChiDaChon},data-max=${tinChiToiDa},data-nv=${tinChiNV},data-lhp=${tinChiLHP}">
+          <div class="credit-bar-info">
+            <div class="credit-bar-title">
+              <i class="fa-solid fa-coins" style="margin-right:4px;"></i>
+              Tín chỉ đã đăng ký trong học kỳ này
+            </div>
+            <div class="credit-bar-nums">
+              <span class="used" id="usedCredits" th:text="${tinChiDaChon}">0</span>
+              <span class="sep">/</span>
+              <span class="max" th:text="${tinChiToiDa} + ' TC tối đa'">25 TC tối đa</span>
+            </div>
+            <div class="credit-bar-track">
+              <div class="credit-bar-fill" id="creditBarFill"
+                   th:style="'width:' + ${tinChiToiDa > 0 ? (tinChiDaChon * 100 / tinChiToiDa) : 0} + '%'"></div>
+            </div>
+            <div class="credit-bar-pct" id="creditBarPct"
+                 th:text="${tinChiToiDa > 0 ? tinChiDaChon + '/' + tinChiToiDa + ' TC (' + (tinChiDaChon * 100 / tinChiToiDa) + '%)' : '0%'}"></div>
+          </div>
+          <div class="credit-bar-detail">
+            <div class="credit-detail-item">
+              <span class="credit-detail-dot" style="background:#38bdf8;"></span>
+              Nguyện vọng:&nbsp;<b id="detailNV" th:text="${tinChiNV}">0</b>&nbsp;TC
+            </div>
+            <div class="credit-detail-item">
+              <span class="credit-detail-dot" style="background:#a78bfa;"></span>
+              Học phần:&nbsp;<b th:text="${tinChiLHP}">0</b>&nbsp;TC
+            </div>
+            <div class="credit-detail-item" id="previewChipWrap" style="display:none;">
+              <span class="preview-chip adding" id="previewChip">
+                <i class="fa-solid fa-plus"></i>&nbsp;<span id="previewVal">0</span>&nbsp;TC đang chọn
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== HỌC PHẦN ĐÃ ĐĂNG KÝ TRONG HỌC KỲ NÀY ===== -->
+        <div class="card" style="margin-bottom:16px;border-left:3px solid var(--primary);">
+          <div class="card-header">
+            <span class="card-title">
+              <i class="fa-solid fa-book-open" style="color:var(--primary);margin-right:6px;"></i>
+              Học phần đã đăng ký trong học kỳ này
+              <span th:if="${danhSachLHPDaDangKy != null and !danhSachLHPDaDangKy.empty}"
+                    style="font-size:11px;font-weight:400;color:var(--gray-500);margin-left:6px;"
+                    th:text="'(' + ${danhSachLHPDaDangKy.size()} + ' lớp · ' + ${tinChiLHP} + ' TC)'"></span>
+            </span>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div th:if="${danhSachLHPDaDangKy == null or danhSachLHPDaDangKy.empty}"
+                 style="padding:14px 18px;color:var(--gray-500);font-size:13px;">
+              <i class="fa-solid fa-circle-info"></i>
+              Bạn chưa đăng ký học phần nào trong học kỳ này.
+            </div>
+            <table th:if="${danhSachLHPDaDangKy != null and !danhSachLHPDaDangKy.empty}" class="table">
+              <thead>
+                <tr>
+                  <th>Mã HP</th>
+                  <th>Tên học phần</th>
+                  <th style="text-align:center;">TC</th>
+                  <th>Giảng viên</th>
+                  <th>Lịch học</th>
+                  <th style="text-align:center;">Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="dk : ${danhSachLHPDaDangKy}">
+                  <td><code style="font-size:11px;" th:text="${dk.lopHocPhan.monHoc.maMon}"></code></td>
+                  <td th:text="${dk.lopHocPhan.monHoc.tenMon}"></td>
+                  <td style="text-align:center;">
+                    <span class="badge badge-secondary" th:text="${dk.lopHocPhan.monHoc.soTinChi}"></span>
+                  </td>
+                  <td style="font-size:12px;" th:text="${dk.lopHocPhan.giangVien?.hoTen ?: 'Chưa phân công'}"></td>
+                  <td style="font-size:12px;">
+                    <div th:each="lh : ${dk.lopHocPhan.lichHocs}">
+                      T<span th:text="${lh.thu}"></span>
+                      t.<span th:text="${lh.tietBatDau}"></span>–<span th:text="${lh.tietKetThuc}"></span>
+                      <span th:if="${lh.phong != null}" style="color:var(--gray-500);">
+                        (P.<span th:text="${lh.phong}"></span>)
+                      </span>
+                    </div>
+                  </td>
+                  <td style="text-align:center;">
+                    <span th:if="${dk.trangThai.name() == 'DA_DANG_KY'}" class="badge badge-primary"
+                          style="font-size:10px;">Đang học</span>
+                    <span th:if="${dk.trangThai.name() == 'HOAN_THANH'}" class="badge badge-success"
+                          style="font-size:10px;">Hoàn thành</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <form th:action="@{/sinh-vien/dang-ky-nguyen-vong}" method="post" id="formDangKy">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
           <input type="hidden" name="keHoachId" th:value="${keHoachChon.id}"/>
-
           <!-- Danh sách môn CHƯA đăng ký -->
           <div class="card" style="margin-bottom:16px;">
             <div class="card-header">
@@ -94,12 +235,18 @@
                 <i class="fa-solid fa-list-ul" style="color:var(--primary);margin-right:6px;"></i>
                 Danh sách các nguyện vọng chưa đăng ký
               </span>
-              <button type="submit" class="btn btn-success btn-sm" form="formDangKy">
-                <i class="fa-solid fa-check"></i> Đăng ký
-              </button>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="btn-full-msg" id="btnFullMsg">
+                  <i class="fa-solid fa-lock"></i>&nbsp;Đã đủ tín chỉ tối đa
+                </span>
+                <button type="submit" class="btn btn-success btn-sm" form="formDangKy" id="btnDangKy">
+                  <i class="fa-solid fa-check"></i> Đăng ký
+                </button>
+              </div>
             </div>
             <div class="card-body" style="padding:0;">
-              <div th:if="${keHoachChon.danhSachMon.empty}" style="padding:20px;text-align:center;color:var(--gray-500);">
+              <div th:if="${keHoachChon.danhSachMon.empty}"
+                   style="padding:20px;text-align:center;color:var(--gray-500);">
                 Kế hoạch này chưa có môn học nào.
               </div>
               <table th:if="${!keHoachChon.danhSachMon.empty}" class="table">
@@ -112,21 +259,30 @@
                     <th>STT</th>
                     <th>Mã học phần</th>
                     <th>Tên học phần</th>
-                    <th>Số tín chỉ</th>
+                    <th style="text-align:center;">Số tín chỉ</th>
+                    <th style="text-align:center;">TC tích lũy nếu chọn</th>
                   </tr>
                 </thead>
                 <tbody>
                   <th:block th:each="m, i : ${keHoachChon.danhSachMon}">
                     <!-- Chỉ hiện môn chưa đăng ký -->
-                    <tr th:if="${daDangKyIds == null or !daDangKyIds.contains(m.id)}">
+                    <tr th:if="${daDangKyIds == null or !daDangKyIds.contains(m.id)}"
+                        class="mon-row"
+                        th:attr="data-tc=${m.monHoc.soTinChi}">
                       <td class="check-col">
                         <input type="checkbox" name="nguyenVongMonHocIds"
-                               th:value="${m.id}" class="chk-mon"/>
+                               th:value="${m.id}" class="chk-mon"
+                               th:attr="data-tc=${m.monHoc.soTinChi}"/>
                       </td>
                       <td th:text="${i.count}"></td>
                       <td><code th:text="${m.monHoc.maMon}"></code></td>
                       <td th:text="${m.monHoc.tenMon}"></td>
-                      <td th:text="${m.monHoc.soTinChi}"></td>
+                      <td style="text-align:center;">
+                        <span class="badge badge-secondary" th:text="${m.monHoc.soTinChi}"></span>
+                      </td>
+                      <td style="text-align:center;">
+                        <span class="tc-preview" style="font-size:11px;color:var(--gray-400);">—</span>
+                      </td>
                     </tr>
                   </th:block>
                 </tbody>
@@ -209,15 +365,122 @@
 </div>
 
 <script>
+// =========================================================
+// Dữ liệu từ server (data-* trên creditBarWrap)
+// =========================================================
+const creditBar = document.getElementById('creditBarWrap');
+let usedBase = creditBar ? parseInt(creditBar.dataset.used || '0') : 0;
+const maxTC  = creditBar ? parseInt(creditBar.dataset.max  || '25') : 25;
+
+// =========================================================
+// Cập nhật thanh tín chỉ và nút đăng ký
+// =========================================================
+function updateCreditBar(selectedExtra) {
+  if (!creditBar) return;
+  const total = usedBase + selectedExtra;
+  const pct   = maxTC > 0 ? Math.min(total * 100 / maxTC, 100) : 0;
+
+  document.getElementById('usedCredits').textContent = total;
+  const fill = document.getElementById('creditBarFill');
+  fill.style.width = pct + '%';
+  document.getElementById('creditBarPct').textContent =
+    total + '/' + maxTC + ' TC (' + Math.round(pct) + '%)';
+
+  // Màu bar thay đổi theo mức
+  if (pct >= 100) {
+    fill.style.background = 'linear-gradient(90deg,#f87171,#ef4444)';
+  } else if (pct >= 80) {
+    fill.style.background = 'linear-gradient(90deg,#fbbf24,#f59e0b)';
+  } else {
+    fill.style.background = 'linear-gradient(90deg,#38bdf8,#7dd3fc)';
+  }
+
+  // Preview chip "+X TC đang chọn"
+  const chipWrap = document.getElementById('previewChipWrap');
+  const previewVal = document.getElementById('previewVal');
+  if (selectedExtra > 0) {
+    chipWrap.style.display = 'flex';
+    previewVal.textContent = '+' + selectedExtra;
+  } else {
+    chipWrap.style.display = 'none';
+  }
+
+  // Disable nút đăng ký nếu đã đủ tín chỉ
+  const btn = document.getElementById('btnDangKy');
+  const msg = document.getElementById('btnFullMsg');
+  if (usedBase >= maxTC) {
+    if (btn) btn.disabled = true;
+    if (msg) msg.style.display = 'inline-flex';
+  } else {
+    if (btn) btn.disabled = false;
+    if (msg) msg.style.display = 'none';
+  }
+}
+
+// =========================================================
+// Cột "TC tích lũy nếu chọn" — cập nhật theo thứ tự tick
+// =========================================================
+function updateRowPreviews() {
+  let running = usedBase;
+  document.querySelectorAll('.chk-mon').forEach(cb => {
+    const tc      = parseInt(cb.dataset.tc || '0');
+    const row     = cb.closest('tr');
+    const preview = row ? row.querySelector('.tc-preview') : null;
+    if (!preview) return;
+
+    if (cb.checked) {
+      running += tc;
+      preview.style.color      = running > maxTC ? 'var(--danger)' : 'var(--success)';
+      preview.style.fontWeight = '700';
+      preview.textContent      = '→ ' + running + ' TC';
+    } else {
+      preview.style.color      = 'var(--gray-400)';
+      preview.style.fontWeight = 'normal';
+      preview.textContent      = '—';
+    }
+  });
+
+  let extra = 0;
+  document.querySelectorAll('.chk-mon:checked').forEach(cb => {
+    extra += parseInt(cb.dataset.tc || '0');
+  });
+  updateCreditBar(extra);
+}
+
+// =========================================================
+// Toggle tất cả
+// =========================================================
 function toggleAll(master) {
   document.querySelectorAll('.chk-mon').forEach(cb => cb.checked = master.checked);
+  updateRowPreviews();
 }
-// Nếu không có checkbox nào được check thì không submit
+
+// =========================================================
+// Lắng nghe thay đổi từng checkbox
+// =========================================================
+document.querySelectorAll('.chk-mon').forEach(cb => {
+  cb.addEventListener('change', updateRowPreviews);
+});
+
+// Khởi tạo ngay khi trang load
+updateRowPreviews();
+
+// =========================================================
+// Validate trước khi submit
+// =========================================================
 document.getElementById('formDangKy')?.addEventListener('submit', function(e) {
   const checked = document.querySelectorAll('.chk-mon:checked');
   if (checked.length === 0) {
     e.preventDefault();
     alert('Vui lòng chọn ít nhất 1 nguyện vọng trước khi đăng ký.');
+    return;
+  }
+  let extra = 0;
+  checked.forEach(cb => extra += parseInt(cb.dataset.tc || '0'));
+  if (usedBase + extra > maxTC) {
+    e.preventDefault();
+    alert('Tổng tín chỉ (' + (usedBase + extra) + ' TC) vượt quá giới hạn ' + maxTC +
+          ' TC của học kỳ. Vui lòng bỏ chọn bớt môn.');
   }
 });
 </script>

@@ -58,6 +58,12 @@ public class SinhVienController {
         return sinhVienService.findByEmail(principal.getUsername());
     }
 
+    private int tinhTinChiTichLuyChinhXac(SinhVien sv) {
+        if (sv.getNganh() == null) return 0;
+        return tinChiTichLuyService.tinhTinChiTheoKhoi(sv.getId(), sv.getNganh().getId())
+                .stream().mapToInt(k -> k.getTinChiDaTichLuy()).sum();
+    }
+
     // =================================================================
     // DASHBOARD
     // =================================================================
@@ -86,7 +92,7 @@ public class SinhVienController {
         List<DangKyHocPhan> dangKyGanDay = dangKyService.layLichSuDangKy(sv.getId());
 
         // Tin chi tich luy — dung DB query (HOAN_THANH + diem >= 5), dong nhat voi trang Tin chi
-        int tinChiTichLuy = dangKyRepo.tinhTongTinChiTichLuy(sv.getId());
+        int tinChiTichLuy = tinhTinChiTichLuyChinhXac(sv);
 
         // Nguyen vong CHO_DUYET — 1 COUNT query
         long nguyenVongChoDuyet = dangKyNvRepo.countChoDuyetBySinhVienId(sv.getId());
@@ -155,7 +161,7 @@ public class SinhVienController {
         model.addAttribute("danhSachHocKy", danhSachHocKy);
 
         // % hoan thanh CTDT = tinChiTichLuy / tongTCCTDT — hien thi bat ke chon HK hay chua
-        int tinChiTichLuy = dangKyRepo.tinhTongTinChiTichLuy(sv.getId());
+        int tinChiTichLuy = tinhTinChiTichLuyChinhXac(sv);
         int tongTCCtdt = 0;
         if (sv.getNganh() != null) {
             tongTCCtdt = chuongTrinhDaoTaoRepo.searchByNganhId(sv.getNganh().getId(), "")
@@ -198,11 +204,16 @@ public class SinhVienController {
             model.addAttribute("monDaHoanThanhIds", monDaHoanThanhIds);
             model.addAttribute("monNguyenVongDuyetIds", monNguyenVongDuyetIds);
 
-            // Tinh tong TC da dang ky trong HK hien tai (tranh lambda trong Thymeleaf)
-            int tinChiDaChonHK = daDangKy.stream()
+            // Tinh tong TC da dang ky trong HK hien tai (LHP) + Nguyen vong
+            int tinChiDaChonLHP = daDangKy.stream()
                 .mapToInt(dk -> dk.getLopHocPhan().getMonHoc().getSoTinChi())
                 .sum();
+            int tinChiNV = dangKyNvRepo.tinhTongTinChiNguyenVong(sv.getId(), hocKyId);
+            int tinChiDaChonHK = tinChiDaChonLHP + tinChiNV;
+            
             model.addAttribute("tinChiDaChonHK", tinChiDaChonHK);
+            model.addAttribute("tinChiDaChonLHP", tinChiDaChonLHP);
+            model.addAttribute("tinChiNV", tinChiNV);
 
             // % cai thien = tinChiDaChonHK / tinChiToiDa * 100
             int phanTramDK = hocKy.getTinChiToiDa() > 0
@@ -339,6 +350,8 @@ public class SinhVienController {
             model.addAttribute("hocKyChon", hocKy);
             model.addAttribute("danhSachDangKy", danhSachDangKy);
             model.addAttribute("danhSachLichThi", danhSachLichThi);
+            model.addAttribute("danhSachThu",  java.util.List.of(2,3,4,5,6,7,8));
+            model.addAttribute("danhSachTiet", java.util.List.of(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15));
         }
         return "sinh-vien/thoi-khoa-bieu";
     }
@@ -363,6 +376,22 @@ public class SinhVienController {
             model.addAttribute("keHoachChon", keHoach);
             model.addAttribute("daDangKyIds", daDangKyIds);
             model.addAttribute("daDangKy", daDangKy);
+
+            // Tín chỉ đã đăng ký nguyện vọng (CHO_DUYET + DA_DUYET) trong học kỳ này
+            Long hocKyId = keHoach.getHocKy().getId();
+            int tinChiNV = dangKyNvRepo.tinhTongTinChiNguyenVong(sv.getId(), hocKyId);
+            // Tín chỉ đã đăng ký học phần chính thức trong học kỳ này
+            int tinChiLHP = dangKyRepo.tinhTongTinChiDaDangKy(sv.getId(), hocKyId);
+            int tinChiToiDa = keHoach.getHocKy().getTinChiToiDa();
+            int tinChiDaChon = tinChiNV + tinChiLHP;
+            model.addAttribute("tinChiDaChon", tinChiDaChon);
+            model.addAttribute("tinChiNV", tinChiNV);
+            model.addAttribute("tinChiLHP", tinChiLHP);
+            model.addAttribute("tinChiToiDa", tinChiToiDa);
+
+            // Danh sách các học phần đã đăng ký trong học kỳ này (để SV xem trước khi đăng ký NV)
+            var danhSachLHPDaDangKy = dangKyRepo.findDangKyThoiKhoaBieu(sv.getId(), hocKyId);
+            model.addAttribute("danhSachLHPDaDangKy", danhSachLHPDaDangKy);
         }
         return "sinh-vien/dang-ky-nguyen-vong";
     }
@@ -774,7 +803,7 @@ public class SinhVienController {
         double gpa = tongTinChi > 0 ? tongDiemNhanTC / tongTinChi : 0.0;
 
         // Tổng tín chỉ tích lũy từ DB — đồng nhất với trang Tín chỉ tích lũy
-        int tinChiTichLuy = dangKyRepo.tinhTongTinChiTichLuy(sv.getId());
+        int tinChiTichLuy = tinhTinChiTichLuyChinhXac(sv);
 
         // Build thiLaiMap: dangKyHocPhanId -> DangKyThiLai (ban ghi moi nhat)
         // De template kiem tra moi mon co dang ky thi lai chua
@@ -794,3 +823,5 @@ public class SinhVienController {
         return "sinh-vien/ket-qua-hoc-tap";
     }
 }
+
+

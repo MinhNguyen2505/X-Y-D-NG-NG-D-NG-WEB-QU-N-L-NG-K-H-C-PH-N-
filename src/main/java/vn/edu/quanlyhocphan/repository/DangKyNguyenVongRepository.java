@@ -79,4 +79,13 @@ public interface DangKyNguyenVongRepository extends JpaRepository<DangKyNguyenVo
            "WHERE m.keHoachNguyenVong.id = :keHoachId " +
            "ORDER BY d.sinhVien.mssv, m.monHoc.maMon")
     List<DangKyNguyenVong> findByKeHoach(@Param("keHoachId") Long keHoachId);
+
+    @Query("SELECT COALESCE(SUM(m.monHoc.soTinChi), 0) FROM DangKyNguyenVong d " +
+           "JOIN d.nguyenVongMonHoc m " +
+           "WHERE d.sinhVien.id = :sinhVienId " +
+           "AND m.keHoachNguyenVong.hocKy.id = :hocKyId " +
+           "AND d.trangThai IN ('CHO_DUYET', 'DA_DUYET')")
+    Integer tinhTongTinChiNguyenVong(
+            @Param("sinhVienId") Long sinhVienId,
+            @Param("hocKyId") Long hocKyId);
 }

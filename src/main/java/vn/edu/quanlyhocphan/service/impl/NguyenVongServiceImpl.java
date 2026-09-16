@@ -23,6 +23,7 @@ public class NguyenVongServiceImpl implements NguyenVongService {
     private final DangKyNguyenVongRepository dangKyNvRepo;
     private final SinhVienRepository sinhVienRepo;
     private final MonHocRepository monHocRepo;
+    private final DangKyHocPhanRepository dangKyHocPhanRepo;
 
     // ================================================================
     // ADMIN
@@ -128,25 +129,42 @@ public class NguyenVongServiceImpl implements NguyenVongService {
     @Override
     @Transactional
     public void dangKy(Long sinhVienId, Long nguyenVongMonHocId) {
+        NguyenVongMonHoc nvmh = nvMonHocRepo.findById(nguyenVongMonHocId)
+            .orElseThrow(() -> new ResourceNotFoundException("NguyenVongMonHoc", nguyenVongMonHocId));
+
+        // Kiem tra ke hoach con mo khong
+        if (!nvmh.getKeHoachNguyenVong().isDangMo()) {
+            throw new NghiepVuException("Ke hoach dang ky nguyen vong da dong.");
+        }
+
+        Long hocKyId = nvmh.getKeHoachNguyenVong().getHocKy().getId();
+        int maxTinChi = nvmh.getKeHoachNguyenVong().getHocKy().getTinChiToiDa();
+        int tinChiMonNay = nvmh.getMonHoc().getSoTinChi();
+
         // Kiem tra da dang ky chua
-        dangKyNvRepo.findBySinhVienIdAndNguyenVongMonHocId(sinhVienId, nguyenVongMonHocId)
-            .ifPresent(dk -> {
-                if (!"DA_HUY".equals(dk.getTrangThai())) {
-                    throw new NghiepVuException("Ban da dang ky nguyen vong nay roi.");
-                }
-                // Neu da huy thi mo lai
-                dk.setTrangThai("CHO_DUYET");
-                dangKyNvRepo.save(dk);
-            });
-
-        // Neu chua co ban ghi nao thi tao moi
-        if (dangKyNvRepo.findBySinhVienIdAndNguyenVongMonHocId(sinhVienId, nguyenVongMonHocId).isEmpty()) {
-            NguyenVongMonHoc nvmh = nvMonHocRepo.findById(nguyenVongMonHocId)
-                .orElseThrow(() -> new ResourceNotFoundException("NguyenVongMonHoc", nguyenVongMonHocId));
-
-            // Kiem tra ke hoach con mo khong
-            if (!nvmh.getKeHoachNguyenVong().isDangMo()) {
-                throw new NghiepVuException("Ke hoach dang ky nguyen vong da dong.");
+        var existingDk = dangKyNvRepo.findBySinhVienIdAndNguyenVongMonHocId(sinhVienId, nguyenVongMonHocId);
+        if (existingDk.isPresent()) {
+            DangKyNguyenVong dk = existingDk.get();
+            if (!"DA_HUY".equals(dk.getTrangThai())) {
+                throw new NghiepVuException("Ban da dang ky nguyen vong nay roi.");
+            }
+            
+            // Check limits before re-opening
+            int currentLhpCredits = dangKyHocPhanRepo.tinhTongTinChiDaDangKy(sinhVienId, hocKyId);
+            int currentNvCredits = dangKyNvRepo.tinhTongTinChiNguyenVong(sinhVienId, hocKyId);
+            if (currentLhpCredits + currentNvCredits + tinChiMonNay > maxTinChi) {
+                throw new NghiepVuException("Khong the dang ky nguyen vong. Tong so tin chi (" + (currentLhpCredits + currentNvCredits + tinChiMonNay) + ") vuot qua gioi han cua hoc ky (" + maxTinChi + ").");
+            }
+            
+            // Neu da huy thi mo lai
+            dk.setTrangThai("CHO_DUYET");
+            dangKyNvRepo.save(dk);
+        } else {
+            // Check limits before creating new
+            int currentLhpCredits = dangKyHocPhanRepo.tinhTongTinChiDaDangKy(sinhVienId, hocKyId);
+            int currentNvCredits = dangKyNvRepo.tinhTongTinChiNguyenVong(sinhVienId, hocKyId);
+            if (currentLhpCredits + currentNvCredits + tinChiMonNay > maxTinChi) {
+                throw new NghiepVuException("Khong the dang ky nguyen vong. Tong so tin chi (" + (currentLhpCredits + currentNvCredits + tinChiMonNay) + ") vuot qua gioi han cua hoc ky (" + maxTinChi + ").");
             }
 
             SinhVien sv = sinhVienRepo.findById(sinhVienId)

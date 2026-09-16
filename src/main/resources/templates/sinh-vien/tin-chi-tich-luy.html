@@ -121,15 +121,13 @@
                     <td style="text-align:center;">
                       <span th:if="${mon.diem != null}"
                             th:text="${mon.diem}"
-                            th:style="${mon.diem.doubleValue() >= 5} ? 'color:var(--success);font-weight:700;' : 'color:var(--danger);font-weight:700;'"></span>
+                            th:style="${mon.diem != null and mon.diem >= 5 ? 'color:var(--success);font-weight:700;' : 'color:var(--danger);font-weight:700;'}"></span>
                       <span th:if="${mon.diem == null}" style="color:var(--gray-400);">—</span>
                     </td>
                     <td style="text-align:center;font-weight:800;">
                       <span th:if="${mon.diemChu != null and mon.diemChu != ''}"
                             th:text="${mon.diemChu}"
-                            th:style="${mon.diemChu == 'F'} ? 'color:#dc2626;'
-                                     : (${mon.diem != null and mon.diem >= 5}) ? 'color:#15803d;'
-                                     : 'color:#6b7280;'"></span>
+                            th:style="${mon.diemChu == 'F' ? 'color:#dc2626;' : (mon.diem != null and mon.diem >= 5 ? 'color:#15803d;' : 'color:#6b7280;')}"></span>
                       <span th:if="${mon.diemChu == null or mon.diemChu == ''}"
                             style="color:var(--gray-400);">—</span>
                     </td>

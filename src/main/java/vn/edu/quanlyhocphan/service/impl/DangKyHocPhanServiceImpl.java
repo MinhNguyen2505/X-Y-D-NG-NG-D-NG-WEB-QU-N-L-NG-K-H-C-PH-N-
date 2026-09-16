@@ -44,6 +44,7 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
     private final LichHocRepository lichHocRepo;
     private final MonTienQuyetRepository monTienQuyetRepo;
     private final HocKyRepository hocKyRepo;
+    private final DangKyNguyenVongRepository dangKyNvRepo;
 
     // =================================================================
     // DANG KY — Toan bo 7 rang buoc (tach thanh method rieng, de test)
@@ -171,10 +172,12 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
     // =================================================================
 
     private void kiemTraTongTinChi(Long sinhVienId, HocKy hocKy, int soTinChiThem) {
-        int tinChiHienTai = dangKyRepo.tinhTongTinChiDaDangKy(sinhVienId, hocKy.getId());
+        int tinChiHienTaiLHP = dangKyRepo.tinhTongTinChiDaDangKy(sinhVienId, hocKy.getId());
+        int tinChiHienTaiNV = dangKyNvRepo.tinhTongTinChiNguyenVong(sinhVienId, hocKy.getId());
+        int tinChiHienTai = tinChiHienTaiLHP + tinChiHienTaiNV;
         if (tinChiHienTai + soTinChiThem > hocKy.getTinChiToiDa()) {
-            log.warn("SV [{}] vuot tin chi: hien_tai={} + them={} > max={}",
-                sinhVienId, tinChiHienTai, soTinChiThem, hocKy.getTinChiToiDa());
+            log.warn("SV [{}] vuot tin chi: LHP={} + NV={} + them={} > max={}",
+                sinhVienId, tinChiHienTaiLHP, tinChiHienTaiNV, soTinChiThem, hocKy.getTinChiToiDa());
             throw new VuotTinChiException(tinChiHienTai, soTinChiThem, hocKy.getTinChiToiDa());
         }
     }

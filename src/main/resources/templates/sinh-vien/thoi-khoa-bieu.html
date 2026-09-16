@@ -273,6 +273,65 @@
             <!-- /mon-card -->
 
           </div>
+
+          <!-- Lịch học dạng grid theo thứ -->
+          <div th:if="${danhSachDangKy != null and !danhSachDangKy.empty}" class="card" style="margin-top:16px;">
+            <div class="card-header">
+              <span class="card-title">
+                <i class="fa-solid fa-calendar-week" style="color:var(--primary);margin-right:6px;"></i>
+                Sắp xếp lịch học trong tuần
+              </span>
+            </div>
+            <div class="card-body" style="overflow-x:auto;padding:0;">
+              <table style="width:100%;border-collapse:collapse;min-width:700px;">
+                <thead>
+                  <tr>
+                    <th style="background:var(--gray-100);padding:8px 10px;font-size:12px;
+                                font-weight:700;border:1px solid var(--gray-200);width:60px;text-align:center;">Tiết</th>
+                    <th th:each="thu : ${danhSachThu}"
+                        style="background:var(--gray-100);padding:8px;font-size:12px;font-weight:700;
+                               border:1px solid var(--gray-200);text-align:center;"
+                        th:text="${thu == 2 ? 'Thứ Hai' : thu == 3 ? 'Thứ Ba'
+                                 : thu == 4 ? 'Thứ Tư'  : thu == 5 ? 'Thứ Năm'
+                                 : thu == 6 ? 'Thứ Sáu' : thu == 7 ? 'Thứ Bảy' : 'CN'}"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Các hàng tiết 1-15 -->
+                  <tr th:each="tiet : ${danhSachTiet}">
+                    <td style="text-align:center;font-size:11px;color:var(--gray-500);
+                                border:1px solid var(--gray-100);padding:4px;background:var(--gray-50);"
+                        th:text="${tiet}"></td>
+                    <!-- Mỗi thứ: check xem có lớp nào học tiết này không -->
+                    <th:block th:each="thu : ${danhSachThu}">
+                      <td style="border:1px solid var(--gray-100);padding:2px;min-width:100px;vertical-align:top;">
+                        <th:block th:each="dk : ${danhSachDangKy}">
+                          <th:block th:each="lh : ${dk.lopHocPhan.lichHocs}">
+                            <!-- Chỉ hiện ô đầu tiên của buổi (tietBatDau) -->
+                            <div th:if="${lh.thu == thu and lh.tietBatDau == tiet}"
+                                 style="background:linear-gradient(135deg,#dbeafe,#eff6ff);
+                                        border-left:3px solid var(--primary);border-radius:4px;
+                                        padding:4px 6px;font-size:11px;margin:2px;">
+                              <div style="font-weight:700;color:var(--navy);font-size:11px;"
+                                   th:text="${dk.lopHocPhan.monHoc.tenMon}"></div>
+                              <div style="color:var(--gray-500);font-size:10px;"
+                                   th:text="${dk.lopHocPhan.maLopHp}
+                                            + (${lh.phong != null} ? ' · P.' + ${lh.phong} : '')"></div>
+                              <div style="color:var(--primary);font-size:10px;"
+                                   th:text="'Tiết ' + ${lh.tietBatDau} + '–' + ${lh.tietKetThuc}"></div>
+                            </div>
+                          </th:block>
+                        </th:block>
+                      </td>
+                    </th:block>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="padding:8px 14px;font-size:11px;color:var(--gray-400);">
+                * Mỗi tiết ≈ 50 phút. Tiết 1 bắt đầu từ 7:00. Lịch có thể thay đổi — theo dõi thông báo chính thức.
+              </div>
+            </div>
+          </div>
         </div>
         <!-- /tab lich-hoc -->
 
