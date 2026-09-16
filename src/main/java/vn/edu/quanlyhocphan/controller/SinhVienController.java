@@ -735,6 +735,9 @@ public class SinhVienController {
         model.addAttribute("tongYeuCau",   tongYeuCau);
         model.addAttribute("tongBatBuoc",  tongBatBuoc);
 
+        int tongMon = danhSachKhoi.stream().mapToInt(k -> k.getDanhSachMon().size()).sum();
+        model.addAttribute("tongMon", tongMon);
+
         // Tinh san phan tram de tranh #numbers.formatDecimal trong Thymeleaf SpEL
         String phanTramTichLuy = tongYeuCau > 0
             ? String.format("%.1f%%", tongTichLuy * 100.0 / tongYeuCau)
