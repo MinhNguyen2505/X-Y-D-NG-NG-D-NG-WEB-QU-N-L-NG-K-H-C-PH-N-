@@ -6,112 +6,240 @@
   <title>Trang chủ — Sinh viên</title>
   <link rel="stylesheet" th:href="@{/css/app.css}"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    /* ---- Greeting Banner ---- */
+    .greeting-banner {
+      background: linear-gradient(135deg, #0b1d5e 0%, #1344b4 50%, #0369a1 100%);
+      border-radius: 16px; padding: 24px 28px;
+      color: #fff; display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 20px;
+      position: relative; overflow: hidden;
+    }
+    .greeting-banner::before {
+      content: '';
+      position: absolute; top: -40px; right: 80px;
+      width: 200px; height: 200px; border-radius: 50%;
+      background: rgba(255,255,255,.05);
+      pointer-events: none;
+    }
+    .greeting-banner::after {
+      content: '';
+      position: absolute; bottom: -60px; right: -20px;
+      width: 180px; height: 180px; border-radius: 50%;
+      background: rgba(255,255,255,.04);
+      pointer-events: none;
+    }
+    .greeting-content { position: relative; z-index: 1; }
+    .greeting-label   { font-size: 12.5px; opacity: .75; margin-bottom: 4px; }
+    .greeting-name    { font-size: 24px; font-weight: 900; letter-spacing: -.3px; margin-bottom: 6px; }
+    .greeting-meta    { font-size: 12px; opacity: .65; }
+    .greeting-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 11.5px; font-weight: 600; margin-top: 8px;
+    }
+    .greeting-icon { font-size: 52px; opacity: .9; position: relative; z-index: 1; }
+
+    /* ---- Quick Action Cards ---- */
+    .quick-actions {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 12px; margin-bottom: 20px;
+    }
+    .qa-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 12px; padding: 16px;
+      text-align: center; cursor: pointer;
+      transition: all .25s; text-decoration: none;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+    }
+    .qa-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .qa-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; transition: transform .25s;
+    }
+    .qa-card:hover .qa-icon { transform: scale(1.1); }
+    .qa-label { font-size: 12px; font-weight: 600; color: var(--gray-700); }
+    .qa-card:hover .qa-label { color: var(--primary); }
+
+    /* ---- Section heading ---- */
+    .section-heading {
+      font-size: 13px; font-weight: 700; color: var(--navy);
+      display: flex; align-items: center; gap: 8px;
+      padding-bottom: 10px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--gray-100);
+    }
+    .section-heading i { color: var(--primary); }
+  </style>
 </head>
 <body>
 <div class="layout">
   <div th:insert="~{fragments/sidebar :: sv('sv-home')}"></div>
   <div class="main">
     <header class="topbar">
-      <div class="topbar-title">Trang chủ</div>
+      <div class="topbar-title">
+        <i class="fa-solid fa-house" style="color:var(--primary);margin-right:8px;font-size:13px;"></i>
+        Trang chủ
+      </div>
       <div class="topbar-user">
-        <div class="topbar-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
-        <span class="topbar-name" th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
+        <div class="topbar-avatar"
+             th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
+        <span class="topbar-name"
+              th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</span>
       </div>
     </header>
+
     <div class="content">
 
-      <div th:if="${successMsg}" class="flash flash-success"><i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span></div>
-      <div th:if="${errorMsg}"   class="flash flash-danger"><i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span></div>
-
-      <!-- Greeting banner -->
-      <div style="background:linear-gradient(135deg,#1a56db,#0c2494);border-radius:10px;padding:20px 24px;
-                  color:#fff;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-        <div>
-          <div style="font-size:13px;opacity:.8;" th:text="${greeting}">Xin chào,</div>
-          <div style="font-size:22px;font-weight:800;" th:text="${sinhVien?.hoTen ?: 'Sinh viên'}">Sinh viên</div>
-          <div style="font-size:12px;opacity:.7;margin-top:4px;"
-               th:text="'MSSV: ' + ${sinhVien?.mssv} + ' | ' + ${sinhVien?.nganh?.tenNganh ?: 'Chưa xác định ngành'}"></div>
-          <!-- Định hướng active -->
-          <div th:if="${dinhHuongActive != null}"
-               style="font-size:12px;opacity:.85;margin-top:6px;background:rgba(255,255,255,.15);
-                      border-radius:4px;padding:3px 8px;display:inline-block;">
-            <i class="fa-solid fa-compass"></i>
-            Định hướng: <b th:text="${dinhHuongActive.dinhHuong.tenDinhHuong}"></b>
-          </div>
-        </div>
-        <div style="font-size:48px;">🎓</div>
+      <div th:if="${successMsg}" class="flash flash-success">
+        <i class="fa-solid fa-circle-check"></i>
+        <span th:text="${successMsg}"></span>
+      </div>
+      <div th:if="${errorMsg}" class="flash flash-danger">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span th:text="${errorMsg}"></span>
       </div>
 
-      <!-- Stats row: 6 cards -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">
+      <!-- ===== GREETING BANNER ===== -->
+      <div class="greeting-banner">
+        <div class="greeting-content">
+          <div class="greeting-label" th:text="${greeting}">Xin chào,</div>
+          <div class="greeting-name"
+               th:text="${sinhVien?.hoTen ?: 'Sinh viên'}">Sinh viên</div>
+          <div class="greeting-meta"
+               th:text="'MSSV: ' + ${sinhVien?.mssv} + '  ·  ' + ${sinhVien?.nganh?.tenNganh ?: 'Chưa xác định ngành'}">
+          </div>
+          <div th:if="${dinhHuongActive != null}" class="greeting-tag">
+            <i class="fa-solid fa-compass"></i>
+            <span th:text="'Định hướng: ' + ${dinhHuongActive.dinhHuong.tenDinhHuong}"></span>
+          </div>
+        </div>
+        <div class="greeting-icon">🎓</div>
+      </div>
+
+      <!-- ===== STAT CARDS ===== -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;">
+
         <div class="stat-card">
-          <div class="stat-icon si-blue"><i class="fa-solid fa-book" style="color:#1d4ed8;"></i></div>
+          <div class="stat-icon si-blue">
+            <i class="fa-solid fa-book" style="color:#1d4ed8;"></i>
+          </div>
           <div>
             <div class="stat-label">Tín chỉ HK này</div>
             <div class="stat-val" th:text="${tinChiDaDangKy}">0</div>
           </div>
         </div>
+
         <div class="stat-card">
-          <div class="stat-icon si-green"><i class="fa-solid fa-graduation-cap" style="color:#15803d;"></i></div>
+          <div class="stat-icon si-green">
+            <i class="fa-solid fa-graduation-cap" style="color:#15803d;"></i>
+          </div>
           <div>
             <div class="stat-label">Tín chỉ tích lũy</div>
             <div class="stat-val" th:text="${tinChiTichLuy}">0</div>
           </div>
         </div>
+
         <div class="stat-card">
-          <div class="stat-icon si-orange"><i class="fa-solid fa-calendar-check" style="color:#c2410c;"></i></div>
+          <div class="stat-icon si-orange">
+            <i class="fa-solid fa-calendar-check" style="color:#c2410c;"></i>
+          </div>
           <div>
             <div class="stat-label">HK đang mở ĐK</div>
             <div class="stat-val" th:text="${hocKyDangMo?.size() ?: 0}">0</div>
           </div>
         </div>
+
         <!-- Nguyện vọng chờ duyệt -->
-        <div class="stat-card" th:style="${nguyenVongChoDuyet > 0} ? 'border-left:3px solid #f59e0b;' : ''">
-          <div class="stat-icon" style="background:#fef3c7;">
+        <div class="stat-card"
+             th:style="${nguyenVongChoDuyet > 0} ? 'border-left:3px solid #f59e0b;' : ''">
+          <div class="stat-icon si-yellow">
             <i class="fa-solid fa-star" style="color:#d97706;"></i>
           </div>
-          <div>
+          <div style="flex:1;">
             <div class="stat-label">Nguyện vọng chờ duyệt</div>
             <div class="stat-val" th:text="${nguyenVongChoDuyet}"
                  th:style="${nguyenVongChoDuyet > 0} ? 'color:#d97706;' : ''">0</div>
           </div>
           <a th:if="${nguyenVongChoDuyet > 0}"
              th:href="@{/sinh-vien/tra-cuu-ket-qua}"
-             style="font-size:11px;color:#d97706;text-decoration:none;margin-left:auto;white-space:nowrap;">
+             style="font-size:11px;color:#d97706;white-space:nowrap;font-weight:600;">
             Xem →
           </a>
         </div>
+
         <!-- Thi lại chờ duyệt -->
-        <div class="stat-card" th:style="${thiLaiChoDuyet > 0} ? 'border-left:3px solid #ef4444;' : ''">
-          <div class="stat-icon" style="background:#fee2e2;">
+        <div class="stat-card"
+             th:style="${thiLaiChoDuyet > 0} ? 'border-left:3px solid #ef4444;' : ''">
+          <div class="stat-icon si-red">
             <i class="fa-solid fa-rotate-right" style="color:#dc2626;"></i>
           </div>
-          <div>
+          <div style="flex:1;">
             <div class="stat-label">Thi lại chờ duyệt</div>
             <div class="stat-val" th:text="${thiLaiChoDuyet}"
                  th:style="${thiLaiChoDuyet > 0} ? 'color:#dc2626;' : ''">0</div>
           </div>
           <a th:if="${thiLaiChoDuyet > 0}"
              th:href="@{/sinh-vien/dang-ky-thi-lai}"
-             style="font-size:11px;color:#dc2626;text-decoration:none;margin-left:auto;white-space:nowrap;">
+             style="font-size:11px;color:#dc2626;white-space:nowrap;font-weight:600;">
             Xem →
           </a>
         </div>
-        <!-- Đăng ký gần đây -->
+
+        <!-- Đăng ký học phần -->
         <div class="stat-card">
-          <div class="stat-icon si-purple"><i class="fa-solid fa-list-check" style="color:#6d28d9;"></i></div>
+          <div class="stat-icon si-purple">
+            <i class="fa-solid fa-list-check" style="color:#6d28d9;"></i>
+          </div>
           <div>
-            <div class="stat-label">Đăng ký học phần</div>
+            <div class="stat-label">Môn đã đăng ký</div>
             <div class="stat-val" th:text="${dangKyGanDay?.size() ?: 0}">0</div>
           </div>
         </div>
+
       </div>
 
-      <!-- Học kỳ đang mở -->
-      <div class="card" style="margin-bottom:14px;">
+      <!-- ===== QUICK ACTIONS ===== -->
+      <div class="quick-actions">
+        <a th:href="@{/sinh-vien/dang-ky}" class="qa-card">
+          <div class="qa-icon si-blue">
+            <i class="fa-solid fa-pen-to-square" style="color:#1d4ed8;"></i>
+          </div>
+          <div class="qa-label">Đăng ký học phần</div>
+        </a>
+        <a th:href="@{/sinh-vien/thoi-khoa-bieu}" class="qa-card">
+          <div class="qa-icon si-teal">
+            <i class="fa-solid fa-calendar-days" style="color:#0f766e;"></i>
+          </div>
+          <div class="qa-label">Thời khoá biểu</div>
+        </a>
+        <a th:href="@{/sinh-vien/tin-chi-tich-luy}" class="qa-card">
+          <div class="qa-icon si-green">
+            <i class="fa-solid fa-graduation-cap" style="color:#15803d;"></i>
+          </div>
+          <div class="qa-label">Tín chỉ tích lũy</div>
+        </a>
+        <a th:href="@{/sinh-vien/ket-qua-hoc-tap}" class="qa-card">
+          <div class="qa-icon si-purple">
+            <i class="fa-solid fa-chart-line" style="color:#6d28d9;"></i>
+          </div>
+          <div class="qa-label">Kết quả học tập</div>
+        </a>
+      </div>
+
+      <!-- ===== HỌC KỲ ĐANG MỞ ===== -->
+      <div class="card">
         <div class="card-header">
           <span class="card-title">
-            <i class="fa-solid fa-calendar-days" style="color:var(--primary);margin-right:6px;"></i>
+            <i class="fa-solid fa-calendar-days" style="color:var(--primary);"></i>
             Học kỳ đang mở đăng ký
           </span>
           <a th:href="@{/sinh-vien/dang-ky}" class="btn btn-primary btn-sm">
@@ -120,24 +248,33 @@
         </div>
         <div class="card-body" style="padding:0;">
           <div th:if="${hocKyDangMo == null or hocKyDangMo.empty}" class="empty-state">
-            <i class="fa-solid fa-circle-info"></i>Hiện không có học kỳ nào đang mở đăng ký.
+            <i class="fa-solid fa-circle-info"></i>
+            <p>Hiện không có học kỳ nào đang mở đăng ký.</p>
           </div>
           <table th:if="${hocKyDangMo != null and !hocKyDangMo.empty}" class="table">
             <thead>
               <tr>
-                <th>Học kỳ</th><th>Năm học</th>
-                <th>Bắt đầu ĐK</th><th>Kết thúc ĐK</th>
-                <th>TC tối thiểu</th><th>TC tối đa</th><th></th>
+                <th>Học kỳ</th>
+                <th>Năm học</th>
+                <th>Bắt đầu ĐK</th>
+                <th>Kết thúc ĐK</th>
+                <th style="text-align:center;">TC tối thiểu</th>
+                <th style="text-align:center;">TC tối đa</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               <tr th:each="hk : ${hocKyDangMo}">
-                <td th:text="${hk.tenHocKy}"></td>
+                <td><b th:text="${hk.tenHocKy}"></b></td>
                 <td th:text="${hk.namHoc}"></td>
                 <td th:text="${#temporals.format(hk.ngayBatDauDk,'dd/MM/yyyy')}"></td>
                 <td th:text="${#temporals.format(hk.ngayKetThucDk,'dd/MM/yyyy')}"></td>
-                <td th:text="${hk.tinChiToiThieu}"></td>
-                <td th:text="${hk.tinChiToiDa}"></td>
+                <td style="text-align:center;">
+                  <span class="badge badge-secondary" th:text="${hk.tinChiToiThieu}"></span>
+                </td>
+                <td style="text-align:center;">
+                  <span class="badge badge-primary" th:text="${hk.tinChiToiDa}"></span>
+                </td>
                 <td>
                   <a th:href="@{/sinh-vien/dang-ky(hocKyId=${hk.id})}"
                      class="btn btn-primary btn-sm">
@@ -150,38 +287,57 @@
         </div>
       </div>
 
-      <!-- Đăng ký gần đây -->
+      <!-- ===== ĐĂNG KÝ GẦN ĐÂY ===== -->
       <div class="card">
         <div class="card-header">
           <span class="card-title">
-            <i class="fa-solid fa-history" style="color:var(--primary);margin-right:6px;"></i>
+            <i class="fa-solid fa-clock-rotate-left" style="color:var(--primary);"></i>
             Đăng ký gần đây
           </span>
-          <a th:href="@{/sinh-vien/ket-qua-hoc-tap}" class="btn btn-outline btn-sm">Xem tất cả</a>
+          <a th:href="@{/sinh-vien/ket-qua-hoc-tap}" class="btn btn-secondary btn-sm">
+            Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+          </a>
         </div>
         <div class="card-body" style="padding:0;">
           <div th:if="${dangKyGanDay == null or dangKyGanDay.empty}" class="empty-state">
-            <i class="fa-solid fa-inbox"></i>Chưa có lịch sử đăng ký.
+            <i class="fa-solid fa-inbox"></i>
+            <p>Chưa có lịch sử đăng ký.</p>
           </div>
           <table th:if="${dangKyGanDay != null and !dangKyGanDay.empty}" class="table">
             <thead>
               <tr>
-                <th>Môn học</th><th>Lớp</th><th>TC</th>
-                <th>Học kỳ</th><th>Ngày ĐK</th><th>Trạng thái</th>
+                <th>Môn học</th>
+                <th>Mã lớp</th>
+                <th style="text-align:center;">TC</th>
+                <th>Học kỳ</th>
+                <th>Ngày ĐK</th>
+                <th style="text-align:center;">Trạng thái</th>
               </tr>
             </thead>
             <tbody>
-              <!-- Chỉ hiện 8 dòng mới nhất -->
               <tr th:each="dk, i : ${dangKyGanDay}" th:if="${i.index < 8}">
                 <td th:text="${dk.lopHocPhan.monHoc.tenMon}"></td>
                 <td><code th:text="${dk.lopHocPhan.maLopHp}"></code></td>
-                <td th:text="${dk.lopHocPhan.monHoc.soTinChi}"></td>
-                <td style="font-size:12px;" th:text="${dk.lopHocPhan.hocKy.tenHocKy}"></td>
+                <td style="text-align:center;">
+                  <span class="badge badge-secondary"
+                        th:text="${dk.lopHocPhan.monHoc.soTinChi}"></span>
+                </td>
+                <td style="font-size:12px;color:var(--gray-500);"
+                    th:text="${dk.lopHocPhan.hocKy.tenHocKy}"></td>
                 <td th:text="${#temporals.format(dk.ngayDangKy,'dd/MM/yyyy')}"></td>
-                <td>
-                  <span th:if="${dk.trangThai.name() == 'DA_DANG_KY'}" class="badge badge-success">Đang học</span>
-                  <span th:if="${dk.trangThai.name() == 'DA_HUY'}"     class="badge badge-danger">Đã hủy</span>
-                  <span th:if="${dk.trangThai.name() == 'HOAN_THANH'}" class="badge badge-primary">Hoàn thành</span>
+                <td style="text-align:center;">
+                  <span th:if="${dk.trangThai.name() == 'DA_DANG_KY'}"
+                        class="badge badge-success">
+                    <i class="fa-solid fa-circle" style="font-size:7px;"></i> Đang học
+                  </span>
+                  <span th:if="${dk.trangThai.name() == 'DA_HUY'}"
+                        class="badge badge-danger">
+                    <i class="fa-solid fa-xmark"></i> Đã hủy
+                  </span>
+                  <span th:if="${dk.trangThai.name() == 'HOAN_THANH'}"
+                        class="badge badge-primary">
+                    <i class="fa-solid fa-check"></i> Hoàn thành
+                  </span>
                 </td>
               </tr>
             </tbody>

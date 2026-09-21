@@ -3,142 +3,297 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 
-<!-- ===== SIDEBAR SINH VIEN ===== -->
+<!-- ===================================================
+     SIDEBAR SINH VIEN
+=================================================== -->
 <aside th:fragment="sv(activePage)" class="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-icon">🎓</div>
-    <div><div class="sb-logo-text">Quản Lý Học Phần</div><div class="sb-logo-sub">Hệ thống tín chỉ</div></div>
+    <div>
+      <div class="sb-logo-text">UniPortal</div>
+      <div class="sb-logo-sub">Hệ thống tín chỉ</div>
+    </div>
   </div>
+
   <nav class="sb-nav">
-    <div class="sb-section">Trang chủ</div>
-    <a th:href="@{/sinh-vien/dashboard}" th:classappend="${activePage=='sv-home'}?' active'" class="sb-link">
+    <div class="sb-section">Tổng quan</div>
+    <a th:href="@{/sinh-vien/dashboard}"
+       th:classappend="${activePage=='sv-home'}?' active'"
+       class="sb-link">
       <i class="fa-solid fa-house"></i> Trang chủ
     </a>
+
     <div class="sb-section">Đăng ký</div>
-    <a th:href="@{/sinh-vien/dang-ky}" th:classappend="${activePage=='sv-dangky'}?' active'" class="sb-link">
-      <i class="fa-solid fa-pen-to-square"></i> Đăng ký tín chỉ
+    <a th:href="@{/sinh-vien/dang-ky}"
+       th:classappend="${activePage=='sv-dangky'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-pen-to-square"></i> Đăng ký học phần
     </a>
-    <a th:href="@{/sinh-vien/dang-ky-nguyen-vong}" th:classappend="${activePage=='sv-nguyen-vong'}?' active'" class="sb-link">
+    <a th:href="@{/sinh-vien/dang-ky-nguyen-vong}"
+       th:classappend="${activePage=='sv-nguyen-vong'}?' active'"
+       class="sb-link">
       <i class="fa-solid fa-star"></i> Đăng ký nguyện vọng
-      <span th:if="${badgeNguyenVong != null and badgeNguyenVong > 0}" class="sb-badge sb-badge-warn" th:text="${badgeNguyenVong}"></span>
+      <span th:if="${badgeNguyenVong != null and badgeNguyenVong > 0}"
+            class="sb-badge sb-badge-warn" th:text="${badgeNguyenVong}"></span>
     </a>
-    <a th:href="@{/sinh-vien/dang-ky-thi-lai}" th:classappend="${activePage=='sv-thi-lai'}?' active'" class="sb-link">
+    <a th:href="@{/sinh-vien/dang-ky-thi-lai}"
+       th:classappend="${activePage=='sv-thi-lai'}?' active'"
+       class="sb-link">
       <i class="fa-solid fa-rotate-right"></i> Đăng ký thi lại
-      <span th:if="${badgeThiLai != null and badgeThiLai > 0}" class="sb-badge sb-badge-danger" th:text="${badgeThiLai}"></span>
+      <span th:if="${badgeThiLai != null and badgeThiLai > 0}"
+            class="sb-badge sb-badge-danger" th:text="${badgeThiLai}"></span>
     </a>
+
     <div class="sb-section">Học tập</div>
-    <a th:href="@{/sinh-vien/chuong-trinh-hoc}" th:classappend="${activePage=='sv-ctdt-hoc'}?' active'" class="sb-link">
+    <a th:href="@{/sinh-vien/chuong-trinh-hoc}"
+       th:classappend="${activePage=='sv-ctdt-hoc'}?' active'"
+       class="sb-link">
       <i class="fa-solid fa-table-list"></i> Chương trình học
     </a>
-    <a th:href="@{/sinh-vien/thoi-khoa-bieu}" th:classappend="${activePage=='sv-tkb'}?' active'" class="sb-link">
+    <a th:href="@{/sinh-vien/thoi-khoa-bieu}"
+       th:classappend="${activePage=='sv-tkb'}?' active'"
+       class="sb-link">
       <i class="fa-solid fa-calendar-days"></i> Thời khoá biểu
     </a>
-    <a th:href="@{/sinh-vien/tin-chi-tich-luy}" th:classappend="${activePage=='sv-tin-chi'}?' active'" class="sb-link">
+    <a th:href="@{/sinh-vien/tin-chi-tich-luy}"
+       th:classappend="${activePage=='sv-tin-chi'}?' active'"
+       class="sb-link">
       <i class="fa-solid fa-graduation-cap"></i> Tín chỉ tích lũy
     </a>
-    <a th:href="@{/sinh-vien/ket-qua-hoc-tap}" th:classappend="${activePage=='sv-kqht'}?' active'" class="sb-link">
+    <a th:href="@{/sinh-vien/ket-qua-hoc-tap}"
+       th:classappend="${activePage=='sv-kqht'}?' active'"
+       class="sb-link">
       <i class="fa-solid fa-chart-line"></i> Kết quả học tập
     </a>
+    <a th:href="@{/sinh-vien/tra-cuu-ket-qua}"
+       th:classappend="${activePage=='sv-tracuu'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-magnifying-glass"></i> Tra cứu kết quả
+    </a>
+    <a th:href="@{/sinh-vien/dinh-huong-hoc-tap}"
+       th:classappend="${activePage=='sv-dh'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-compass"></i> Định hướng học tập
+    </a>
   </nav>
+
   <div class="sb-footer">
     <div class="sb-user">
-      <div class="sb-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
-      <div><div class="sb-name" th:text="${sinhVien?.hoTen ?: #authentication.name}">SV</div><div class="sb-role">Sinh viên</div></div>
+      <div class="sb-avatar"
+           th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
+      <div>
+        <div class="sb-name"
+             th:text="${sinhVien?.hoTen ?: #authentication.name}">Sinh viên</div>
+        <div class="sb-role">Sinh viên</div>
+      </div>
     </div>
     <div th:replace="~{fragments/sidebar :: _footer-actions}"></div>
   </div>
 </aside>
 
-<!-- ===== SIDEBAR GIANG VIEN ===== -->
+<!-- ===================================================
+     SIDEBAR GIANG VIEN
+=================================================== -->
 <aside th:fragment="gv(activePage)" class="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-icon">👨‍🏫</div>
-    <div><div class="sb-logo-text">Quản Lý Học Phần</div><div class="sb-logo-sub">Giảng viên</div></div>
+    <div>
+      <div class="sb-logo-text">UniPortal</div>
+      <div class="sb-logo-sub">Giảng viên</div>
+    </div>
   </div>
+
   <nav class="sb-nav">
     <div class="sb-section">Giảng Viên</div>
-    <a th:href="@{/giang-vien/dashboard}"    th:classappend="${activePage=='gv-home'}?' active'"      class="sb-link"><i class="fa-solid fa-house"></i> Trang chủ</a>
-    <a th:href="@{/giang-vien/danh-sach-lop}" th:classappend="${activePage=='gv-lop'}?' active'"       class="sb-link"><i class="fa-solid fa-chalkboard-user"></i> Danh sách lớp</a>
-    <a th:href="@{/giang-vien/nhap-diem}"     th:classappend="${activePage=='gv-nhap-diem'}?' active'" class="sb-link"><i class="fa-solid fa-pen-to-square"></i> Nhập điểm</a>
+    <a th:href="@{/giang-vien/dashboard}"
+       th:classappend="${activePage=='gv-home'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-house"></i> Trang chủ
+    </a>
+    <a th:href="@{/giang-vien/danh-sach-lop}"
+       th:classappend="${activePage=='gv-lop'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-chalkboard-user"></i> Danh sách lớp
+    </a>
+    <a th:href="@{/giang-vien/nhap-diem}"
+       th:classappend="${activePage=='gv-nhap-diem'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-pen-to-square"></i> Nhập điểm
+    </a>
   </nav>
+
   <div class="sb-footer">
     <div class="sb-user">
-      <div class="sb-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">G</div>
-      <div><div class="sb-name" th:text="${giangVien?.hoTen ?: #authentication.name}">GV</div><div class="sb-role">Giảng viên</div></div>
+      <div class="sb-avatar"
+           th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">G</div>
+      <div>
+        <div class="sb-name"
+             th:text="${giangVien?.hoTen ?: #authentication.name}">Giảng viên</div>
+        <div class="sb-role">Giảng viên</div>
+      </div>
     </div>
     <div th:replace="~{fragments/sidebar :: _footer-actions}"></div>
   </div>
 </aside>
 
-<!-- ===== SIDEBAR ADMIN ===== -->
+<!-- ===================================================
+     SIDEBAR ADMIN
+=================================================== -->
 <aside th:fragment="admin(activePage)" class="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-icon">⚙️</div>
-    <div><div class="sb-logo-text">Quản Lý Học Phần</div><div class="sb-logo-sub">Quản trị hệ thống</div></div>
+    <div>
+      <div class="sb-logo-text">UniPortal</div>
+      <div class="sb-logo-sub">Quản trị hệ thống</div>
+    </div>
   </div>
+
   <nav class="sb-nav">
     <div class="sb-section">Hệ Thống</div>
-    <a th:href="@{/admin/dashboard}" th:classappend="${activePage=='admin-home'}?' active'" class="sb-link"><i class="fa-solid fa-gauge"></i> Tổng quan</a>
-    <a th:href="@{/admin/bao-cao}"   th:classappend="${activePage=='admin-bc'}?' active'"   class="sb-link"><i class="fa-solid fa-chart-pie"></i> Báo cáo thống kê</a>
+    <a th:href="@{/admin/dashboard}"
+       th:classappend="${activePage=='admin-home'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-gauge"></i> Tổng quan
+    </a>
+    <a th:href="@{/admin/bao-cao}"
+       th:classappend="${activePage=='admin-bc'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-chart-pie"></i> Báo cáo thống kê
+    </a>
+
     <div class="sb-section">Tài Khoản</div>
-    <a th:href="@{/admin/sinh-vien}"  th:classappend="${activePage=='admin-sv'}?' active'" class="sb-link"><i class="fa-solid fa-user-graduate"></i> Sinh viên</a>
-    <a th:href="@{/admin/giang-vien}" th:classappend="${activePage=='admin-gv'}?' active'" class="sb-link"><i class="fa-solid fa-chalkboard-user"></i> Giảng viên</a>
-    <a th:href="@{/admin/quan-ly}"    th:classappend="${activePage=='admin-ql'}?' active'" class="sb-link"><i class="fa-solid fa-user-tie"></i> Cán bộ Quản lý</a>
+    <a th:href="@{/admin/sinh-vien}"
+       th:classappend="${activePage=='admin-sv'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-user-graduate"></i> Sinh viên
+    </a>
+    <a th:href="@{/admin/giang-vien}"
+       th:classappend="${activePage=='admin-gv'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-chalkboard-user"></i> Giảng viên
+    </a>
+    <a th:href="@{/admin/quan-ly}"
+       th:classappend="${activePage=='admin-ql'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-user-tie"></i> Cán bộ Quản lý
+    </a>
+
     <div class="sb-section">Danh Mục</div>
-    <a th:href="@{/admin/mon-hoc}" th:classappend="${activePage=='admin-mh'}?' active'" class="sb-link"><i class="fa-solid fa-book"></i> Môn học</a>
-    <a th:href="@{/admin/hoc-ky}"  th:classappend="${activePage=='admin-hk'}?' active'" class="sb-link"><i class="fa-solid fa-calendar"></i> Học kỳ</a>
+    <a th:href="@{/admin/mon-hoc}"
+       th:classappend="${activePage=='admin-mh'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-book"></i> Môn học
+    </a>
+    <a th:href="@{/admin/hoc-ky}"
+       th:classappend="${activePage=='admin-hk'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-calendar"></i> Học kỳ
+    </a>
   </nav>
+
   <div class="sb-footer">
     <div class="sb-user">
-      <div class="sb-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">A</div>
-      <div><div class="sb-name" th:text="${#authentication.name}">Admin</div><div class="sb-role">Quản trị viên</div></div>
+      <div class="sb-avatar"
+           th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">A</div>
+      <div>
+        <div class="sb-name" th:text="${#authentication.name}">Admin</div>
+        <div class="sb-role">Quản trị viên</div>
+      </div>
     </div>
     <div th:replace="~{fragments/sidebar :: _footer-actions}"></div>
   </div>
 </aside>
 
-<!-- ===== SIDEBAR QUAN LY ===== -->
+<!-- ===================================================
+     SIDEBAR QUAN LY
+=================================================== -->
 <aside th:fragment="ql(activePage)" class="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-icon">📋</div>
-    <div><div class="sb-logo-text">Quản Lý Học Phần</div><div class="sb-logo-sub">Phòng Đào Tạo</div></div>
+    <div>
+      <div class="sb-logo-text">UniPortal</div>
+      <div class="sb-logo-sub">Phòng Đào Tạo</div>
+    </div>
   </div>
+
   <nav class="sb-nav">
     <div class="sb-section">Tổng Quan</div>
-    <a th:href="@{/quan-ly/dashboard}" th:classappend="${activePage=='ql-home'}?' active'" class="sb-link"><i class="fa-solid fa-gauge"></i> Tổng quan</a>
-    <a th:href="@{/quan-ly/bao-cao}"   th:classappend="${activePage=='ql-bc'}?' active'"   class="sb-link"><i class="fa-solid fa-chart-pie"></i> Báo cáo thống kê</a>
+    <a th:href="@{/quan-ly/dashboard}"
+       th:classappend="${activePage=='ql-home'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-gauge"></i> Tổng quan
+    </a>
+    <a th:href="@{/quan-ly/bao-cao}"
+       th:classappend="${activePage=='ql-bc'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-chart-pie"></i> Báo cáo thống kê
+    </a>
+
     <div class="sb-section">Nghiệp Vụ Học Phần</div>
-    <a th:href="@{/quan-ly/lop-hoc-phan}" th:classappend="${activePage=='ql-lhp'}?' active'" class="sb-link"><i class="fa-solid fa-layer-group"></i> Lớp học phần</a>
-    <a th:href="@{/quan-ly/nguyen-vong}"  th:classappend="${activePage=='ql-nv'}?' active'"  class="sb-link">
+    <a th:href="@{/quan-ly/lop-hoc-phan}"
+       th:classappend="${activePage=='ql-lhp'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-layer-group"></i> Lớp học phần
+    </a>
+    <a th:href="@{/quan-ly/nguyen-vong}"
+       th:classappend="${activePage=='ql-nv'}?' active'"
+       class="sb-link">
       <i class="fa-solid fa-star"></i> Kế hoạch NV
-      <span th:if="${qlNvChoDuyet != null and qlNvChoDuyet > 0}" class="sb-badge sb-badge-warn" th:text="${qlNvChoDuyet}"></span>
+      <span th:if="${qlNvChoDuyet != null and qlNvChoDuyet > 0}"
+            class="sb-badge sb-badge-warn" th:text="${qlNvChoDuyet}"></span>
     </a>
-    <a th:href="@{/quan-ly/thi-lai}"    th:classappend="${activePage=='ql-thi-lai'}?' active'" class="sb-link">
+    <a th:href="@{/quan-ly/thi-lai}"
+       th:classappend="${activePage=='ql-thi-lai'}?' active'"
+       class="sb-link">
       <i class="fa-solid fa-rotate-right"></i> Duyệt Thi lại
-      <span th:if="${qlThiLaiChoDuyet != null and qlThiLaiChoDuyet > 0}" class="sb-badge sb-badge-danger" th:text="${qlThiLaiChoDuyet}"></span>
+      <span th:if="${qlThiLaiChoDuyet != null and qlThiLaiChoDuyet > 0}"
+            class="sb-badge sb-badge-danger" th:text="${qlThiLaiChoDuyet}"></span>
     </a>
-    <a th:href="@{/quan-ly/dinh-huong}" th:classappend="${activePage=='ql-dh'}?' active'" class="sb-link"><i class="fa-solid fa-compass"></i> Định hướng HT</a>
+    <a th:href="@{/quan-ly/dinh-huong}"
+       th:classappend="${activePage=='ql-dh'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-compass"></i> Định hướng HT
+    </a>
+
     <div class="sb-section">Tra Cứu</div>
-    <a th:href="@{/quan-ly/sinh-vien}"  th:classappend="${activePage=='ql-sv'}?' active'" class="sb-link"><i class="fa-solid fa-user-graduate"></i> Sinh viên</a>
-    <a th:href="@{/quan-ly/giang-vien}" th:classappend="${activePage=='ql-gv'}?' active'" class="sb-link"><i class="fa-solid fa-chalkboard-user"></i> Giảng viên</a>
+    <a th:href="@{/quan-ly/sinh-vien}"
+       th:classappend="${activePage=='ql-sv'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-user-graduate"></i> Sinh viên
+    </a>
+    <a th:href="@{/quan-ly/giang-vien}"
+       th:classappend="${activePage=='ql-gv'}?' active'"
+       class="sb-link">
+      <i class="fa-solid fa-chalkboard-user"></i> Giảng viên
+    </a>
   </nav>
+
   <div class="sb-footer">
     <div class="sb-user">
-      <div class="sb-avatar" th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">Q</div>
-      <div><div class="sb-name" th:text="${quanLy?.hoTen ?: #authentication.name}">Cán bộ QL</div><div class="sb-role">Phòng Đào Tạo</div></div>
+      <div class="sb-avatar"
+           th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">Q</div>
+      <div>
+        <div class="sb-name"
+             th:text="${quanLy?.hoTen ?: #authentication.name}">Cán bộ QL</div>
+        <div class="sb-role">Phòng Đào Tạo</div>
+      </div>
     </div>
     <div th:replace="~{fragments/sidebar :: _footer-actions}"></div>
   </div>
 </aside>
 
-<!-- ===== FOOTER ACTIONS (dùng chung) ===== -->
+<!-- ===================================================
+     FOOTER ACTIONS (dùng chung)
+=================================================== -->
 <div th:fragment="_footer-actions">
   <a th:href="@{/doi-mat-khau}" class="sb-action-btn">
     <i class="fa-solid fa-key"></i> Đổi mật khẩu
   </a>
   <form th:action="@{/logout}" method="post">
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-    <button type="submit" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
+    <button type="submit" class="btn-logout">
+      <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+    </button>
   </form>
 </div>
 
