@@ -56,6 +56,7 @@ public class HocKyServiceImpl implements HocKyService {
             int min = lhp.getSiSoToiThieu() != null ? lhp.getSiSoToiThieu() : 15;
             if (lhp.getSiSoHienTai() < min) {
                 lhp.setTrangThai(vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.HUY);
+                lhp.setSiSoHienTai(0);
                 lopHocPhanRepo.save(lhp);
 
                 // Cap nhat ban ghi dang ky cua SV trong lop bi huy ve DA_HUY

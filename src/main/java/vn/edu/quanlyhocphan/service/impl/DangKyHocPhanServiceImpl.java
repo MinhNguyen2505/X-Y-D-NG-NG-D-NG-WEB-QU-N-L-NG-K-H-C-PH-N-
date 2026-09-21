@@ -138,25 +138,68 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
             }
         }
 
-        // 2. Kiem tra doi tuong cu the cua lop hoc phan (neu co gioi han)
-        if (lhp.getDoiTuong() != null && !lhp.getDoiTuong().isBlank() && !"TAT_CA".equalsIgnoreCase(lhp.getDoiTuong())) {
-            String doiTuongLop = lhp.getDoiTuong().trim().toUpperCase();
-            String svKhoa = sinhVien.getKhoaHoc() != null ? sinhVien.getKhoaHoc().trim().toUpperCase() : "";
-            String svNganh = (sinhVien.getNganh() != null && sinhVien.getNganh().getMaNganh() != null)
-                             ? sinhVien.getNganh().getMaNganh().trim().toUpperCase() : "";
-            String svLopSh = sinhVien.getLopSinhHoat() != null ? sinhVien.getLopSinhHoat().trim().toUpperCase() : "";
+        // 2. Kiem tra doi tuong cu the cua lop hoc phan (neu co quy dinh chat che)
+        if (!isSinhVienThuocDoiTuong(sinhVien, lhp.getDoiTuong())) {
+            log.warn("SV [{}] (khoa={}, nganh={}, lopSH={}) khong thuoc doi tuong [{}] cua LHP [{}]",
+                sinhVien.getMssv(), sinhVien.getKhoaHoc(),
+                sinhVien.getNganh() != null ? sinhVien.getNganh().getMaNganh() : "",
+                sinhVien.getLopSinhHoat(), lhp.getDoiTuong(), lhp.getMaLopHp());
+            throw new NghiepVuException(
+                "Lớp học phần [" + lhp.getMaLopHp() + "] chỉ mở cho đối tượng [" + lhp.getDoiTuong() + "]. Bạn không thuộc đối tượng đăng ký lớp này.");
+        }
+    }
 
-            boolean hopLe = (!svKhoa.isEmpty() && doiTuongLop.contains(svKhoa))
-                         || (!svNganh.isEmpty() && doiTuongLop.contains(svNganh))
-                         || (!svLopSh.isEmpty() && doiTuongLop.contains(svLopSh));
+    /**
+     * Chuan hoa va kiem tra doi tuong mo lop:
+     * - Null / Trong / "TAT_CA" / "ALL" / "*" -> Cho phep tat ca SV trong CTDT.
+     * - Ho tro danh sach token cach nhau boi dau phay (VD: "K21, K22", "CNTT, DTVT").
+     * - Ho tro token to hop khoa + nganh (VD: "K21_CNTT", "K21-CNTT").
+     */
+    private boolean isSinhVienThuocDoiTuong(SinhVien sv, String doiTuongConfig) {
+        if (doiTuongConfig == null || doiTuongConfig.isBlank()) {
+            return true;
+        }
+        String normalized = doiTuongConfig.trim().toUpperCase();
+        if (normalized.equals("TAT_CA") || normalized.equals("ALL") || normalized.equals("*")) {
+            return true;
+        }
 
-            if (!hopLe) {
-                log.warn("SV [{}] (khoa={}, nganh={}) khong thuoc doi tuong [{}] cua LHP [{}]",
-                    sinhVien.getMssv(), svKhoa, svNganh, lhp.getDoiTuong(), lhp.getMaLopHp());
-                throw new NghiepVuException(
-                    "Lớp học phần [" + lhp.getMaLopHp() + "] chỉ mở cho đối tượng [" + lhp.getDoiTuong() + "]. Bạn không thuộc đối tượng đăng ký lớp này.");
+        String svKhoa = sv.getKhoaHoc() != null ? sv.getKhoaHoc().trim().toUpperCase() : "";
+        String svMaNganh = (sv.getNganh() != null && sv.getNganh().getMaNganh() != null)
+                           ? sv.getNganh().getMaNganh().trim().toUpperCase() : "";
+        String svTenNganh = (sv.getNganh() != null && sv.getNganh().getTenNganh() != null)
+                            ? sv.getNganh().getTenNganh().trim().toUpperCase() : "";
+        String svLopSh = sv.getLopSinhHoat() != null ? sv.getLopSinhHoat().trim().toUpperCase() : "";
+
+        String[] tokens = normalized.split("[,;|]+");
+        for (String token : tokens) {
+            String t = token.trim();
+            if (t.isEmpty()) continue;
+
+            if (t.contains("_") || t.contains("-")) {
+                String[] parts = t.split("[_-]+");
+                boolean allPartsMatch = true;
+                for (String part : parts) {
+                    String p = part.trim();
+                    boolean matchPart = (!svKhoa.isEmpty() && (svKhoa.equals(p) || svKhoa.contains(p) || p.contains(svKhoa)))
+                                     || (!svMaNganh.isEmpty() && (svMaNganh.equals(p) || svMaNganh.contains(p) || p.contains(svMaNganh)))
+                                     || (!svTenNganh.isEmpty() && svTenNganh.contains(p))
+                                     || (!svLopSh.isEmpty() && (svLopSh.equals(p) || svLopSh.contains(p) || p.contains(svLopSh)));
+                    if (!matchPart) {
+                        allPartsMatch = false;
+                        break;
+                    }
+                }
+                if (allPartsMatch) return true;
+            } else {
+                boolean match = (!svKhoa.isEmpty() && (svKhoa.equalsIgnoreCase(t) || svKhoa.contains(t) || t.contains(svKhoa)))
+                             || (!svMaNganh.isEmpty() && (svMaNganh.equalsIgnoreCase(t) || svMaNganh.contains(t) || t.contains(svMaNganh)))
+                             || (!svTenNganh.isEmpty() && svTenNganh.contains(t))
+                             || (!svLopSh.isEmpty() && (svLopSh.equalsIgnoreCase(t) || svLopSh.contains(t) || t.contains(svLopSh)));
+                if (match) return true;
             }
         }
+        return false;
     }
 
     // =================================================================
