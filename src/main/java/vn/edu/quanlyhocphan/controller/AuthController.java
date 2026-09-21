@@ -21,10 +21,10 @@ public class AuthController {
             @RequestParam(value = "logout", required = false) String logout,
             Model model) {
         if (error != null) {
-            model.addAttribute("errorMsg", "Sai email hoac mat khau. Vui long thu lai.");
+            model.addAttribute("errorMsg", "Sai email ho\u1EB7c m\u1EADt kh\u1EA9u. Vui l\u00F2ng th\u1EED l\u1EA1i.");
         }
         if (logout != null) {
-            model.addAttribute("logoutMsg", "Ban da dang xuat thanh cong.");
+            model.addAttribute("logoutMsg", "B\u1EA1n \u0111\u00E3 \u0111\u0103ng xu\u1EA5t th\u00E0nh c\u00F4ng!");
         }
         return "auth/login";
     }
