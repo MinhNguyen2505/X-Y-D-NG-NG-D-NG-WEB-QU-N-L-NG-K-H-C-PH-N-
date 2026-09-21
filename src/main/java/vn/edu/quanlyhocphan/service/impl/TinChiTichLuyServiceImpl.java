@@ -153,7 +153,7 @@ public class TinChiTichLuyServiceImpl implements TinChiTichLuyService {
     public int tongTinChiDaTichLuy(Long sinhVienId, Long nganhId) {
         // Tinh tich luy theo CTDT (khong dem mon ngoai chuong trinh)
         return tinhTinChiTheoKhoi(sinhVienId, nganhId).stream()
-            .mapToInt(TinChiKhoiDto::getTinChiDaTichLuy)
+            .mapToInt(dto -> dto.getTinChiDaTichLuy())
             .sum();
     }
 
