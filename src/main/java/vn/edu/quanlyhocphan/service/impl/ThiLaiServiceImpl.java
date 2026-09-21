@@ -70,8 +70,6 @@ public class ThiLaiServiceImpl implements ThiLaiService {
             });
 
         if (thiLaiRepo.findBySinhVienIdAndDangKyHocPhanId(sinhVienId, dangKyHocPhanId).isEmpty()) {
-            SinhVien sv = svRepo.findById(sinhVienId)
-                .orElseThrow(() -> new ResourceNotFoundException("SinhVien", sinhVienId));
             DangKyThiLai dktl = DangKyThiLai.builder()
                 .sinhVien(sv)
                 .dangKyHocPhan(dkhp)

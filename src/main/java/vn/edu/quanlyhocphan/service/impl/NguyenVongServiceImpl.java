@@ -174,9 +174,6 @@ public class NguyenVongServiceImpl implements NguyenVongService {
                 throw new NghiepVuException("Khong the dang ky nguyen vong. Tong so tin chi (" + (currentLhpCredits + currentNvCredits + tinChiMonNay) + ") vuot qua gioi han cua hoc ky (" + maxTinChi + ").");
             }
 
-            SinhVien sv = sinhVienRepo.findById(sinhVienId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sinh vien", sinhVienId));
-
             DangKyNguyenVong dk = DangKyNguyenVong.builder()
                 .sinhVien(sv)
                 .nguyenVongMonHoc(nvmh)
