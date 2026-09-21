@@ -6,128 +6,435 @@
   <title>Đăng nhập — Quản lý học phần</title>
   <link rel="stylesheet" th:href="@{/css/style.css}"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       min-height: 100vh;
-      background: linear-gradient(145deg,#071663 0%,#0c2494 40%,#1344b4 100%);
+      display: flex;
+      font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+      background: #05112b;
+      overflow: hidden;
+    }
+
+    /* ============================
+       LEFT PANEL — branding
+    ============================ */
+    .lp-left {
+      flex: 0 0 52%;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 56px;
+    }
+
+    /* Animated gradient background */
+    .lp-left::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg,
+        #0b1d5e 0%,
+        #12337a 30%,
+        #0e4da4 60%,
+        #0369a1 100%);
+      z-index: 0;
+    }
+
+    /* Grid pattern overlay */
+    .lp-left::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      z-index: 1;
+    }
+
+    /* Glow orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: .35;
+      z-index: 1;
+      pointer-events: none;
+      animation: orb-pulse 8s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 420px; height: 420px; background: #3b82f6; top: -100px; left: -80px; animation-delay: 0s; }
+    .orb-2 { width: 300px; height: 300px; background: #06b6d4; bottom: -60px; right: -60px; animation-delay: 3s; }
+    .orb-3 { width: 200px; height: 200px; background: #818cf8; top: 40%; left: 60%; animation-delay: 1.5s; }
+
+    @keyframes orb-pulse {
+      from { transform: scale(1) translate(0, 0); }
+      to   { transform: scale(1.12) translate(12px, -12px); }
+    }
+
+    .lp-left-content { position: relative; z-index: 2; }
+
+    .lp-brand {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 56px;
+    }
+    .lp-brand-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: rgba(255,255,255,.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.2);
       display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
     }
-    .login-box {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      padding: 40px 36px;
+    .lp-brand-name {
+      font-size: 15px; font-weight: 700; color: rgba(255,255,255,.85);
+      letter-spacing: .5px; text-transform: uppercase;
+    }
+
+    .lp-headline {
+      font-size: 38px; font-weight: 900; line-height: 1.15;
+      color: #fff; margin-bottom: 20px;
+      text-shadow: 0 2px 20px rgba(0,0,0,.3);
+    }
+    .lp-headline span { color: #60c8ff; }
+
+    .lp-desc {
+      font-size: 15px; color: rgba(255,255,255,.65);
+      line-height: 1.7; max-width: 380px; margin-bottom: 48px;
+    }
+
+    .lp-features { display: flex; flex-direction: column; gap: 14px; }
+    .lp-feature {
+      display: flex; align-items: center; gap: 14px;
+    }
+    .lp-feature-icon {
+      width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: #60c8ff;
+    }
+    .lp-feature-text { font-size: 13.5px; color: rgba(255,255,255,.75); font-weight: 500; }
+
+    /* Diagonal cut between panels */
+    .lp-left-clip {
+      position: absolute; right: -36px; top: 0; bottom: 0;
+      width: 72px;
+      background: #05112b;
+      transform: skewX(-3deg);
+      z-index: 3;
+    }
+
+    /* ============================
+       RIGHT PANEL — form
+    ============================ */
+    .lp-right {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px 40px;
+      background: #05112b;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle radial glow behind form */
+    .lp-right::before {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(59,130,246,.12) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .login-card {
       width: 100%; max-width: 400px;
-      box-shadow: 0 24px 64px rgba(0,0,0,.45);
+      position: relative; z-index: 1;
     }
-    .login-logo {
-      text-align: center; margin-bottom: 24px;
+
+    /* Avatar / icon */
+    .login-avatar {
+      width: 68px; height: 68px; border-radius: 20px; margin: 0 auto 20px;
+      background: linear-gradient(135deg, #1a56db, #0369a1);
+      box-shadow: 0 10px 30px rgba(26,86,219,.45);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px;
     }
-    .login-logo-icon {
-      width: 64px; height: 64px; border-radius: 16px;
-      background: linear-gradient(135deg,var(--primary),var(--primary-dark));
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 30px; color: var(--white);
-      box-shadow: 0 8px 24px rgba(26,86,219,.45);
-      margin-bottom: 12px;
+
+    .login-heading {
+      font-size: 26px; font-weight: 800; color: #f1f5f9;
+      text-align: center; margin-bottom: 6px;
     }
-    .login-title { font-size: 22px; font-weight: 800; color: var(--navy); text-align: center; margin-bottom: 6px; }
-    .login-sub   { font-size: 13px; color: var(--gray-500); text-align: center; margin-bottom: 28px; }
-    .form-group  { margin-bottom: 16px; }
-    .form-label  { display: block; font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; }
-    .input-wrap  { position: relative; }
-    .input-wrap .inp-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-300); font-size: 14px; }
-    .form-control {
-      width: 100%; padding: 11px 12px 11px 38px;
-      border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
-      font-family: inherit; font-size: 14px; color: var(--gray-900);
-      background: var(--gray-50); outline: none; transition: var(--transition);
+    .login-subheading {
+      font-size: 13px; color: #64748b;
+      text-align: center; margin-bottom: 32px;
     }
-    .form-control:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 3px rgba(26,86,219,.12); }
-    .btn-block {
-      width: 100%; padding: 13px;
-      background: linear-gradient(135deg,var(--primary),var(--primary-dark));
-      color: var(--white); border: none; border-radius: var(--radius-sm);
+
+    /* Alert messages */
+    .login-alert {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; border-radius: 10px;
+      font-size: 13px; font-weight: 500;
+      margin-bottom: 20px;
+      animation: alert-in .3s ease;
+    }
+    @keyframes alert-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+    .login-alert.err { background: rgba(220,38,38,.12); border: 1px solid rgba(220,38,38,.25); color: #fca5a5; }
+    .login-alert.ok  { background: rgba(22,163,74,.12);  border: 1px solid rgba(22,163,74,.25);  color: #86efac;  }
+
+    /* Form */
+    .lf-group { margin-bottom: 18px; }
+    .lf-label {
+      display: block; font-size: 12.5px; font-weight: 700;
+      color: #94a3b8; letter-spacing: .5px; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .lf-wrap { position: relative; }
+    .lf-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: #475569; font-size: 14px; pointer-events: none;
+      transition: color .25s;
+    }
+    .lf-input {
+      width: 100%; padding: 13px 14px 13px 42px;
+      background: rgba(255,255,255,.04);
+      border: 1.5px solid rgba(255,255,255,.08);
+      border-radius: 10px; outline: none;
+      font-family: inherit; font-size: 14px; color: #e2e8f0;
+      transition: all .25s;
+    }
+    .lf-input::placeholder { color: #334155; }
+    .lf-input:focus {
+      border-color: #3b82f6;
+      background: rgba(59,130,246,.06);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+    }
+    .lf-input:focus + .lf-icon,
+    .lf-wrap:focus-within .lf-icon { color: #60a5fa; }
+
+    /* Toggle password */
+    .lf-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: #475569; cursor: pointer; font-size: 14px;
+      transition: color .2s; background: none; border: none; padding: 0;
+    }
+    .lf-toggle:hover { color: #94a3b8; }
+
+    /* Submit button */
+    .btn-login {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #1a56db 0%, #0369a1 100%);
+      color: #fff; border: none; border-radius: 10px;
       font-family: inherit; font-size: 15px; font-weight: 700;
-      cursor: pointer; transition: var(--transition);
-      box-shadow: 0 6px 18px rgba(26,86,219,.4);
-      margin-top: 8px;
+      cursor: pointer; margin-top: 8px;
+      letter-spacing: .5px;
+      box-shadow: 0 8px 24px rgba(26,86,219,.4);
+      transition: all .3s cubic-bezier(.4,0,.2,1);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      position: relative; overflow: hidden;
     }
-    .btn-block:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(26,86,219,.5); }
-    .login-hint {
-      margin-top: 20px; padding: 12px 14px;
-      background: var(--gray-50); border-radius: var(--radius-sm);
-      border: 1px solid var(--gray-200); font-size: 12px; color: var(--gray-500);
+    .btn-login::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.08), transparent);
+      opacity: 0; transition: opacity .3s;
     }
-    .login-hint b { color: var(--navy); }
+    .btn-login:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(26,86,219,.55); }
+    .btn-login:hover::after { opacity: 1; }
+    .btn-login:active { transform: translateY(0); }
+
+    /* Quick-fill accounts */
+    .quickfill {
+      margin-top: 28px;
+      padding: 16px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 12px;
+    }
+    .quickfill-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .8px; color: #475569; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .quickfill-title::before, .quickfill-title::after {
+      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,.06);
+    }
+    .qf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .qf-btn {
+      display: flex; flex-direction: column; gap: 2px;
+      padding: 10px 12px; border-radius: 8px; cursor: pointer;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.07);
+      transition: all .2s;
+      text-align: left;
+    }
+    .qf-btn:hover {
+      background: rgba(59,130,246,.12);
+      border-color: rgba(59,130,246,.25);
+      transform: translateY(-1px);
+    }
+    .qf-role {
+      font-size: 11px; font-weight: 700; color: #60a5fa;
+      display: flex; align-items: center; gap: 5px; text-transform: uppercase;
+    }
+    .qf-email { font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .lp-left { display: none; }
+      body { background: #07102e; overflow: auto; }
+      .lp-right { padding: 32px 24px; background: #07102e; }
+    }
   </style>
 </head>
 <body>
-<div class="login-box">
-  <div class="login-logo">
-    <div class="login-logo-icon">🎓</div>
-    <div class="login-title">Đăng Nhập</div>
-    <div class="login-sub">Hệ thống Quản lý Đăng ký Học phần</div>
-  </div>
 
-  <!-- Thông báo lỗi / thành công -->
-  <div th:if="${errorMsg}" class="alert alert-danger" style="margin-bottom:16px;">
-    <i class="fa-solid fa-circle-exclamation"></i>
-    <span th:text="${errorMsg}"></span>
-  </div>
-  <div th:if="${logoutMsg}" class="alert alert-success" style="margin-bottom:16px;">
-    <i class="fa-solid fa-circle-check"></i>
-    <span th:text="${logoutMsg}"></span>
-  </div>
+  <!-- ===== LEFT PANEL ===== -->
+  <div class="lp-left">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 
-  <form action="/login" method="post">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-    <div class="form-group">
-      <label class="form-label" for="username">Email</label>
-      <div class="input-wrap">
-        <i class="fa-solid fa-envelope inp-icon"></i>
-        <input type="email" id="username" name="username" class="form-control"
-               placeholder="Nhập email đăng nhập" required autocomplete="email"/>
+    <div class="lp-left-content">
+      <div class="lp-brand">
+        <div class="lp-brand-icon">🎓</div>
+        <div class="lp-brand-name">UniPortal</div>
+      </div>
+
+      <div class="lp-headline">
+        Quản lý<br/><span>Đăng ký</span><br/>Học phần
+      </div>
+      <div class="lp-desc">
+        Hệ thống quản lý học phần hiện đại — tra cứu thời khoá biểu,
+        đăng ký môn học và theo dõi kết quả học tập ngay trên một nền tảng.
+      </div>
+
+      <div class="lp-features">
+        <div class="lp-feature">
+          <div class="lp-feature-icon"><i class="fa-solid fa-calendar-check"></i></div>
+          <div class="lp-feature-text">Đăng ký học phần nhanh chóng, dễ dàng</div>
+        </div>
+        <div class="lp-feature">
+          <div class="lp-feature-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="lp-feature-text">Theo dõi tín chỉ tích lũy theo thời gian thực</div>
+        </div>
+        <div class="lp-feature">
+          <div class="lp-feature-icon"><i class="fa-solid fa-bell"></i></div>
+          <div class="lp-feature-text">Thông báo kết quả nguyện vọng tức thì</div>
+        </div>
       </div>
     </div>
-    <div class="form-group">
-      <label class="form-label" for="password">Mật khẩu</label>
-      <div class="input-wrap">
-        <i class="fa-solid fa-lock inp-icon"></i>
-        <input type="password" id="password" name="password" class="form-control"
-               placeholder="Nhập mật khẩu" required autocomplete="current-password"/>
+
+    <div class="lp-left-clip"></div>
+  </div>
+
+  <!-- ===== RIGHT PANEL — FORM ===== -->
+  <div class="lp-right">
+    <div class="login-card">
+      <div class="login-avatar">🎓</div>
+      <div class="login-heading">Chào mừng trở lại!</div>
+      <div class="login-subheading">Đăng nhập để tiếp tục vào hệ thống</div>
+
+      <!-- Alert lỗi / logout -->
+      <div th:if="${errorMsg}" class="login-alert err">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span th:text="${errorMsg}"></span>
+      </div>
+      <div th:if="${logoutMsg}" class="login-alert ok">
+        <i class="fa-solid fa-circle-check"></i>
+        <span th:text="${logoutMsg}"></span>
+      </div>
+
+      <!-- Form -->
+      <form action="/login" method="post" id="loginForm" autocomplete="off">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="lf-group">
+          <label class="lf-label" for="username">Email</label>
+          <div class="lf-wrap">
+            <input type="email" id="username" name="username" class="lf-input"
+                   placeholder="ten@email.com" required autocomplete="email"/>
+            <i class="fa-solid fa-envelope lf-icon"></i>
+          </div>
+        </div>
+
+        <div class="lf-group">
+          <label class="lf-label" for="password">Mật khẩu</label>
+          <div class="lf-wrap">
+            <input type="password" id="password" name="password" class="lf-input"
+                   placeholder="••••••••" required autocomplete="current-password"/>
+            <i class="fa-solid fa-lock lf-icon"></i>
+            <button type="button" class="lf-toggle" id="togglePwd" title="Hiện/ẩn mật khẩu" tabindex="-1">
+              <i class="fa-solid fa-eye" id="togglePwdIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="btnLogin">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          ĐĂNG NHẬP
+        </button>
+      </form>
+
+      <!-- Quick-fill -->
+      <div class="quickfill">
+        <div class="quickfill-title">Tài khoản demo</div>
+        <div class="qf-grid">
+          <div class="qf-btn" onclick="fillLogin('admin@email.com','123456')" title="Đăng nhập nhanh với tài khoản Admin">
+            <div class="qf-role"><i class="fa-solid fa-shield-halved"></i> Admin</div>
+            <div class="qf-email">admin@email.com</div>
+          </div>
+          <div class="qf-btn" onclick="fillLogin('quanly@email.com','123456')" title="Đăng nhập nhanh với tài khoản Quản lý">
+            <div class="qf-role"><i class="fa-solid fa-clipboard-list"></i> Quản lý</div>
+            <div class="qf-email">quanly@email.com</div>
+          </div>
+          <div class="qf-btn" onclick="fillLogin('sv001@email.com','123456')" title="Đăng nhập nhanh với tài khoản Sinh viên">
+            <div class="qf-role"><i class="fa-solid fa-graduation-cap"></i> Sinh viên</div>
+            <div class="qf-email">sv001@email.com</div>
+          </div>
+          <div class="qf-btn" onclick="fillLogin('gv001@email.com','123456')" title="Đăng nhập nhanh với tài khoản Giảng viên">
+            <div class="qf-role"><i class="fa-solid fa-chalkboard-teacher"></i> Giảng viên</div>
+            <div class="qf-email">gv001@email.com</div>
+          </div>
+        </div>
       </div>
     </div>
-    <button type="submit" class="btn-block">
-      <i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP
-    </button>
-  </form>
-
-  <div class="login-hint" style="line-height:1.8;">
-    <div style="font-weight:700;margin-bottom:4px;color:var(--navy);display:flex;justify-content:space-between;align-items:center;">
-      <span>Tài khoản mẫu (bấm để điền nhanh):</span>
-    </div>
-    <div onclick="fillLogin('admin@email.com','123456')" style="cursor:pointer;" title="Bấm để điền nhanh">
-      🛡️ Admin: <b>admin@email.com</b> / 123456
-    </div>
-    <div onclick="fillLogin('quanly@email.com','123456')" style="cursor:pointer;color:#1e40af;" title="Bấm để điền nhanh">
-      📋 Quản lý: <b>quanly@email.com</b> / 123456
-    </div>
-    <div onclick="fillLogin('sv001@email.com','123456')" style="cursor:pointer;" title="Bấm để điền nhanh">
-      🎓 Sinh viên: <b>sv001@email.com</b> / 123456
-    </div>
-    <div onclick="fillLogin('gv001@email.com','123456')" style="cursor:pointer;" title="Bấm để điền nhanh">
-      👨‍🏫 Giảng viên: <b>gv001@email.com</b> / 123456
-    </div>
   </div>
-</div>
 
 <script>
+// Toggle show/hide password
+const toggleBtn  = document.getElementById('togglePwd');
+const pwdInput   = document.getElementById('password');
+const toggleIcon = document.getElementById('togglePwdIcon');
+if (toggleBtn) {
+  toggleBtn.addEventListener('click', () => {
+    const isHidden = pwdInput.type === 'password';
+    pwdInput.type = isHidden ? 'text' : 'password';
+    toggleIcon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+  });
+}
+
+// Quick-fill function
 function fillLogin(email, pass) {
   const u = document.getElementById('username');
   const p = document.getElementById('password');
-  if (u) u.value = email;
-  if (p) p.value = pass;
+  if (u) { u.value = email; u.dispatchEvent(new Event('input')); }
+  if (p) { p.value = pass;  p.dispatchEvent(new Event('input')); }
+  // Ripple animation on button
+  const btn = document.getElementById('btnLogin');
+  if (btn) { btn.style.transform = 'scale(.98)'; setTimeout(() => btn.style.transform = '', 150); }
 }
+
+// Loading state on submit
+document.getElementById('loginForm')?.addEventListener('submit', function() {
+  const btn = document.getElementById('btnLogin');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang đăng nhập...';
+  }
+});
 </script>
 </body>
 </html>

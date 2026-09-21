@@ -43,7 +43,6 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
     private final DangKyHocPhanRepository dangKyRepo;
     private final LichHocRepository lichHocRepo;
     private final MonTienQuyetRepository monTienQuyetRepo;
-    private final HocKyRepository hocKyRepo;
     private final DangKyNguyenVongRepository dangKyNvRepo;
 
     // =================================================================

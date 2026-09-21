@@ -6,7 +6,6 @@ import vn.edu.quanlyhocphan.dto.BaoCaoThongKeDTO;
 import vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan;
 import vn.edu.quanlyhocphan.repository.DangKyHocPhanRepository;
 import vn.edu.quanlyhocphan.repository.DangKyNguyenVongRepository;
-import vn.edu.quanlyhocphan.repository.DangKyThiLaiRepository;
 import vn.edu.quanlyhocphan.repository.LopHocPhanRepository;
 import vn.edu.quanlyhocphan.repository.SinhVienRepository;
 import vn.edu.quanlyhocphan.service.BaoCaoService;
@@ -23,7 +22,6 @@ public class BaoCaoServiceImpl implements BaoCaoService {
 
     private final DangKyHocPhanRepository  dangKyRepo;
     private final DangKyNguyenVongRepository dangKyNvRepo;
-    private final DangKyThiLaiRepository   thiLaiRepo;
     private final LopHocPhanRepository     lopHocPhanRepo;
     private final SinhVienRepository       sinhVienRepo;
     private final ThiLaiService            thiLaiService;
@@ -145,12 +143,12 @@ public class BaoCaoServiceImpl implements BaoCaoService {
 
         for (Object[] row : rows) {
             long tc = ((Number) row[1]).longValue();
-            if (tc == 0) phanBo.merge("0 TC", 1L, Long::sum);
-            else if (tc <= 5) phanBo.merge("1-5 TC", 1L, Long::sum);
-            else if (tc <= 10) phanBo.merge("6-10 TC", 1L, Long::sum);
-            else if (tc <= 15) phanBo.merge("11-15 TC", 1L, Long::sum);
-            else if (tc <= 20) phanBo.merge("16-20 TC", 1L, Long::sum);
-            else phanBo.merge(">20 TC", 1L, Long::sum);
+            if (tc == 0) phanBo.merge("0 TC", 1L, (a, b) -> a + b);
+            else if (tc <= 5) phanBo.merge("1-5 TC", 1L, (a, b) -> a + b);
+            else if (tc <= 10) phanBo.merge("6-10 TC", 1L, (a, b) -> a + b);
+            else if (tc <= 15) phanBo.merge("11-15 TC", 1L, (a, b) -> a + b);
+            else if (tc <= 20) phanBo.merge("16-20 TC", 1L, (a, b) -> a + b);
+            else phanBo.merge(">20 TC", 1L, (a, b) -> a + b);
         }
         return phanBo;
     }

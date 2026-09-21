@@ -13,7 +13,6 @@ import vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan;
 import vn.edu.quanlyhocphan.exception.*;
 import vn.edu.quanlyhocphan.repository.ChuongTrinhDaoTaoRepository;
 import vn.edu.quanlyhocphan.repository.DangKyHocPhanRepository;
-import vn.edu.quanlyhocphan.repository.NganhRepository;
 import vn.edu.quanlyhocphan.service.*;
 import vn.edu.quanlyhocphan.service.NguyenVongService;
 import vn.edu.quanlyhocphan.service.DinhHuongService;
@@ -46,8 +45,8 @@ public class SinhVienController {
     private final DinhHuongService dinhHuongService;
     private final TinChiTichLuyService tinChiTichLuyService;
     private final LichThiRepository lichThiRepo;
-    private final NganhRepository nganhRepo;
     private final ThiLaiService thiLaiService;
+
     private final vn.edu.quanlyhocphan.repository.DangKyNguyenVongRepository dangKyNvRepo;
     private final vn.edu.quanlyhocphan.repository.DangKyThiLaiRepository thiLaiRepo;
 

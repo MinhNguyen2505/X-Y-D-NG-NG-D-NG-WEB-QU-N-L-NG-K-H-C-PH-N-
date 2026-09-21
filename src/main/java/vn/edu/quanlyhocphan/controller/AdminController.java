@@ -13,8 +13,6 @@ import vn.edu.quanlyhocphan.service.*;
 import vn.edu.quanlyhocphan.service.NguyenVongService;
 import vn.edu.quanlyhocphan.service.DinhHuongService;
 
-import java.util.List;import java.util.List;
-
 /**
  * Controller cho role ADMIN (Phong dao tao).
  * Chuc nang:
