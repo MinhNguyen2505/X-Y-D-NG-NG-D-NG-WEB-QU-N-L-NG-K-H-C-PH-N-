@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +13,6 @@ import vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan;
 import vn.edu.quanlyhocphan.repository.NganhRepository;
 import vn.edu.quanlyhocphan.repository.QuanLyRepository;
 import vn.edu.quanlyhocphan.service.*;
-
-import java.util.List;
-
 /**
  * Controller cho role QUAN_LY (Phong Dao Tao).
  * Nhiem vu: dieu hanh hoc vu hang ngay
@@ -45,7 +41,6 @@ public class QuanLyController {
     private final BaoCaoService        baoCaoService;
     private final NganhRepository      nganhRepo;
     private final QuanLyRepository     quanLyRepo;
-    private final PasswordEncoder      passwordEncoder;
 
     // ===== helper =====
     private QuanLy layQuanLyHienTai(UserDetails principal) {
@@ -219,7 +214,7 @@ public class QuanLyController {
     public String danhSachNV(Model model) {
         var ds = nguyenVongService.findAllKeHoach();
         java.util.Map<Long, Long> soChoDuyetMap = ds.stream().collect(java.util.stream.Collectors.toMap(
-                KeHoachNguyenVong::getId,
+                kh -> kh.getId(),
                 kh -> nguyenVongService.findDangKyByKeHoach(kh.getId()).stream()
                         .filter(d -> "CHO_DUYET".equals(d.getTrangThai())).count()
         ));
