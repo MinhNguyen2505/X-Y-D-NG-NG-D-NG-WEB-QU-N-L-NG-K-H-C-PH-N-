@@ -16,7 +16,7 @@
       display: flex;
       font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
       background: #05112b;
-      overflow: hidden;
+      overflow-x: hidden;
     }
 
     /* ============================
@@ -131,11 +131,12 @@
     ============================ */
     .lp-right {
       flex: 1;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; align-items: flex-start; justify-content: center;
       padding: 48px 40px;
       background: #05112b;
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
+      min-height: 100vh;
     }
 
     /* Subtle radial glow behind form */
@@ -152,6 +153,8 @@
     .login-card {
       width: 100%; max-width: 400px;
       position: relative; z-index: 1;
+      margin: auto;
+      padding: 8px 0;
     }
 
     /* Avatar / icon */
