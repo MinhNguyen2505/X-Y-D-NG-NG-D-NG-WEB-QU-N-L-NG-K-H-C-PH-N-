@@ -65,16 +65,6 @@
        class="sb-link">
       <i class="fa-solid fa-chart-line"></i> Kết quả học tập
     </a>
-    <a th:href="@{/sinh-vien/tra-cuu-ket-qua}"
-       th:classappend="${activePage=='sv-tracuu'}?' active'"
-       class="sb-link">
-      <i class="fa-solid fa-magnifying-glass"></i> Tra cứu kết quả
-    </a>
-    <a th:href="@{/sinh-vien/dinh-huong-hoc-tap}"
-       th:classappend="${activePage=='sv-dh'}?' active'"
-       class="sb-link">
-      <i class="fa-solid fa-compass"></i> Định hướng học tập
-    </a>
   </nav>
 
   <div class="sb-footer">
@@ -248,11 +238,6 @@
       <i class="fa-solid fa-rotate-right"></i> Duyệt Thi lại
       <span th:if="${qlThiLaiChoDuyet != null and qlThiLaiChoDuyet > 0}"
             class="sb-badge sb-badge-danger" th:text="${qlThiLaiChoDuyet}"></span>
-    </a>
-    <a th:href="@{/quan-ly/dinh-huong}"
-       th:classappend="${activePage=='ql-dh'}?' active'"
-       class="sb-link">
-      <i class="fa-solid fa-compass"></i> Định hướng HT
     </a>
 
     <div class="sb-section">Tra Cứu</div>

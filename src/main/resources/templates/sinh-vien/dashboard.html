@@ -117,10 +117,6 @@
           <div class="greeting-meta"
                th:text="'MSSV: ' + ${sinhVien?.mssv} + '  ·  ' + ${sinhVien?.nganh?.tenNganh ?: 'Chưa xác định ngành'}">
           </div>
-          <div th:if="${dinhHuongActive != null}" class="greeting-tag">
-            <i class="fa-solid fa-compass"></i>
-            <span th:text="'Định hướng: ' + ${dinhHuongActive.dinhHuong.tenDinhHuong}"></span>
-          </div>
         </div>
         <div class="greeting-icon">🎓</div>
       </div>
@@ -170,7 +166,7 @@
                  th:style="${nguyenVongChoDuyet > 0} ? 'color:#d97706;' : ''">0</div>
           </div>
           <a th:if="${nguyenVongChoDuyet > 0}"
-             th:href="@{/sinh-vien/tra-cuu-ket-qua}"
+             th:href="@{/sinh-vien/dang-ky-nguyen-vong}"
              style="font-size:11px;color:#d97706;white-space:nowrap;font-weight:600;">
             Xem →
           </a>
