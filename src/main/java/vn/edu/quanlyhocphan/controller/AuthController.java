@@ -19,7 +19,12 @@ public class AuthController {
     public String login(
             @RequestParam(value = "error", required = false) String error,
             @RequestParam(value = "logout", required = false) String logout,
+            jakarta.servlet.http.HttpServletRequest request,
             Model model) {
+        
+        // Eagerly create session to prevent IllegalStateException in Thymeleaf when evaluating CSRF token
+        request.getSession(true);
+
         if (error != null) {
             model.addAttribute("errorMsg", "Sai email ho\u1EB7c m\u1EADt kh\u1EA9u. Vui l\u00F2ng th\u1EED l\u1EA1i.");
         }
