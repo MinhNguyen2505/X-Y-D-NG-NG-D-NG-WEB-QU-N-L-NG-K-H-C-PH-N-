@@ -20,7 +20,8 @@ public interface HocKyRepository extends JpaRepository<HocKy, Long> {
      * Dieu kien: ngayBatDauDk <= ngayHienTai <= ngayKetThucDk
      */
     @Query("SELECT hk FROM HocKy hk " +
-           "WHERE :ngayHienTai BETWEEN hk.ngayBatDauDk AND hk.ngayKetThucDk")
+           "WHERE :ngayHienTai BETWEEN hk.ngayBatDauDk AND hk.ngayKetThucDk " +
+           "AND (hk.daChotDangKy IS NULL OR hk.daChotDangKy = false)")
     List<HocKy> findHocKyDangMoDangKy(@Param("ngayHienTai") LocalDate ngayHienTai);
 
     /**
@@ -28,7 +29,8 @@ public interface HocKyRepository extends JpaRepository<HocKy, Long> {
      * Service can query nay de xac nhan hoc_ky cua lop dang ky con han dang ky.
      */
     @Query("SELECT hk FROM HocKy hk WHERE hk.id = :hocKyId " +
-           "AND :ngayHienTai BETWEEN hk.ngayBatDauDk AND hk.ngayKetThucDk")
+           "AND :ngayHienTai BETWEEN hk.ngayBatDauDk AND hk.ngayKetThucDk " +
+           "AND (hk.daChotDangKy IS NULL OR hk.daChotDangKy = false)")
     Optional<HocKy> findByIdAndDangMoDangKy(
             @Param("hocKyId") Long hocKyId,
             @Param("ngayHienTai") LocalDate ngayHienTai);

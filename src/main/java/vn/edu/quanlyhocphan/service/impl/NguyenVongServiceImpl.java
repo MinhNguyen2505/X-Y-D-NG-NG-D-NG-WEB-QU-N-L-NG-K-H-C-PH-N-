@@ -137,6 +137,13 @@ public class NguyenVongServiceImpl implements NguyenVongService {
             throw new NghiepVuException("Ke hoach dang ky nguyen vong da dong.");
         }
 
+        SinhVien sv = sinhVienRepo.findById(sinhVienId)
+            .orElseThrow(() -> new ResourceNotFoundException("Sinh vien", sinhVienId));
+
+        if (sv.getTrangThai() != vn.edu.quanlyhocphan.enums.TrangThaiSinhVien.DANG_HOC) {
+            throw new NghiepVuException("Sinh viên đang ở trạng thái [" + sv.getTrangThai() + "], không được phép đăng ký nguyện vọng.");
+        }
+
         Long hocKyId = nvmh.getKeHoachNguyenVong().getHocKy().getId();
         int maxTinChi = nvmh.getKeHoachNguyenVong().getHocKy().getTinChiToiDa();
         int tinChiMonNay = nvmh.getMonHoc().getSoTinChi();

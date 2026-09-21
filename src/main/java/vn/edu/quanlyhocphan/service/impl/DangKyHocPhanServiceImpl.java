@@ -44,9 +44,11 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
     private final LichHocRepository lichHocRepo;
     private final MonTienQuyetRepository monTienQuyetRepo;
     private final DangKyNguyenVongRepository dangKyNvRepo;
+    private final ChuongTrinhDaoTaoRepository chuongTrinhDaoTaoRepo;
+    private final LichThiRepository lichThiRepo;
 
     // =================================================================
-    // DANG KY — Toan bo 7 rang buoc (tach thanh method rieng, de test)
+    // DANG KY — Toan bo cac rang buoc nghiep vu
     // =================================================================
 
     @Override
@@ -58,22 +60,28 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
         SinhVien sinhVien = sinhVienRepo.findById(sinhVienId)
             .orElseThrow(() -> new ResourceNotFoundException("Sinh vien", sinhVienId));
 
+        // [Mục 2] Kiem tra trang thai sinh vien (chi DANG_HOC moi duoc dang ky)
+        kiemTraTrangThaiSinhVien(sinhVien);
+
         // Fetch kem HocKy + MonHoc trong 1 query
         LopHocPhan lhp = lopHocPhanRepo.findByIdWithLichHoc(lopHocPhanId)
             .orElseThrow(() -> new ResourceNotFoundException("Lop hoc phan", lopHocPhanId));
 
         HocKy hocKy = lhp.getHocKy();
 
-        // [#6] Kiem tra thoi gian dang ky
+        // [#6 + Mục 7] Kiem tra thoi gian dang ky va chot dot dang ky
         kiemTraThoiGianDangKy(hocKy);
 
         // [#2-part1] Kiem tra trang thai lop con mo
         kiemTraTrangThaiLop(lhp);
 
-        // [Mục 4] Kiem tra mon da dat (diem >= 5.0 thi khong cho dang ky lai)
+        // [Mục 1] Kiem tra doi tuong sinh vien (mon hoc thuoc CTDT nganh)
+        kiemTraDoiTuongDangKy(sinhVien, lhp.getMonHoc());
+
+        // [Mục 6] Kiem tra hoc cai thien / mon da dat (diem >= 8.0 thi khong cho hoc cai thien)
         kiemTraDaDatMon(sinhVienId, lhp.getMonHoc());
 
-        // [#5] Kiem tra trung lop (cho phep dang ky lai neu truoc do DA_HUY)
+        // [#5 + Mục 3] Kiem tra trung lop (cho phep dang ky lai neu truoc do DA_HUY)
         kiemTraTrungLop(sinhVienId, lopHocPhanId, lhp.getMaLopHp());
 
         // [#5b] Kiem tra da dang ky mon nay trong HK nay chua (lop khac cung mon)
@@ -85,18 +93,60 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
         // [#4] Kiem tra tong tin chi (chi tinh cac LHP chinh thuc, khong tinh nguyen vong)
         kiemTraTongTinChi(sinhVienId, hocKy, lhp.getMonHoc().getSoTinChi());
 
-        // [#1] Kiem tra trung lich
+        // [#1] Kiem tra trung lich hoc
         kiemTraTrungLich(sinhVienId, hocKy.getId(), lhp);
 
-        // [#2-chinh + #7] Kiem tra si so (Optimistic Locking) + luu trong cung transaction
+        // [Mục 5] Kiem tra trung lich thi
+        kiemTraTrungLichThi(sinhVienId, hocKy.getId(), lhp);
+
+        // [#2-chinh + #7 + Mục 8] Kiem tra si so (Optimistic Locking) + luu trong cung transaction
         return dangKyVaCapNhatSiSo(sinhVien, lhp);
     }
 
     // =================================================================
-    // RANG BUOC #6 — Kiem tra thoi gian dang ky
+    // MỤC 2 — Kiem tra trang thai sinh vien
+    // =================================================================
+
+    private void kiemTraTrangThaiSinhVien(SinhVien sinhVien) {
+        if (sinhVien.getTrangThai() != vn.edu.quanlyhocphan.enums.TrangThaiSinhVien.DANG_HOC) {
+            String tenTrangThai = switch (sinhVien.getTrangThai()) {
+                case BAO_LUU -> "Bảo lưu";
+                case DINH_CHI -> "Đình chỉ học tập";
+                case TOT_NGHIEP -> "Đã tốt nghiệp";
+                default -> sinhVien.getTrangThai().name();
+            };
+            log.warn("SV [{}] khong the dang ky vi trang thai [{}]", sinhVien.getMssv(), sinhVien.getTrangThai());
+            throw new NghiepVuException("Sinh viên đang ở trạng thái [" + tenTrangThai + "], không được phép thực hiện đăng ký.");
+        }
+    }
+
+    // =================================================================
+    // MỤC 1 — Kiem tra doi tuong duoc phep dang ky (thuoc CTDT nganh)
+    // =================================================================
+
+    private void kiemTraDoiTuongDangKy(SinhVien sinhVien, MonHoc monHoc) {
+        if (sinhVien.getNganh() != null) {
+            boolean thuocCTDT = chuongTrinhDaoTaoRepo.existsByNganhIdAndMonHocId(sinhVien.getNganh().getId(), monHoc.getId());
+            if (!thuocCTDT) {
+                log.warn("SV [{}] khong thuoc CTDT mon [{}] nganh [{}]",
+                    sinhVien.getMssv(), monHoc.getMaMon(), sinhVien.getNganh().getTenNganh());
+                throw new NghiepVuException(
+                    "Môn học [" + monHoc.getTenMon() + "] không thuộc Chương trình đào tạo ngành "
+                    + sinhVien.getNganh().getTenNganh() + ".");
+            }
+        }
+    }
+
+    // =================================================================
+    // RANG BUOC #6 + MỤC 7 — Kiem tra thoi gian dang ky & da chot dang ky
     // =================================================================
 
     private void kiemTraThoiGianDangKy(HocKy hocKy) {
+        if (Boolean.TRUE.equals(hocKy.getDaChotDangKy())) {
+            log.warn("Hoc ky [{}] da chot dang ky", hocKy.getTenHocKy());
+            throw new NgoaiThoiGianDangKyException(
+                "Học kỳ [" + hocKy.getTenHocKy() + "] đã chốt đợt đăng ký. Không thể thực hiện thao tác.");
+        }
         LocalDate hom_nay = LocalDate.now();
         boolean trongThoiGian = !hom_nay.isBefore(hocKy.getNgayBatDauDk())
                              && !hom_nay.isAfter(hocKy.getNgayKetThucDk());
@@ -119,20 +169,27 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
     }
 
     // =================================================================
-    // MỤC 4 — Kiem tra mon da dat (khong cho phep dang ky lai neu da dat)
+    // MỤC 6 — Kiem tra hoc cai thien / mon da dat (diem >= 8.0 thi chan)
     // =================================================================
 
     private void kiemTraDaDatMon(Long sinhVienId, MonHoc monHoc) {
-        boolean daDat = dangKyRepo.kiemTraDaHoanThanhMon(sinhVienId, monHoc.getId());
-        if (daDat) {
-            log.warn("SV [{}] da hoan thanh dat mon [{}]", sinhVienId, monHoc.getTenMon());
-            throw new NghiepVuException(
-                "Bạn đã hoàn thành môn học [" + monHoc.getTenMon() + "] với điểm đạt. Không thể đăng ký lại.");
+        List<DangKyHocPhan> lichSu = dangKyRepo.findLichSuDangKy(sinhVienId);
+        for (DangKyHocPhan dk : lichSu) {
+            if (dk.getLopHocPhan().getMonHoc().getId().equals(monHoc.getId())
+                && dk.getTrangThai() == TrangThaiDangKy.HOAN_THANH
+                && dk.getDiemTongKet() != null) {
+                if (dk.getDiemTongKet().compareTo(new BigDecimal("8.0")) >= 0) {
+                    log.warn("SV [{}] da dat diem cao mon [{}] diem={}", sinhVienId, monHoc.getTenMon(), dk.getDiemTongKet());
+                    throw new NghiepVuException(
+                        "Bạn đã hoàn thành môn [" + monHoc.getTenMon() + "] với điểm " + dk.getDiemTongKet() + " (Giỏi/Xuất sắc). Không thể đăng ký học cải thiện.");
+                }
+                log.info("SV [{}] dang ky hoc cai thien mon [{}] (diem cu = {})", sinhVienId, monHoc.getTenMon(), dk.getDiemTongKet());
+            }
         }
     }
 
     // =================================================================
-    // RANG BUOC #5 — Kiem tra trung lop (Cho phep dang ky lai neu DA_HUY)
+    // RANG BUOC #5 + MỤC 3 — Kiem tra trung lop (Cho phep dang ky lai neu DA_HUY)
     // =================================================================
 
     private void kiemTraTrungLop(Long sinhVienId, Long lopHocPhanId, String maLopHp) {
@@ -205,9 +262,40 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
             for (LichHoc moi : lichMoi) {
                 if (isXungDotLich(cu, moi)) {
                     String maLopCu = cu.getLopHocPhan().getMaLopHp();
-                    log.warn("Trung lich: Thu {} Tiet {}-{} voi lop [{}]",
+                    log.warn("Trung lich hoc: Thu {} Tiet {}-{} voi lop [{}]",
                         moi.getThu(), moi.getTietBatDau(), moi.getTietKetThuc(), maLopCu);
                     throw new TrungLichException(maLopCu);
+                }
+            }
+        }
+    }
+
+    // =================================================================
+    // MỤC 5 — Kiem tra trung lich thi
+    // =================================================================
+
+    private void kiemTraTrungLichThi(Long sinhVienId, Long hocKyId, LopHocPhan lhpMoi) {
+        List<LichThi> lichThiMoi = lichThiRepo.findByLopHocPhan_IdOrderByNgayThiAscGioBatDauAsc(lhpMoi.getId());
+        if (lichThiMoi == null || lichThiMoi.isEmpty()) {
+            return;
+        }
+
+        List<LichThi> lichThiDaDangKy = lichThiRepo.findBySinhVienAndHocKy(sinhVienId, hocKyId);
+        for (LichThi cu : lichThiDaDangKy) {
+            for (LichThi moi : lichThiMoi) {
+                if (cu.getNgayThi() != null && cu.getNgayThi().equals(moi.getNgayThi())) {
+                    if (cu.getGioBatDau() != null && cu.getGioKetThuc() != null &&
+                        moi.getGioBatDau() != null && moi.getGioKetThuc() != null) {
+                        boolean overlap = cu.getGioBatDau().isBefore(moi.getGioKetThuc())
+                                       && cu.getGioKetThuc().isAfter(moi.getGioBatDau());
+                        if (overlap) {
+                            String tenMonCu = cu.getLopHocPhan().getMonHoc().getTenMon();
+                            log.warn("Trung lich thi: ngay {} ({} - {}) voi mon [{}]",
+                                moi.getNgayThi(), moi.getGioBatDau(), moi.getGioKetThuc(), tenMonCu);
+                            throw new TrungLichException(
+                                "Trùng lịch thi ngày " + moi.getNgayThi() + " (" + moi.getGioBatDau() + " - " + moi.getGioKetThuc() + ") với môn [" + tenMonCu + "]");
+                        }
+                    }
                 }
             }
         }

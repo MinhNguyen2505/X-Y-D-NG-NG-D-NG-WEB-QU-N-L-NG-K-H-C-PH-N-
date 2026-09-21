@@ -326,6 +326,28 @@ public class AdminController {
         return "redirect:/admin/hoc-ky";
     }
 
+    @PostMapping("/hoc-ky/{id}/chot-dang-ky")
+    public String chotDangKyHocKy(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            hocKyService.chotDangKy(id);
+            redirectAttributes.addFlashAttribute("successMsg", "Đã chốt đợt đăng ký cho học kỳ.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Có lỗi: " + e.getMessage());
+        }
+        return "redirect:/admin/hoc-ky";
+    }
+
+    @PostMapping("/hoc-ky/{id}/mo-lai-dang-ky")
+    public String moLaiDangKyHocKy(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            hocKyService.moLaiDangKy(id);
+            redirectAttributes.addFlashAttribute("successMsg", "Đã mở lại đợt đăng ký cho học kỳ.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Có lỗi: " + e.getMessage());
+        }
+        return "redirect:/admin/hoc-ky";
+    }
+
     // =================================================================
     // MO LOP HOC PHAN
     // =================================================================

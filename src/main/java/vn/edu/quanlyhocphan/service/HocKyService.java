@@ -10,4 +10,6 @@ public interface HocKyService {
     void deleteById(Long id);
     /** Lay hoc ky hien tai dang mo dang ky (co the co nhieu hon 1 neu overlap). */
     List<HocKy> findHocKyDangMoDangKy();
+    void chotDangKy(Long hocKyId);
+    void moLaiDangKy(Long hocKyId);
 }

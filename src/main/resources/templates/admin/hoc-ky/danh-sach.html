@@ -16,14 +16,53 @@
       </div>
       <div class="card"><div class="card-body" style="padding:0;">
         <table class="table">
-          <thead><tr><th>Tên học kỳ</th><th>Năm học</th><th>Bắt đầu ĐK</th><th>Kết thúc ĐK</th><th>TC min</th><th>TC max</th><th></th></tr></thead>
+          <thead>
+            <tr>
+              <th>Tên học kỳ</th>
+              <th>Năm học</th>
+              <th>Bắt đầu ĐK</th>
+              <th>Kết thúc ĐK</th>
+              <th style="text-align:center;">TC min</th>
+              <th style="text-align:center;">TC max</th>
+              <th style="text-align:center;">Trạng thái ĐK</th>
+              <th style="text-align:right;">Thao tác</th>
+            </tr>
+          </thead>
           <tbody>
             <tr th:each="hk : ${danhSach}">
-              <td th:text="${hk.tenHocKy}"></td><td th:text="${hk.namHoc}"></td>
+              <td><b th:text="${hk.tenHocKy}"></b></td>
+              <td th:text="${hk.namHoc}"></td>
               <td th:text="${#temporals.format(hk.ngayBatDauDk,'dd/MM/yyyy')}"></td>
               <td th:text="${#temporals.format(hk.ngayKetThucDk,'dd/MM/yyyy')}"></td>
-              <td th:text="${hk.tinChiToiThieu}"></td><td th:text="${hk.tinChiToiDa}"></td>
-              <td><a th:href="@{/admin/hoc-ky/sua/{id}(id=${hk.id})}" class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i> Sửa</a></td>
+              <td style="text-align:center;" th:text="${hk.tinChiToiThieu}"></td>
+              <td style="text-align:center;" th:text="${hk.tinChiToiDa}"></td>
+              <td style="text-align:center;">
+                <span th:if="${hk.daChotDangKy}" class="badge badge-danger">
+                  <i class="fa-solid fa-lock"></i> Đã chốt
+                </span>
+                <span th:if="${!hk.daChotDangKy}" class="badge badge-success">
+                  <i class="fa-solid fa-lock-open"></i> Đang mở
+                </span>
+              </td>
+              <td style="text-align:right;">
+                <div style="display:inline-flex;gap:6px;">
+                  <form th:if="${!hk.daChotDangKy}" th:action="@{/admin/hoc-ky/{id}/chot-dang-ky(id=${hk.id})}" method="post" onsubmit="return confirm('Chốt đợt đăng ký của học kỳ này? Sinh viên sẽ không thể đăng ký hay hủy môn nữa.')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-warning btn-sm">
+                      <i class="fa-solid fa-lock"></i> Chốt ĐK
+                    </button>
+                  </form>
+                  <form th:if="${hk.daChotDangKy}" th:action="@{/admin/hoc-ky/{id}/mo-lai-dang-ky(id=${hk.id})}" method="post" onsubmit="return confirm('Mở lại đợt đăng ký cho học kỳ này?')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-success btn-sm">
+                      <i class="fa-solid fa-lock-open"></i> Mở lại
+                    </button>
+                  </form>
+                  <a th:href="@{/admin/hoc-ky/sua/{id}(id=${hk.id})}" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-pen"></i> Sửa
+                  </a>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>

@@ -41,6 +41,13 @@ public class ThiLaiServiceImpl implements ThiLaiService {
     @Override
     @Transactional
     public void dangKy(Long sinhVienId, Long dangKyHocPhanId) {
+        SinhVien sv = svRepo.findById(sinhVienId)
+            .orElseThrow(() -> new ResourceNotFoundException("SinhVien", sinhVienId));
+
+        if (sv.getTrangThai() != vn.edu.quanlyhocphan.enums.TrangThaiSinhVien.DANG_HOC) {
+            throw new NghiepVuException("Sinh viên đang ở trạng thái [" + sv.getTrangThai() + "], không được phép đăng ký thi lại.");
+        }
+
         // Kiem tra mon chua dat
         DangKyHocPhan dkhp = dkhpRepo.findById(dangKyHocPhanId)
             .orElseThrow(() -> new ResourceNotFoundException("DangKyHocPhan", dangKyHocPhanId));

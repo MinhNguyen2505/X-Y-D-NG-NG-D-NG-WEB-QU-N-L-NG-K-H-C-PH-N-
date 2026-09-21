@@ -41,4 +41,18 @@ public class HocKyServiceImpl implements HocKyService {
     public List<HocKy> findHocKyDangMoDangKy() {
         return hocKyRepo.findHocKyDangMoDangKy(LocalDate.now());
     }
+
+    @Override @Transactional
+    public void chotDangKy(Long hocKyId) {
+        HocKy hk = findById(hocKyId);
+        hk.setDaChotDangKy(true);
+        hocKyRepo.save(hk);
+    }
+
+    @Override @Transactional
+    public void moLaiDangKy(Long hocKyId) {
+        HocKy hk = findById(hocKyId);
+        hk.setDaChotDangKy(false);
+        hocKyRepo.save(hk);
+    }
 }

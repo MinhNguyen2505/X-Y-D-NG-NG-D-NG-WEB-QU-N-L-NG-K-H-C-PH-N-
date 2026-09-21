@@ -72,6 +72,11 @@ public class HocKy {
     @Builder.Default
     private Integer tinChiToiDa = 25;
 
+    /** Danh dau hoc ky da chot danh sach dang ky (khong cho dang ky/huy nua) */
+    @Column(name = "da_chot_dang_ky")
+    @Builder.Default
+    private Boolean daChotDangKy = false;
+
     // ---- Quan he 1-N voi LopHocPhan (cac lop mo trong hoc ky nay) ----
     @OneToMany(mappedBy = "hocKy", fetch = FetchType.LAZY)
     @Builder.Default
