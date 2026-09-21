@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Thông Báo Lỗi — Quản Lý Học Phần</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .error-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-50);
+      padding: 20px;
+    }
+    .error-card {
+      background: #ffffff;
+      max-width: 500px;
+      width: 100%;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+      padding: 40px 30px;
+      text-align: center;
+      border: 1px solid var(--gray-200);
+    }
+    .error-code {
+      font-size: 64px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .error-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 10px;
+    }
+    .error-desc {
+      font-size: 14px;
+      color: var(--gray-600);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .error-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+<div class="error-wrapper">
+  <div class="error-card">
+    <div class="error-code" th:text="${status ?: 'Oops!'}">404</div>
+    <div class="error-title" th:text="${error ?: 'Đã có lỗi xảy ra'}">Không tìm thấy trang</div>
+    <p class="error-desc" th:text="${message ?: 'Yêu cầu không thể xử lý hoặc dữ liệu không tồn tại trên hệ thống.'}">
+      Vui lòng kiểm tra lại liên kết hoặc quay về trang chủ.
+    </p>
+    <div class="error-actions">
+      <button onclick="window.history.back()" class="btn btn-outline">
+        <i class="fa-solid fa-arrow-left"></i> Quay lại
+      </button>
+      <a th:href="@{/login}" class="btn btn-primary">
+        <i class="fa-solid fa-house"></i> Về trang chủ
+      </a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

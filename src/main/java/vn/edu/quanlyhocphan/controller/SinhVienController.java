@@ -64,6 +64,20 @@ public class SinhVienController {
                 .stream().mapToInt(k -> k.getTinChiDaTichLuy()).sum();
     }
 
+    @ModelAttribute
+    public void themThongTinChung(@AuthenticationPrincipal UserDetails principal, Model model) {
+        if (principal != null) {
+            try {
+                SinhVien sv = laySinhVienHienTai(principal);
+                if (sv != null) {
+                    model.addAttribute("sinhVien", sv);
+                    model.addAttribute("badgeNguyenVong", dangKyNvRepo.countChoDuyetBySinhVienId(sv.getId()));
+                    model.addAttribute("badgeThiLai", thiLaiRepo.countChoDuyetBySinhVienId(sv.getId()));
+                }
+            } catch (Exception ignored) {}
+        }
+    }
+
     // =================================================================
     // DASHBOARD
     // =================================================================

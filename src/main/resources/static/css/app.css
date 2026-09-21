@@ -50,6 +50,14 @@ a:hover{color:var(--primary-dark);}
   border:none;background:rgba(255,80,80,.2);border-radius:var(--radius);
   color:rgba(255,200,200,.9);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;}
 .btn-logout:hover{background:rgba(255,80,80,.35);}
+.sb-badge{margin-left:auto;border-radius:10px;font-size:10px;padding:1px 6px;font-weight:700;}
+.sb-badge-warn{background:#f59e0b;color:#fff;}
+.sb-badge-danger{background:#ef4444;color:#fff;}
+.sb-action-btn{display:flex;align-items:center;justify-content:center;gap:6px;
+  background:rgba(255,255,255,.12);color:rgba(255,255,255,.9);border-radius:var(--radius);
+  padding:6px 8px;font-size:11.5px;font-weight:600;text-decoration:none;
+  margin-bottom:6px;transition:var(--transition);}
+.sb-action-btn:hover{background:rgba(255,255,255,.22);color:var(--white);}
 
 /* Topbar user */
 .topbar-user{display:flex;align-items:center;gap:6px;}

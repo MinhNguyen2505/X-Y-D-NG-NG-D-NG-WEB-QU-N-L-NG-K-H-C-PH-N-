@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Tạo kế hoạch nguyện vọng</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="layout">
+  <div th:insert="~{fragments/sidebar :: ql('ql-nv')}"></div>
+  <div class="main">
+    <header class="topbar"><div class="topbar-title">Tạo kế hoạch nguyện vọng</div></header>
+    <div class="content">
+      <div class="page-hd">
+        <div class="page-hd-title">Tạo kế hoạch mới</div>
+        <a th:href="@{/quan-ly/nguyen-vong}" class="btn btn-outline">
+          <i class="fa-solid fa-arrow-left"></i> Quay lại
+        </a>
+      </div>
+
+      <div class="card" style="max-width:580px;">
+        <div class="card-body">
+          <form th:action="@{/quan-ly/nguyen-vong/them}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="form-group">
+              <label class="form-label">Tên kế hoạch *</label>
+              <input type="text" name="tenKeHoach" class="form-control" required
+                     placeholder="VD: Đăng ký nguyện vọng HK1 2026-2027"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mô tả</label>
+              <textarea name="moTa" class="form-control" rows="3"
+                        placeholder="Hướng dẫn sinh viên đăng ký nguyện vọng..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Học kỳ *</label>
+              <select name="hocKy.id" class="form-control" required>
+                <option value="">-- Chọn học kỳ --</option>
+                <option th:each="hk : ${danhSachHocKy}"
+                        th:value="${hk.id}"
+                        th:text="${hk.tenHocKy} + ' (' + ${hk.namHoc} + ')'"></option>
+              </select>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Ngày bắt đầu *</label>
+                <input type="date" name="ngayBatDau" class="form-control" required/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ngày kết thúc *</label>
+                <input type="date" name="ngayKetThuc" class="form-control" required/>
+              </div>
+            </div>
+            <div class="flex mt-2">
+              <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Tạo kế hoạch
+              </button>
+              <a th:href="@{/quan-ly/nguyen-vong}" class="btn btn-outline">Hủy</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

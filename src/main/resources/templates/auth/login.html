@@ -102,12 +102,32 @@
     </button>
   </form>
 
-  <div class="login-hint">
-    <b>Tài khoản mẫu:</b><br/>
-    Admin: <b>admin@email.com</b> / 123456<br/>
-    Sinh viên: <b>sv001@email.com</b> / 123456<br/>
-    Giảng viên: <b>gv001@email.com</b> / 123456
+  <div class="login-hint" style="line-height:1.8;">
+    <div style="font-weight:700;margin-bottom:4px;color:var(--navy);display:flex;justify-content:space-between;align-items:center;">
+      <span>Tài khoản mẫu (bấm để điền nhanh):</span>
+    </div>
+    <div onclick="fillLogin('admin@email.com','123456')" style="cursor:pointer;" title="Bấm để điền nhanh">
+      🛡️ Admin: <b>admin@email.com</b> / 123456
+    </div>
+    <div onclick="fillLogin('quanly@email.com','123456')" style="cursor:pointer;color:#1e40af;" title="Bấm để điền nhanh">
+      📋 Quản lý: <b>quanly@email.com</b> / 123456
+    </div>
+    <div onclick="fillLogin('sv001@email.com','123456')" style="cursor:pointer;" title="Bấm để điền nhanh">
+      🎓 Sinh viên: <b>sv001@email.com</b> / 123456
+    </div>
+    <div onclick="fillLogin('gv001@email.com','123456')" style="cursor:pointer;" title="Bấm để điền nhanh">
+      👨‍🏫 Giảng viên: <b>gv001@email.com</b> / 123456
+    </div>
   </div>
 </div>
+
+<script>
+function fillLogin(email, pass) {
+  const u = document.getElementById('username');
+  const p = document.getElementById('password');
+  if (u) u.value = email;
+  if (p) p.value = pass;
+}
+</script>
 </body>
 </html>

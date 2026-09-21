@@ -132,16 +132,22 @@
                             style="color:var(--gray-400);">—</span>
                     </td>
                     <td style="text-align:center;">
-                      <span th:if="${mon.ketQua == 'Hoàn thành'}" class="badge badge-success" style="font-size:10px;">
+                      <a th:if="${mon.ketQua == 'Hoàn thành'}" th:href="@{/sinh-vien/ket-qua-hoc-tap}"
+                         class="badge badge-success" style="font-size:10px;text-decoration:none;display:inline-block;" title="Xem điểm môn này trong Kết quả học tập">
                         <i class="fa-solid fa-check"></i> Đạt
-                      </span>
-                      <span th:if="${mon.ketQua == 'Không đạt'}" class="badge badge-danger" style="font-size:10px;">
-                        <i class="fa-solid fa-xmark"></i> Không đạt
-                      </span>
-                      <span th:if="${mon.ketQua == 'Đang học'}" class="badge badge-secondary" style="font-size:10px;">
-                        <i class="fa-solid fa-spinner"></i> Đang học
-                      </span>
-                      <span th:if="${mon.ketQua == 'Chưa học'}" style="color:var(--gray-300);font-size:11px;">Chưa học</span>
+                      </a>
+                      <a th:if="${mon.ketQua == 'Không đạt'}" th:href="@{/sinh-vien/dang-ky-thi-lai}"
+                         class="badge badge-danger" style="font-size:10px;text-decoration:none;display:inline-block;" title="Bấm để Đăng ký thi lại môn này">
+                        <i class="fa-solid fa-rotate-right"></i> Thi lại
+                      </a>
+                      <a th:if="${mon.ketQua == 'Đang học'}" th:href="@{/sinh-vien/thoi-khoa-bieu}"
+                         class="badge badge-secondary" style="font-size:10px;text-decoration:none;display:inline-block;" title="Xem lịch học môn này trong Thời khóa biểu">
+                        <i class="fa-solid fa-calendar-days"></i> Đang học
+                      </a>
+                      <a th:if="${mon.ketQua == 'Chưa học'}" th:href="@{/sinh-vien/dang-ky}"
+                         style="color:var(--primary);font-size:11px;text-decoration:none;font-weight:600;display:inline-block;" title="Bấm để đến trang Đăng ký tín chỉ">
+                        <i class="fa-solid fa-pen-to-square"></i> ĐK môn
+                      </a>
                     </td>
                   </tr>
                 </th:block>

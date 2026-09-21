@@ -88,4 +88,9 @@ public interface DangKyNguyenVongRepository extends JpaRepository<DangKyNguyenVo
     Integer tinhTongTinChiNguyenVong(
             @Param("sinhVienId") Long sinhVienId,
             @Param("hocKyId") Long hocKyId);
+
+    /** Dem tat ca dang ky theo trang thai (bao cao) */
+    @Query("SELECT COUNT(d) FROM DangKyNguyenVong d WHERE d.trangThai = :trangThai")
+    long countByTrangThai(@Param("trangThai") String trangThai);
 }
+

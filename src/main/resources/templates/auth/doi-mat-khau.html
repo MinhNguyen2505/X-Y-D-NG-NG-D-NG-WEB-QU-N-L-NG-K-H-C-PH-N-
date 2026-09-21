@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Đổi mật khẩu — Quản Lý Học Phần</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .pass-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .pass-input-wrapper input {
+      padding-right: 40px;
+    }
+    .toggle-pass-btn {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--gray-500);
+      cursor: pointer;
+      font-size: 15px;
+      padding: 0;
+    }
+    .toggle-pass-btn:hover {
+      color: var(--primary);
+    }
+    .security-tips-card {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .security-tips-title {
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .security-tips-list {
+      font-size: 12.5px;
+      color: #1e3a8a;
+      line-height: 1.6;
+      padding-left: 20px;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <!-- Dynamic sidebar based on user role -->
+  <div th:if="${userRole == 'ADMIN'}" th:insert="~{fragments/sidebar :: admin('doi-mat-khau')}"></div>
+  <div th:if="${userRole == 'QUAN_LY'}" th:insert="~{fragments/sidebar :: ql('doi-mat-khau')}"></div>
+  <div th:if="${userRole == 'GIANG_VIEN'}" th:insert="~{fragments/sidebar :: gv('doi-mat-khau')}"></div>
+  <div th:if="${userRole == 'SINH_VIEN'}" th:insert="~{fragments/sidebar :: sv('doi-mat-khau')}"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Thiết lập tài khoản & Bảo mật</div>
+      <div class="topbar-user">
+        <div class="topbar-avatar" th:text="${#strings.substring(email, 0, 1).toUpperCase()}">U</div>
+        <span class="topbar-name" th:text="${email}">user@epu.edu.vn</span>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- Flash Messages -->
+      <div th:if="${successMsg}" class="flash flash-success">
+        <i class="fa-solid fa-circle-check"></i>
+        <span th:text="${successMsg}"></span>
+      </div>
+      <div th:if="${errorMsg}" class="flash flash-danger">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span th:text="${errorMsg}"></span>
+      </div>
+
+      <div class="page-hd">
+        <div>
+          <div class="page-hd-title">Đổi mật khẩu</div>
+          <div class="page-hd-sub">Cập nhật mật khẩu định kỳ để tăng cường an toàn cho tài khoản của bạn</div>
+        </div>
+      </div>
+
+      <div style="max-width: 540px;">
+        <!-- Security Info Card -->
+        <div class="security-tips-card">
+          <div class="security-tips-title">
+            <i class="fa-solid fa-shield-halved"></i> Quy định bảo mật thông tin
+          </div>
+          <ul class="security-tips-list">
+            <li>Mật khẩu mới phải có tối thiểu <strong>6 ký tự</strong>.</li>
+            <li>Hệ thống lưu trữ mật khẩu bằng thuật toán mã hóa một chiều <strong>BCrypt</strong> an toàn cao.</li>
+            <li>Quản trị viên và nhân viên kỹ thuật <strong>không thể xem</strong> mật khẩu gốc của bạn.</li>
+            <li>Không chia sẻ thông tin đăng nhập hoặc mật khẩu cho bất kỳ ai.</li>
+          </ul>
+        </div>
+
+        <!-- Form Card -->
+        <div class="card">
+          <div class="card-body">
+            <form th:action="@{/doi-mat-khau}" method="post" id="formDoiMatKhau">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+              <div class="form-group" style="margin-bottom:16px;">
+                <label class="form-label" for="matKhauCu">Mật khẩu hiện tại <span style="color:#ef4444;">*</span></label>
+                <div class="pass-input-wrapper">
+                  <input type="password" id="matKhauCu" name="matKhauCu" class="form-control"
+                         placeholder="Nhập mật khẩu đang sử dụng" required autocomplete="current-password"/>
+                  <button type="button" class="toggle-pass-btn" onclick="togglePass('matKhauCu', this)" title="Hiện/Ẩn">
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:16px;">
+                <label class="form-label" for="matKhauMoi">Mật khẩu mới <span style="color:#ef4444;">*</span></label>
+                <div class="pass-input-wrapper">
+                  <input type="password" id="matKhauMoi" name="matKhauMoi" class="form-control"
+                         placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)" required minlength="6" autocomplete="new-password"/>
+                  <button type="button" class="toggle-pass-btn" onclick="togglePass('matKhauMoi', this)" title="Hiện/Ẩn">
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:20px;">
+                <label class="form-label" for="xacNhanMatKhauMoi">Xác nhận mật khẩu mới <span style="color:#ef4444;">*</span></label>
+                <div class="pass-input-wrapper">
+                  <input type="password" id="xacNhanMatKhauMoi" name="xacNhanMatKhauMoi" class="form-control"
+                         placeholder="Nhập lại mật khẩu mới" required minlength="6" autocomplete="new-password"/>
+                  <button type="button" class="toggle-pass-btn" onclick="togglePass('xacNhanMatKhauMoi', this)" title="Hiện/Ẩn">
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:10px;align-items:center;">
+                <button type="submit" class="btn btn-primary" style="padding:10px 20px;">
+                  <i class="fa-solid fa-key"></i> Cập nhật mật khẩu
+                </button>
+                <button type="reset" class="btn btn-outline">Nhập lại</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function togglePass(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const icon = btn.querySelector('i');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.classList.remove('fa-eye');
+    icon.classList.add('fa-eye-slash');
+  } else {
+    input.type = 'password';
+    icon.classList.remove('fa-eye-slash');
+    icon.classList.add('fa-eye');
+  }
+}
+
+document.getElementById('formDoiMatKhau').addEventListener('submit', function(e) {
+  const newPass = document.getElementById('matKhauMoi').value;
+  const confirmPass = document.getElementById('xacNhanMatKhauMoi').value;
+  if (newPass !== confirmPass) {
+    e.preventDefault();
+    alert('Xác nhận mật khẩu mới không trùng khớp. Vui lòng kiểm tra lại!');
+  }
+});
+</script>
+</body>
+</html>

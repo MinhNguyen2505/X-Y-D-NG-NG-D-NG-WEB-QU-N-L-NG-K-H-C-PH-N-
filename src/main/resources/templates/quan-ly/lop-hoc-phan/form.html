@@ -1,0 +1,169 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><title>Form Lớp học phần</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="layout">
+  <div th:insert="~{fragments/sidebar :: ql('ql-lhp')}"></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title"
+           th:text="${lopHocPhan.id == null} ? 'Mở lớp học phần' : 'Sửa lớp học phần'">Form</div>
+    </header>
+    <div class="content">
+      <div th:if="${successMsg}" class="flash flash-success">
+        <i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span>
+      </div>
+      <div th:if="${errorMsg}" class="flash flash-danger">
+        <i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span>
+      </div>
+
+      <div class="page-hd">
+        <div class="page-hd-title"
+             th:text="${lopHocPhan.id == null} ? 'Mở lớp học phần' : 'Sửa lớp học phần'">Form</div>
+        <a th:href="@{/quan-ly/lop-hoc-phan}" class="btn btn-outline">
+          <i class="fa-solid fa-arrow-left"></i> Quay lại
+        </a>
+      </div>
+
+      <div th:style="${lopHocPhan.id != null} ? 'display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;' : ''">
+
+        <!-- Form chính -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"
+                  th:text="${lopHocPhan.id == null} ? 'Thông tin lớp học phần' : 'Chỉnh sửa thông tin'"></span>
+          </div>
+          <div class="card-body">
+            <form th:action="${lopHocPhan.id == null}
+                              ? @{/quan-ly/lop-hoc-phan/them}
+                              : @{/quan-ly/lop-hoc-phan/sua/{id}(id=${lopHocPhan.id})}"
+                  method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <input type="hidden" name="version"      th:value="${lopHocPhan.version ?: 0}"/>
+              <input type="hidden" name="siSoHienTai"  th:value="${lopHocPhan.siSoHienTai ?: 0}"/>
+
+              <div class="form-group">
+                <label class="form-label">Mã lớp HP *</label>
+                <input type="text" name="maLopHp" class="form-control"
+                       th:value="${lopHocPhan.maLopHp}" required
+                       placeholder="VD: IT3030-01"/>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label">Môn học *</label>
+                  <select name="monHoc.id" class="form-control" required>
+                    <option value="">-- Chọn môn học --</option>
+                    <option th:each="mh : ${danhSachMonHoc}"
+                            th:value="${mh.id}"
+                            th:text="${mh.maMon} + ' — ' + ${mh.tenMon}"
+                            th:selected="${lopHocPhan.monHoc?.id == mh.id}"></option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Học kỳ *</label>
+                  <select name="hocKy.id" class="form-control" required>
+                    <option value="">-- Chọn học kỳ --</option>
+                    <option th:each="hk : ${danhSachHocKy}"
+                            th:value="${hk.id}"
+                            th:text="${hk.tenHocKy} + ' (' + ${hk.namHoc} + ')'"
+                            th:selected="${lopHocPhan.hocKy?.id == hk.id}"></option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Giảng viên</label>
+                  <select name="giangVien.id" class="form-control">
+                    <option value="">-- Chưa phân công --</option>
+                    <option th:each="gv : ${danhSachGiangVien}"
+                            th:value="${gv.id}"
+                            th:text="${gv.hoTen} + ' (' + ${gv.maGv} + ')'"
+                            th:selected="${lopHocPhan.giangVien?.id == gv.id}"></option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Sĩ số tối đa *</label>
+                  <input type="number" name="siSoToiDa" class="form-control"
+                         th:value="${lopHocPhan.siSoToiDa ?: 50}" min="1" required/>
+                </div>
+              </div>
+
+              <!-- Sĩ số hiện tại (chỉ hiện khi sửa) -->
+              <div th:if="${lopHocPhan.id != null}"
+                   style="background:var(--gray-50);border-radius:6px;padding:8px 12px;
+                          margin-bottom:14px;font-size:13px;">
+                <i class="fa-solid fa-users" style="color:var(--primary);margin-right:4px;"></i>
+                Sĩ số hiện tại:
+                <b th:text="${lopHocPhan.siSoHienTai}">0</b>
+                / <span th:text="${lopHocPhan.siSoToiDa}">50</span>
+              </div>
+
+              <div class="flex mt-2">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fa-solid fa-floppy-disk"></i> Lưu
+                </button>
+                <a th:href="@{/quan-ly/lop-hoc-phan}" class="btn btn-outline">Hủy</a>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Danh sách SV đã đăng ký (chỉ hiện khi sửa) -->
+        <div th:if="${lopHocPhan.id != null}" class="card">
+          <div class="card-header">
+            <span class="card-title">
+              <i class="fa-solid fa-users" style="color:var(--success);margin-right:6px;"></i>
+              Sinh viên đã đăng ký
+              <span style="font-size:12px;color:var(--gray-500);margin-left:6px;"
+                    th:text="'(' + ${danhSachSV?.size() ?: 0} + ' SV)'"></span>
+            </span>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div th:if="${danhSachSV == null or danhSachSV.empty}" class="empty-state">
+              <i class="fa-solid fa-user-slash"></i>Chưa có sinh viên đăng ký.
+            </div>
+            <table th:if="${danhSachSV != null and !danhSachSV.empty}" class="table">
+              <thead>
+                <tr>
+                  <th style="width:36px;text-align:center;">STT</th>
+                  <th>MSSV</th>
+                  <th>Họ tên</th>
+                  <th style="text-align:center;">Điểm TK</th>
+                  <th style="text-align:center;">Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="dk, i : ${danhSachSV}">
+                  <td style="text-align:center;color:var(--gray-400);" th:text="${i.count}"></td>
+                  <td><code th:text="${dk.sinhVien.mssv}"></code></td>
+                  <td th:text="${dk.sinhVien.hoTen}"></td>
+                  <td style="text-align:center;">
+                    <span th:if="${dk.diemTongKet != null}"
+                          th:text="${dk.diemTongKet}"
+                          th:style="${dk.diemTongKet < 5} ? 'color:var(--danger);font-weight:700;'
+                                                         : 'color:var(--success);font-weight:700;'"></span>
+                    <span th:if="${dk.diemTongKet == null}" class="text-muted">—</span>
+                  </td>
+                  <td style="text-align:center;">
+                    <span th:if="${dk.trangThai.name() == 'DA_DANG_KY'}"
+                          class="badge badge-success" style="font-size:10px;">Đang học</span>
+                    <span th:if="${dk.trangThai.name() == 'HOAN_THANH'}"
+                          class="badge badge-primary" style="font-size:10px;">Hoàn thành</span>
+                    <span th:if="${dk.trangThai.name() == 'DA_HUY'}"
+                          class="badge badge-secondary" style="font-size:10px;">Đã hủy</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

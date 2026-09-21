@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><title>Lớp học phần</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="layout">
+  <div th:insert="~{fragments/sidebar :: ql('ql-lhp')}"></div>
+  <div class="main">
+    <header class="topbar"><div class="topbar-title">Quản lý Lớp học phần</div></header>
+    <div class="content">
+      <div th:if="${successMsg}" class="flash flash-success">
+        <i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span>
+      </div>
+      <div th:if="${errorMsg}" class="flash flash-danger">
+        <i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span>
+      </div>
+
+      <div class="page-hd">
+        <div class="page-hd-title">Lớp học phần</div>
+        <a th:href="@{/quan-ly/lop-hoc-phan/them}" class="btn btn-primary">
+          <i class="fa-solid fa-plus"></i> Mở lớp mới
+        </a>
+      </div>
+
+      <!-- Chọn học kỳ -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-body">
+          <div class="flex-wrap">
+            <a th:each="hk : ${danhSachHocKy}"
+               th:href="@{/quan-ly/lop-hoc-phan(hocKyId=${hk.id})}"
+               th:text="${hk.tenHocKy} + ' (' + ${hk.namHoc} + ')'"
+               th:class="${hocKyChon?.id == hk.id} ? 'btn btn-primary' : 'btn btn-outline'"></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danh sách lớp -->
+      <div th:if="${hocKyChon != null}" class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <span th:text="${hocKyChon.tenHocKy}"></span>
+            — <span th:text="${danhSachLop?.size() ?: 0}"></span> lớp
+          </span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${danhSachLop == null or danhSachLop.empty}" class="empty-state">
+            <i class="fa-solid fa-folder-open"></i>Chưa có lớp học phần nào trong học kỳ này.
+          </div>
+          <table th:if="${danhSachLop != null and !danhSachLop.empty}" class="table">
+            <thead>
+              <tr>
+                <th>Mã lớp</th>
+                <th>Môn học</th>
+                <th>Giảng viên</th>
+                <th style="text-align:center;">Sĩ số</th>
+                <th style="text-align:center;">Trạng thái</th>
+                <th style="text-align:center;">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="lhp : ${danhSachLop}">
+                <td><code th:text="${lhp.maLopHp}"></code></td>
+                <td>
+                  <span th:text="${lhp.monHoc.tenMon}"></span><br/>
+                  <small class="text-muted" th:text="${lhp.monHoc.maMon}"></small>
+                </td>
+                <td th:text="${lhp.giangVien?.hoTen ?: '—'}"></td>
+                <td style="text-align:center;">
+                  <span th:text="${lhp.siSoHienTai} + '/' + ${lhp.siSoToiDa}"
+                        th:style="${lhp.siSoHienTai >= lhp.siSoToiDa}
+                                  ? 'color:var(--danger);font-weight:700;' : ''"></span>
+                </td>
+                <td style="text-align:center;">
+                  <span th:if="${lhp.trangThai.name() == 'MO'}"  class="badge badge-success">Đang mở</span>
+                  <span th:if="${lhp.trangThai.name() == 'DONG'}" class="badge badge-secondary">Đã đóng</span>
+                </td>
+                <td>
+                  <div class="flex" style="justify-content:center;gap:4px;">
+                    <!-- Nút Sửa -->
+                    <a th:href="@{/quan-ly/lop-hoc-phan/sua/{id}(id=${lhp.id})}"
+                       class="btn btn-outline btn-sm" title="Sửa chi tiết">
+                      <i class="fa-solid fa-pen"></i>
+                    </a>
+                    <!-- Nút Đóng lớp (khi đang MO) -->
+                    <form th:if="${lhp.trangThai.name() == 'MO'}"
+                          th:action="@{/quan-ly/lop-hoc-phan/{id}/dong(id=${lhp.id})}" method="post"
+                          onsubmit="return confirm('Đóng lớp ' + this.dataset.ten + '?')"
+                          th:data-ten="${lhp.maLopHp}">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input type="hidden" name="hocKyId" th:value="${hocKyChon.id}"/>
+                      <button type="submit" class="btn btn-danger btn-sm" title="Đóng lớp">
+                        <i class="fa-solid fa-lock"></i>
+                      </button>
+                    </form>
+                    <!-- Nút Mở lại (khi DONG) -->
+                    <form th:if="${lhp.trangThai.name() == 'DONG'}"
+                          th:action="@{/quan-ly/lop-hoc-phan/{id}/mo(id=${lhp.id})}" method="post">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input type="hidden" name="hocKyId" th:value="${hocKyChon.id}"/>
+                      <button type="submit" class="btn btn-success btn-sm" title="Mở lại lớp">
+                        <i class="fa-solid fa-lock-open"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

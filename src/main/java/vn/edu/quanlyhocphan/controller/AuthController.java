@@ -41,6 +41,9 @@ public class AuthController {
         if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
             return "redirect:/admin/dashboard";
         }
+        if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_QUAN_LY"))) {
+            return "redirect:/quan-ly/dashboard";
+        }
         if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_GIANG_VIEN"))) {
             return "redirect:/giang-vien/dashboard";
         }

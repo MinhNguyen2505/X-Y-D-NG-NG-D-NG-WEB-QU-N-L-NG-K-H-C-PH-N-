@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><title>Danh sách Sinh viên — Phòng Đào Tạo</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .privacy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <div th:insert="~{fragments/sidebar :: ql('ql-sv')}"></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Tra cứu Sinh viên (Chế độ xem)</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="privacy-badge">
+          <i class="fa-solid fa-shield-halved"></i> Mật khẩu mã hóa BCrypt
+        </span>
+      </div>
+    </header>
+    <div class="content">
+      <div class="page-hd">
+        <div>
+          <div class="page-hd-title">Danh sách Sinh viên</div>
+          <div class="page-hd-sub" th:text="${danhSach?.size()} + ' sinh viên trong hệ thống'"></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <input type="text" id="searchInput" placeholder="Tìm theo MSSV, họ tên, lớp..." class="form-control" style="width:260px;" onkeyup="filterTable()"/>
+          <button type="button" class="btn btn-outline" id="btnPrivacy" onclick="togglePrivacyMode()">
+            <i class="fa-solid fa-eye-slash"></i> Che thông tin
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0;">
+          <table class="table" id="svTable">
+            <thead>
+              <tr>
+                <th>MSSV</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Lớp sinh hoạt</th>
+                <th>Ngành học</th>
+                <th>Khoá</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="sv : ${danhSach}">
+                <td><strong th:text="${sv.mssv}"></strong></td>
+                <td th:text="${sv.hoTen}"></td>
+                <td>
+                  <span class="masked-email" th:data-original="${sv.email}" th:text="${sv.email}"></span>
+                </td>
+                <td th:text="${sv.lopSinhHoat ?: '—'}"></td>
+                <td th:text="${sv.nganh?.tenNganh ?: '—'}"></td>
+                <td th:text="${sv.khoaHoc ?: '—'}"></td>
+                <td><span class="badge badge-success" th:text="${sv.trangThai}"></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let privacyEnabled = false;
+
+function maskEmail(email) {
+  if (!email || !email.includes('@')) return email;
+  const parts = email.split('@');
+  const user = parts[0];
+  const domain = parts[1];
+  const maskedUser = user.length <= 2 ? user + '***' : user.substring(0, 2) + '***';
+  return maskedUser + '@' + domain;
+}
+
+function togglePrivacyMode() {
+  privacyEnabled = !privacyEnabled;
+  const btn = document.getElementById('btnPrivacy');
+  const elements = document.querySelectorAll('.masked-email');
+
+  elements.forEach(el => {
+    const original = el.getAttribute('data-original');
+    el.textContent = privacyEnabled ? maskEmail(original) : original;
+  });
+
+  if (privacyEnabled) {
+    btn.innerHTML = '<i class="fa-solid fa-eye"></i> Hiện thông tin';
+    btn.style.background = '#e0f2fe';
+    btn.style.borderColor = '#7dd3fc';
+  } else {
+    btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Che thông tin';
+    btn.style.background = '';
+    btn.style.borderColor = '';
+  }
+}
+
+function filterTable() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const rows = document.querySelectorAll('#svTable tbody tr');
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(query) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

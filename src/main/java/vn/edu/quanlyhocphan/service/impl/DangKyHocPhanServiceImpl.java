@@ -129,9 +129,9 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
                 // Neu trang_thai = DA_HUY: chi bao loi ro rang, SV khong the dang ky lai
                 // (UNIQUE constraint chi cho 1 ban ghi)
                 if (dk.getTrangThai() == TrangThaiDangKy.DA_HUY) {
-                    throw new TrungLopException(
+                    throw new NghiepVuException(
                         "Ban da huy dang ky lop [" + maLopHp + "] truoc do. "
-                        + "Lien he phong dao tao de duoc ho tro.");
+                        + "Khong the dang ky lai cung lop. Vui long chon lop hoc phan khac.");
                 }
             });
     }

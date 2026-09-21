@@ -1,7 +1,8 @@
 -- =============================================================
--- RESET + INSERT DU LIEU MAU DAY DU
--- Password tat ca: 123456
--- Hash BCrypt: $2a$10$bT28j9LV6ccKA5D3razdEOTbAWbKbE1TJDoxaep4m2uL0rBYktiny
+-- reset.sql — Xóa sạch data cũ và nạp lại data mẫu
+-- Dùng khi muốn reset về trạng thái ban đầu
+-- TRUNCATE toàn bộ bảng, sau đó INSERT lại
+-- Mật khẩu tất cả tài khoản: 123456
 -- =============================================================
 
 USE quan_ly_hoc_phan;
@@ -9,6 +10,7 @@ USE quan_ly_hoc_phan;
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE dang_ky_dinh_huong;
 TRUNCATE TABLE dinh_huong;
+TRUNCATE TABLE dang_ky_thi_lai;
 TRUNCATE TABLE dang_ky_nguyen_vong;
 TRUNCATE TABLE nguyen_vong_mon_hoc;
 TRUNCATE TABLE ke_hoach_nguyen_vong;
@@ -22,9 +24,12 @@ TRUNCATE TABLE hoc_ky;
 TRUNCATE TABLE mon_hoc;
 TRUNCATE TABLE sinh_vien;
 TRUNCATE TABLE giang_vien;
+TRUNCATE TABLE quan_ly;
+TRUNCATE TABLE admin;
 TRUNCATE TABLE khoi_kien_thuc;
 TRUNCATE TABLE nganh;
 SET FOREIGN_KEY_CHECKS = 1;
+
 
 -- =============================================================
 -- 1. NGANH
@@ -56,6 +61,7 @@ INSERT INTO khoi_kien_thuc (ma_khoi, ten_khoi, nganh_id) VALUES
 ('KT4.2', 'Khoi tot nghiep',                      2);
 
 -- =============================================================
+-- =============================================================
 -- 3. GIANG VIEN
 -- =============================================================
 INSERT INTO giang_vien (ma_gv, ho_ten, email, mat_khau, khoa_bo_mon) VALUES
@@ -66,6 +72,17 @@ INSERT INTO giang_vien (ma_gv, ho_ten, email, mat_khau, khoa_bo_mon) VALUES
 ('GV005', 'Hoang Van Em',    'gv005@email.com', '$2a$10$bT28j9LV6ccKA5D3razdEOTbAWbKbE1TJDoxaep4m2uL0rBYktiny', 'Khoa CNTT'),
 ('GV006', 'Vu Thi Phuong',   'gv006@email.com', '$2a$10$bT28j9LV6ccKA5D3razdEOTbAWbKbE1TJDoxaep4m2uL0rBYktiny', 'Khoa CNTT'),
 ('GV007', 'Ngo Van Quang',   'gv007@email.com', '$2a$10$bT28j9LV6ccKA5D3razdEOTbAWbKbE1TJDoxaep4m2uL0rBYktiny', 'Khoa Ly luan chinh tri');
+
+-- =============================================================
+-- ADMIN & QUAN LY (mat_khau = 123456 BCrypt)
+-- =============================================================
+INSERT INTO admin (ten_dang_nhap, mat_khau) VALUES
+('admin', '$2a$10$bT28j9LV6ccKA5D3razdEOTbAWbKbE1TJDoxaep4m2uL0rBYktiny');
+
+INSERT INTO quan_ly (ma_ql, ho_ten, email, mat_khau, chuc_vu) VALUES
+('QL001', 'Nguyen Van Quan', 'ql001@email.com', '$2a$10$bT28j9LV6ccKA5D3razdEOTbAWbKbE1TJDoxaep4m2uL0rBYktiny', 'Truong phong Dao tao'),
+('QL002', 'Tran Thi Ly',     'ql002@email.com', '$2a$10$bT28j9LV6ccKA5D3razdEOTbAWbKbE1TJDoxaep4m2uL0rBYktiny', 'Chuyen vien Dao tao');
+
 
 -- =============================================================
 -- 4. SINH VIEN

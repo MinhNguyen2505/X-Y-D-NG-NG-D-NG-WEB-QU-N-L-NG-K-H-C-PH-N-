@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><title>Danh sách Giảng viên — Phòng Đào Tạo</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="layout">
+  <div th:insert="~{fragments/sidebar :: ql('ql-gv')}"></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Tra cứu Giảng viên (Chế độ xem)</div>
+    </header>
+    <div class="content">
+      <div class="page-hd">
+        <div>
+          <div class="page-hd-title">Danh sách Giảng viên</div>
+          <div class="page-hd-sub" th:text="${danhSach?.size()} + ' giảng viên trong hệ thống'"></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <input type="text" id="searchGvInput" placeholder="Tìm theo mã GV, họ tên, khoa..." class="form-control" style="width:280px;" onkeyup="filterGvTable()"/>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0;">
+          <table class="table" id="gvTable">
+            <thead>
+              <tr>
+                <th>Mã GV</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Khoa / Bộ môn</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="gv : ${danhSach}">
+                <td><strong th:text="${gv.maGv}"></strong></td>
+                <td th:text="${gv.hoTen}"></td>
+                <td th:text="${gv.email}"></td>
+                <td th:text="${gv.khoaBoMon ?: '—'}"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function filterGvTable() {
+  const query = document.getElementById('searchGvInput').value.toLowerCase();
+  const rows = document.querySelectorAll('#gvTable tbody tr');
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(query) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

@@ -22,8 +22,13 @@
           <div class="form-group"><label class="form-label">Email *</label>
             <input type="email" name="email" class="form-control" th:value="${giangVien.email}" required/></div>
           <div class="form-group">
-            <label class="form-label" th:text="${giangVien.id == null} ? 'Mật khẩu *' : 'Mật khẩu (bỏ trống = không đổi)'">MK</label>
-            <input type="password" name="matKhau" class="form-control" th:required="${giangVien.id == null}"/></div>
+            <label class="form-label" th:text="${giangVien.id == null} ? 'Mật khẩu khởi tạo *' : 'Đặt lại mật khẩu mới (bỏ trống = giữ nguyên)'">Mật khẩu</label>
+            <input type="password" name="matKhau" class="form-control" th:required="${giangVien.id == null}" placeholder="Nhập mật khẩu an toàn"/>
+            <small style="color:#64748b;font-size:11.5px;display:block;margin-top:4px;">
+              <i class="fa-solid fa-shield-halved" style="color:#16a34a;"></i>
+              Mật khẩu được mã hóa một chiều BCrypt. Admin không xem được mật khẩu gốc của giảng viên.
+            </small>
+          </div>
           <div class="form-group"><label class="form-label">Khoa/Bộ môn</label>
             <input type="text" name="khoaBoMon" class="form-control" th:value="${giangVien.khoaBoMon}"/></div>
           <div class="flex mt-2">

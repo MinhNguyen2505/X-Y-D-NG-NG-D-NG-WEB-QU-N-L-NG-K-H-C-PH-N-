@@ -40,8 +40,11 @@ public class SecurityConfig {
                 // Cac URL public (dang nhap, tai nguyen tinh)
                 .requestMatchers("/login", "/css/**", "/js/**", "/images/**").permitAll()
 
-                // Admin: quan ly toan bo he thong
+                // Admin: quan ly danh muc he thong
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                // Quan Ly: dieu hanh hoc vu hang ngay
+                .requestMatchers("/quan-ly/**").hasRole("QUAN_LY")
 
                 // Giang vien: xem lop, nhap diem
                 .requestMatchers("/giang-vien/**").hasRole("GIANG_VIEN")

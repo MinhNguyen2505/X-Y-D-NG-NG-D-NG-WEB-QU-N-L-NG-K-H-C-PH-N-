@@ -8,6 +8,6 @@ class QuanLyHocPhanApplicationTests {
 
     @Test
     void contextLoads() {
-        // Kiem tra Spring context khoi dong thanh cong
     }
 }
+

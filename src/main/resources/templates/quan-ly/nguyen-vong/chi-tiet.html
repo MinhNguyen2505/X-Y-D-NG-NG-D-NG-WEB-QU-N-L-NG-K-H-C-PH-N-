@@ -8,7 +8,7 @@
 </head>
 <body>
 <div class="layout">
-  <div th:insert="~{fragments/sidebar :: admin('admin-nv')}"></div>
+  <div th:insert="~{fragments/sidebar :: ql('ql-nv')}"></div>
   <div class="main">
     <header class="topbar">
       <div class="topbar-title" th:text="${keHoach.tenKeHoach}">Chi tiết</div>
@@ -32,7 +32,7 @@
         <div class="flex">
           <!-- Nút mở/đóng kế hoạch -->
           <form th:if="${keHoach.trangThai == 'DANG_MO'}"
-                th:action="@{/admin/nguyen-vong/{id}/dong(id=${keHoach.id})}" method="post">
+                th:action="@{/quan-ly/nguyen-vong/{id}/dong(id=${keHoach.id})}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <button type="submit" class="btn btn-danger"
                     onclick="return confirm('Đóng kế hoạch? Sinh viên sẽ không thể đăng ký nữa.')">
@@ -40,13 +40,13 @@
             </button>
           </form>
           <form th:if="${keHoach.trangThai == 'DA_DONG'}"
-                th:action="@{/admin/nguyen-vong/{id}/mo(id=${keHoach.id})}" method="post">
+                th:action="@{/quan-ly/nguyen-vong/{id}/mo(id=${keHoach.id})}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <button type="submit" class="btn btn-success">
               <i class="fa-solid fa-lock-open"></i> Mở lại
             </button>
           </form>
-          <a th:href="@{/admin/nguyen-vong}" class="btn btn-outline">
+          <a th:href="@{/quan-ly/nguyen-vong}" class="btn btn-outline">
             <i class="fa-solid fa-arrow-left"></i> Quay lại
           </a>
         </div>
@@ -88,7 +88,7 @@
                   <td th:text="${m.monHoc.tenMon}"></td>
                   <td th:text="${m.monHoc.soTinChi}"></td>
                   <td>
-                    <form th:action="@{/admin/nguyen-vong/{kId}/xoa-mon/{mId}(kId=${keHoach.id},mId=${m.id})}"
+                    <form th:action="@{/quan-ly/nguyen-vong/{kId}/xoa-mon/{mId}(kId=${keHoach.id},mId=${m.id})}"
                           method="post" onsubmit="return confirm('Xóa môn này?')">
                       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                       <button type="submit" class="btn btn-danger btn-sm">
@@ -102,7 +102,7 @@
           </div>
           <!-- Form thêm môn -->
           <div style="padding:14px;border-top:1px solid var(--gray-200);">
-            <form th:action="@{/admin/nguyen-vong/{id}/them-mon(id=${keHoach.id})}" method="post">
+            <form th:action="@{/quan-ly/nguyen-vong/{id}/them-mon(id=${keHoach.id})}" method="post">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
               <div class="flex">
                 <select name="monHocId" class="form-control" style="flex:1;" required>
@@ -130,7 +130,7 @@
                     th:text="'(' + ${danhSachDangKy.size()} + ' bản ghi)'"></span>
             </span>
             <!-- Nút duyệt tất cả -->
-            <form th:action="@{/admin/nguyen-vong/{id}/duyet-tat-ca(id=${keHoach.id})}" method="post"
+            <form th:action="@{/quan-ly/nguyen-vong/{id}/duyet-tat-ca(id=${keHoach.id})}" method="post"
                   onsubmit="return confirm('Duyệt tất cả bản ghi đang CHỜ DUYỆT?')">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
               <button type="submit" class="btn btn-success btn-sm">
@@ -163,7 +163,7 @@
                   <td class="flex">
                     <!-- Nút Duyệt (chỉ hiện khi CHO_DUYET) -->
                     <form th:if="${dk.trangThai == 'CHO_DUYET'}"
-                          th:action="@{/admin/nguyen-vong/{kId}/duyet/{dkId}(kId=${keHoach.id},dkId=${dk.id})}"
+                          th:action="@{/quan-ly/nguyen-vong/{kId}/duyet/{dkId}(kId=${keHoach.id},dkId=${dk.id})}"
                           method="post">
                       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                       <button type="submit" class="btn btn-success btn-sm" title="Duyệt">
@@ -172,7 +172,7 @@
                     </form>
                     <!-- Nút Từ chối (chỉ hiện khi CHO_DUYET hoặc DA_DUYET) -->
                     <form th:if="${dk.trangThai != 'DA_HUY'}"
-                          th:action="@{/admin/nguyen-vong/{kId}/tu-choi/{dkId}(kId=${keHoach.id},dkId=${dk.id})}"
+                          th:action="@{/quan-ly/nguyen-vong/{kId}/tu-choi/{dkId}(kId=${keHoach.id},dkId=${dk.id})}"
                           method="post"
                           onsubmit="return confirm('Từ chối nguyện vọng này?')">
                       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>

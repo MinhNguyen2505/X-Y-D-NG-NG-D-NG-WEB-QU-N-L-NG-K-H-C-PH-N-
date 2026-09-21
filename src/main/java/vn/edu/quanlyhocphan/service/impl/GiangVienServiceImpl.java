@@ -44,7 +44,18 @@ public class GiangVienServiceImpl implements GiangVienService {
     @Override @Transactional
     public GiangVien save(GiangVien giangVien) {
         if (giangVien.getId() == null) {
-            giangVien.setMatKhau(passwordEncoder.encode(giangVien.getMatKhau()));
+            if (giangVien.getMatKhau() != null && !giangVien.getMatKhau().isBlank()) {
+                giangVien.setMatKhau(passwordEncoder.encode(giangVien.getMatKhau()));
+            }
+        } else {
+            GiangVien old = giangVienRepo.findById(giangVien.getId()).orElse(null);
+            if (giangVien.getMatKhau() == null || giangVien.getMatKhau().isBlank()) {
+                if (old != null) giangVien.setMatKhau(old.getMatKhau());
+            } else {
+                if (old == null || !giangVien.getMatKhau().equals(old.getMatKhau())) {
+                    giangVien.setMatKhau(passwordEncoder.encode(giangVien.getMatKhau()));
+                }
+            }
         }
         return giangVienRepo.save(giangVien);
     }

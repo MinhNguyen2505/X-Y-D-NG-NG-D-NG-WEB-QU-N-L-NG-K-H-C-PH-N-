@@ -232,13 +232,7 @@
                     </td>
                     <td style="text-align:center;">
                       <span th:if="${c.khoiKienThuc != null}" class="kb"
-                            th:classappend="${#strings.startsWith(c.khoiKienThuc.maKhoi,'KT1')} ? ' kb-kt1'
-                                          : ${#strings.startsWith(c.khoiKienThuc.maKhoi,'KT2')} ? ' kb-kt2'
-                                          : ${#strings.startsWith(c.khoiKienThuc.maKhoi,'KT3')} ? ' kb-kt3'
-                                          : ${#strings.startsWith(c.khoiKienThuc.maKhoi,'KT4')} ? ' kb-kt4'
-                                          : ${c.khoiKienThuc.maKhoi == 'GDTC'}                  ? ' kb-gdtc'
-                                          : ${c.khoiKienThuc.maKhoi == 'QPAN'}                  ? ' kb-qpan'
-                                          : ' kb-x'"
+                            th:classappend="${#strings.startsWith(c.khoiKienThuc.maKhoi,'KT1') ? ' kb-kt1' : (#strings.startsWith(c.khoiKienThuc.maKhoi,'KT2') ? ' kb-kt2' : (#strings.startsWith(c.khoiKienThuc.maKhoi,'KT3') ? ' kb-kt3' : (#strings.startsWith(c.khoiKienThuc.maKhoi,'KT4') ? ' kb-kt4' : (c.khoiKienThuc.maKhoi == 'GDTC' ? ' kb-gdtc' : (c.khoiKienThuc.maKhoi == 'QPAN' ? ' kb-qpan' : ' kb-x')))))}"
                             th:text="${c.khoiKienThuc.maKhoi}"></span>
                       <span th:if="${c.khoiKienThuc == null}" class="text-muted">—</span>
                     </td>

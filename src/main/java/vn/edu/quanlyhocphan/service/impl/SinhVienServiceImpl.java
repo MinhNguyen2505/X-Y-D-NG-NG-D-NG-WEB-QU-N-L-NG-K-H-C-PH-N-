@@ -48,9 +48,19 @@ public class SinhVienServiceImpl implements SinhVienService {
     @Override
     @Transactional
     public SinhVien save(SinhVien sinhVien) {
-        // Ma hoa mat khau neu la sinh vien moi (chua co id) hoac mat khau chua duoc ma hoa
         if (sinhVien.getId() == null) {
-            sinhVien.setMatKhau(passwordEncoder.encode(sinhVien.getMatKhau()));
+            if (sinhVien.getMatKhau() != null && !sinhVien.getMatKhau().isBlank()) {
+                sinhVien.setMatKhau(passwordEncoder.encode(sinhVien.getMatKhau()));
+            }
+        } else {
+            SinhVien old = sinhVienRepo.findById(sinhVien.getId()).orElse(null);
+            if (sinhVien.getMatKhau() == null || sinhVien.getMatKhau().isBlank()) {
+                if (old != null) sinhVien.setMatKhau(old.getMatKhau());
+            } else {
+                if (old == null || !sinhVien.getMatKhau().equals(old.getMatKhau())) {
+                    sinhVien.setMatKhau(passwordEncoder.encode(sinhVien.getMatKhau()));
+                }
+            }
         }
         return sinhVienRepo.save(sinhVien);
     }

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Kế hoạch nguyện vọng</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="layout">
+  <div th:insert="~{fragments/sidebar :: ql('ql-nv')}"></div>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">Quản lý Kế hoạch Nguyện vọng</div>
+    </header>
+    <div class="content">
+      <div th:if="${successMsg}" class="flash flash-success"><i class="fa-solid fa-circle-check"></i><span th:text="${successMsg}"></span></div>
+      <div th:if="${errorMsg}"   class="flash flash-danger"><i class="fa-solid fa-circle-exclamation"></i><span th:text="${errorMsg}"></span></div>
+
+      <div class="page-hd">
+        <div>
+          <div class="page-hd-title">Kế hoạch đăng ký nguyện vọng</div>
+          <div class="page-hd-sub">Tạo và quản lý các kế hoạch để sinh viên đăng ký nguyện vọng môn học</div>
+        </div>
+        <a th:href="@{/quan-ly/nguyen-vong/them}" class="btn btn-primary">
+          <i class="fa-solid fa-plus"></i> Tạo kế hoạch mới
+        </a>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0;">
+          <div th:if="${(danhSach == null or danhSach.empty) and (danhSachKeHoach == null or danhSachKeHoach.empty)}" class="empty-state">
+            <i class="fa-solid fa-star"></i>Chưa có kế hoạch nguyện vọng nào.
+          </div>
+          <table th:if="${(danhSach != null and !danhSach.empty) or (danhSachKeHoach != null and !danhSachKeHoach.empty)}" class="table">
+            <thead>
+              <tr>
+                <th>Tên kế hoạch</th>
+                <th>Học kỳ</th>
+                <th>Bắt đầu</th>
+                <th>Kết thúc</th>
+                <th style="text-align:center;">Đơn chờ duyệt</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="kh : ${danhSach != null ? danhSach : danhSachKeHoach}">
+                <td><b th:text="${kh.tenKeHoach}"></b></td>
+                <td th:text="${kh.hocKy.tenHocKy}"></td>
+                <td th:text="${#temporals.format(kh.ngayBatDau,'dd/MM/yyyy')}"></td>
+                <td th:text="${#temporals.format(kh.ngayKetThuc,'dd/MM/yyyy')}"></td>
+                <td style="text-align:center;">
+                  <span th:if="${soChoDuyetMap != null and soChoDuyetMap.get(kh.id) != null and soChoDuyetMap.get(kh.id) > 0}"
+                        class="badge badge-warning" style="background:#f59e0b;color:#fff;font-weight:700;font-size:11px;"
+                        th:text="${soChoDuyetMap.get(kh.id)} + ' chờ duyệt'"></span>
+                  <span th:unless="${soChoDuyetMap != null and soChoDuyetMap.get(kh.id) != null and soChoDuyetMap.get(kh.id) > 0}"
+                        class="badge badge-light" style="color:var(--gray-500);font-size:11px;">0</span>
+                </td>
+                <td>
+                  <span th:if="${kh.trangThai == 'DANG_MO'}" class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Đang mở</span>
+                  <span th:if="${kh.trangThai == 'DA_DONG'}" class="badge badge-secondary"><i class="fa-solid fa-lock"></i> Đã đóng</span>
+                </td>
+                <td>
+                  <a th:href="@{/quan-ly/nguyen-vong/{id}(id=${kh.id})}" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-eye"></i> Xem & Duyệt
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

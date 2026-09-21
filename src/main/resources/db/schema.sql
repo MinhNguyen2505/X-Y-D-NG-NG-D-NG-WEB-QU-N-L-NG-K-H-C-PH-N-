@@ -1,8 +1,9 @@
-﻿-- =============================================================
--- Schema: Quan ly dang ky hoc phan theo tin chi
--- Database: MySQL >= 8.0.16 (de dung CHECK constraint)
--- Thu tu tao bang: cha truoc, con sau (tranh loi FK)
 -- =============================================================
+-- schema.sql — Tạo toàn bộ cấu trúc CSDL (DDL)
+-- Chạy file này MỘT LẦN đầu tiên để tạo bảng
+-- Database: MySQL >= 8.0.16
+-- =============================================================
+
 
 CREATE DATABASE IF NOT EXISTS quan_ly_hoc_phan
     CHARACTER SET utf8mb4
