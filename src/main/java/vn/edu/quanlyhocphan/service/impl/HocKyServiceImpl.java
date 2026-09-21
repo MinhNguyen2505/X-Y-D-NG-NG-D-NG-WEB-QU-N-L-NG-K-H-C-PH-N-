@@ -51,7 +51,7 @@ public class HocKyServiceImpl implements HocKyService {
         hocKyRepo.save(hk);
 
         // Tu dong huy cac lop khong dat si so toi thieu, chot cac lop dat si so
-        List<vn.edu.quanlyhocphan.entity.LopHocPhan> dsLop = lopHocPhanRepo.findByHocKyId(hocKyId, null);
+        List<vn.edu.quanlyhocphan.entity.LopHocPhan> dsLop = lopHocPhanRepo.findByHocKyIdAndTrangThai(hocKyId, null);
         for (vn.edu.quanlyhocphan.entity.LopHocPhan lhp : dsLop) {
             int min = lhp.getSiSoToiThieu() != null ? lhp.getSiSoToiThieu() : 15;
             if (lhp.getSiSoHienTai() < min) {
@@ -80,7 +80,7 @@ public class HocKyServiceImpl implements HocKyService {
         hocKyRepo.save(hk);
 
         // Mo lai cac lop sang trang thai MO neu truoc do bi DONG
-        List<vn.edu.quanlyhocphan.entity.LopHocPhan> dsLop = lopHocPhanRepo.findByHocKyId(hocKyId, null);
+        List<vn.edu.quanlyhocphan.entity.LopHocPhan> dsLop = lopHocPhanRepo.findByHocKyIdAndTrangThai(hocKyId, null);
         for (vn.edu.quanlyhocphan.entity.LopHocPhan lhp : dsLop) {
             if (lhp.getTrangThai() == vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.DONG) {
                 lhp.setTrangThai(vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.MO);
