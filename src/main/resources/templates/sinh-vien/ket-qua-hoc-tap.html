@@ -47,11 +47,20 @@
       </div>
 
       <div class="card">
-        <div class="card-header">
-          <span class="card-title">
-            <i class="fa-solid fa-table" style="color:var(--primary);margin-right:6px;"></i>
-            Lịch sử học tập
-          </span>
+        <div class="card-header" style="flex-wrap:wrap;gap:10px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span class="card-title">
+              <i class="fa-solid fa-table" style="color:var(--primary);margin-right:6px;"></i>
+              Lịch sử đăng ký & học tập
+            </span>
+            <!-- Filter Tabs -->
+            <div class="btn-group" style="display:inline-flex;border:1px solid var(--gray-200);border-radius:6px;overflow:hidden;">
+              <button type="button" class="btn btn-sm filter-btn active" onclick="filterStatus('ALL', this)" style="border-radius:0;padding:4px 10px;font-size:12px;background:var(--primary);color:#fff;">Tất cả</button>
+              <button type="button" class="btn btn-sm filter-btn" onclick="filterStatus('HOAN_THANH', this)" style="border-radius:0;padding:4px 10px;font-size:12px;background:#fff;color:var(--gray-700);">Hoàn thành</button>
+              <button type="button" class="btn btn-sm filter-btn" onclick="filterStatus('DA_DANG_KY', this)" style="border-radius:0;padding:4px 10px;font-size:12px;background:#fff;color:var(--gray-700);">Đang học</button>
+              <button type="button" class="btn btn-sm filter-btn" onclick="filterStatus('DA_HUY', this)" style="border-radius:0;padding:4px 10px;font-size:12px;background:#fff;color:var(--gray-700);">Đã hủy</button>
+            </div>
+          </div>
           <a th:href="@{/sinh-vien/dang-ky-thi-lai}" class="btn btn-outline btn-sm">
             <i class="fa-solid fa-rotate-right"></i> Đăng ký thi lại
           </a>
@@ -60,12 +69,13 @@
           <div th:if="${lichSu == null or lichSu.empty}" class="empty-state">
             <i class="fa-solid fa-inbox"></i>Chưa có dữ liệu học tập.
           </div>
-          <table th:if="${lichSu != null and !lichSu.empty}" class="table">
+          <table th:if="${lichSu != null and !lichSu.empty}" class="table" id="historyTable">
             <thead>
               <tr>
                 <th>Học kỳ</th>
                 <th>Môn học</th>
                 <th style="text-align:center;">TC</th>
+                <th style="text-align:center;">Trạng thái</th>
                 <th style="text-align:center;">Điểm GK</th>
                 <th style="text-align:center;">Điểm CK</th>
                 <th style="text-align:center;">Điểm TK</th>
@@ -75,36 +85,53 @@
             </thead>
             <tbody>
               <tr th:each="dk : ${lichSu}"
-                  th:if="${dk.trangThai.name() != 'DA_HUY'}"
+                  th:attr="data-status=${dk.trangThai.name()}"
                   th:with="tl=${thiLaiMap != null ? thiLaiMap[dk.id] : null}">
                 <td style="white-space:nowrap;font-size:12px;"
                     th:text="${dk.lopHocPhan.hocKy.tenHocKy}"></td>
                 <td>
                   <span th:text="${dk.lopHocPhan.monHoc.tenMon}"></span><br/>
-                  <small class="text-muted" th:text="${dk.lopHocPhan.monHoc.maMon}"></small>
+                  <small class="text-muted" th:text="${dk.lopHocPhan.monHoc.maMon + ' (' + dk.lopHocPhan.maLopHp + ')'}"></small>
                 </td>
                 <td style="text-align:center;" th:text="${dk.lopHocPhan.monHoc.soTinChi}"></td>
-                <td style="text-align:center;"
-                    th:text="${dk.diemGiuaKy != null ? dk.diemGiuaKy : '—'}"></td>
-                <td style="text-align:center;"
-                    th:text="${dk.diemCuoiKy != null ? dk.diemCuoiKy : '—'}"></td>
                 <td style="text-align:center;">
-                  <b th:text="${dk.diemTongKet != null ? dk.diemTongKet : '—'}"
-                     th:style="${dk.diemTongKet != null and dk.diemTongKet < 5}
-                               ? 'color:var(--danger);' :
-                               (dk.diemTongKet != null ? 'color:var(--success);' : '')"></b>
+                  <span th:if="${dk.trangThai.name() == 'HOAN_THANH'}" class="badge badge-success" style="font-size:11px;">
+                    <i class="fa-solid fa-check"></i> Hoàn thành
+                  </span>
+                  <span th:if="${dk.trangThai.name() == 'DA_DANG_KY'}" class="badge badge-primary" style="font-size:11px;">
+                    <i class="fa-solid fa-book-open"></i> Đang học
+                  </span>
+                  <span th:if="${dk.trangThai.name() == 'DA_HUY'}" class="badge badge-danger" style="font-size:11px;">
+                    <i class="fa-solid fa-ban"></i> Đã hủy
+                  </span>
+                </td>
+                <td style="text-align:center;"
+                    th:text="${dk.trangThai.name() == 'DA_HUY' ? '—' : (dk.diemGiuaKy != null ? dk.diemGiuaKy : '—')}"></td>
+                <td style="text-align:center;"
+                    th:text="${dk.trangThai.name() == 'DA_HUY' ? '—' : (dk.diemCuoiKy != null ? dk.diemCuoiKy : '—')}"></td>
+                <td style="text-align:center;">
+                  <th:block th:if="${dk.trangThai.name() != 'DA_HUY'}">
+                    <b th:text="${dk.diemTongKet != null ? dk.diemTongKet : '—'}"
+                       th:style="${dk.diemTongKet != null and dk.diemTongKet < 5}
+                                 ? 'color:var(--danger);' :
+                                 (dk.diemTongKet != null ? 'color:var(--success);' : '')"></b>
+                  </th:block>
+                  <span th:if="${dk.trangThai.name() == 'DA_HUY'}" style="color:var(--gray-400);">—</span>
                 </td>
                 <td style="text-align:center;">
-                  <span th:if="${dk.diemTongKet == null}"
-                        class="badge badge-secondary">Chưa có điểm</span>
-                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet >= 5}"
-                        class="badge badge-success">Đạt</span>
-                  <span th:if="${dk.diemTongKet != null and dk.diemTongKet < 5}"
-                        class="badge badge-danger">Không đạt</span>
+                  <th:block th:if="${dk.trangThai.name() != 'DA_HUY'}">
+                    <span th:if="${dk.diemTongKet == null}"
+                          class="badge badge-secondary">Chưa có điểm</span>
+                    <span th:if="${dk.diemTongKet != null and dk.diemTongKet >= 5}"
+                          class="badge badge-success">Đạt</span>
+                    <span th:if="${dk.diemTongKet != null and dk.diemTongKet < 5}"
+                          class="badge badge-danger">Không đạt</span>
+                  </th:block>
+                  <span th:if="${dk.trangThai.name() == 'DA_HUY'}" class="badge badge-secondary" style="opacity:.6;">Đã hủy</span>
                 </td>
-                <!-- Cột thi lại: chỉ hiện khi điểm < 5 -->
+                <!-- Cột thi lại: chỉ hiện khi điểm < 5 và không phải DA_HUY -->
                 <td style="text-align:center;">
-                  <th:block th:if="${dk.diemTongKet != null and dk.diemTongKet < 5}">
+                  <th:block th:if="${dk.trangThai.name() != 'DA_HUY' and dk.diemTongKet != null and dk.diemTongKet < 5}">
                     <!-- Đã đăng ký và còn hiệu lực -->
                     <span th:if="${tl != null and tl.trangThai != 'DA_HUY'}">
                       <span th:if="${tl.trangThai == 'CHO_DUYET'}"
@@ -127,8 +154,7 @@
                       </button>
                     </form>
                   </th:block>
-                  <!-- Không cần thi lại hoặc chưa có điểm -->
-                  <span th:if="${dk.diemTongKet == null or dk.diemTongKet >= 5}"
+                  <span th:if="${dk.trangThai.name() == 'DA_HUY' or dk.diemTongKet == null or dk.diemTongKet >= 5}"
                         style="color:var(--gray-300);">—</span>
                 </td>
               </tr>
@@ -140,5 +166,29 @@
     </div>
   </div>
 </div>
+
+<script>
+function filterStatus(status, btn) {
+  const buttons = document.querySelectorAll('.filter-btn');
+  buttons.forEach(b => {
+    b.style.background = '#fff';
+    b.style.color = 'var(--gray-700)';
+    b.classList.remove('active');
+  });
+  btn.style.background = 'var(--primary)';
+  btn.style.color = '#fff';
+  btn.classList.add('active');
+
+  const rows = document.querySelectorAll('#historyTable tbody tr');
+  rows.forEach(row => {
+    const rowStatus = row.getAttribute('data-status');
+    if (status === 'ALL' || rowStatus === status) {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+}
+</script>
 </body>
 </html>

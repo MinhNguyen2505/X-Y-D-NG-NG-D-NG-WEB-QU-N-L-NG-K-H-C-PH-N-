@@ -70,7 +70,10 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
         // [#2-part1] Kiem tra trang thai lop con mo
         kiemTraTrangThaiLop(lhp);
 
-        // [#5] Kiem tra trung lop
+        // [Mục 4] Kiem tra mon da dat (diem >= 5.0 thi khong cho dang ky lai)
+        kiemTraDaDatMon(sinhVienId, lhp.getMonHoc());
+
+        // [#5] Kiem tra trung lop (cho phep dang ky lai neu truoc do DA_HUY)
         kiemTraTrungLop(sinhVienId, lopHocPhanId, lhp.getMaLopHp());
 
         // [#5b] Kiem tra da dang ky mon nay trong HK nay chua (lop khac cung mon)
@@ -79,7 +82,7 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
         // [#3] Kiem tra mon tien quyet
         kiemTraMonTienQuyet(sinhVienId, lhp.getMonHoc().getId());
 
-        // [#4] Kiem tra tong tin chi
+        // [#4] Kiem tra tong tin chi (chi tinh cac LHP chinh thuc, khong tinh nguyen vong)
         kiemTraTongTinChi(sinhVienId, hocKy, lhp.getMonHoc().getSoTinChi());
 
         // [#1] Kiem tra trung lich
@@ -116,7 +119,20 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
     }
 
     // =================================================================
-    // RANG BUOC #5 — Kiem tra trung lop
+    // MỤC 4 — Kiem tra mon da dat (khong cho phep dang ky lai neu da dat)
+    // =================================================================
+
+    private void kiemTraDaDatMon(Long sinhVienId, MonHoc monHoc) {
+        boolean daDat = dangKyRepo.kiemTraDaHoanThanhMon(sinhVienId, monHoc.getId());
+        if (daDat) {
+            log.warn("SV [{}] da hoan thanh dat mon [{}]", sinhVienId, monHoc.getTenMon());
+            throw new NghiepVuException(
+                "Bạn đã hoàn thành môn học [" + monHoc.getTenMon() + "] với điểm đạt. Không thể đăng ký lại.");
+        }
+    }
+
+    // =================================================================
+    // RANG BUOC #5 — Kiem tra trung lop (Cho phep dang ky lai neu DA_HUY)
     // =================================================================
 
     private void kiemTraTrungLop(Long sinhVienId, Long lopHocPhanId, String maLopHp) {
@@ -125,13 +141,7 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
                 if (dk.getTrangThai() == TrangThaiDangKy.DA_DANG_KY) {
                     throw new TrungLopException(maLopHp);
                 }
-                // Neu trang_thai = DA_HUY: chi bao loi ro rang, SV khong the dang ky lai
-                // (UNIQUE constraint chi cho 1 ban ghi)
-                if (dk.getTrangThai() == TrangThaiDangKy.DA_HUY) {
-                    throw new NghiepVuException(
-                        "Ban da huy dang ky lop [" + maLopHp + "] truoc do. "
-                        + "Khong the dang ky lai cung lop. Vui long chon lop hoc phan khac.");
-                }
+                // Neu trang_thai = DA_HUY: cho phep dang ky lai (se update ban ghi o buoc dangKyVaCapNhatSiSo)
             });
     }
 
@@ -143,7 +153,7 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
         boolean daDangKy = dangKyRepo.kiemTraDaDangKyMonTrongHocKy(sinhVienId, monHocId, hocKyId);
         if (daDangKy) {
             throw new TrungLopException(
-                "Ban da dang ky lop khac cua mon hoc nay trong hoc ky nay roi.");
+                "Bạn đã đăng ký lớp khác của môn học này trong học kỳ này rồi.");
         }
     }
 
@@ -167,17 +177,15 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
     }
 
     // =================================================================
-    // RANG BUOC #4 — Kiem tra tong tin chi
+    // RANG BUOC #4 — Kiem tra tong tin chi (khong tinh nguyen vong)
     // =================================================================
 
     private void kiemTraTongTinChi(Long sinhVienId, HocKy hocKy, int soTinChiThem) {
         int tinChiHienTaiLHP = dangKyRepo.tinhTongTinChiDaDangKy(sinhVienId, hocKy.getId());
-        int tinChiHienTaiNV = dangKyNvRepo.tinhTongTinChiNguyenVong(sinhVienId, hocKy.getId());
-        int tinChiHienTai = tinChiHienTaiLHP + tinChiHienTaiNV;
-        if (tinChiHienTai + soTinChiThem > hocKy.getTinChiToiDa()) {
-            log.warn("SV [{}] vuot tin chi: LHP={} + NV={} + them={} > max={}",
-                sinhVienId, tinChiHienTaiLHP, tinChiHienTaiNV, soTinChiThem, hocKy.getTinChiToiDa());
-            throw new VuotTinChiException(tinChiHienTai, soTinChiThem, hocKy.getTinChiToiDa());
+        if (tinChiHienTaiLHP + soTinChiThem > hocKy.getTinChiToiDa()) {
+            log.warn("SV [{}] vuot tin chi: LHP={} + them={} > max={}",
+                sinhVienId, tinChiHienTaiLHP, soTinChiThem, hocKy.getTinChiToiDa());
+            throw new VuotTinChiException(tinChiHienTaiLHP, soTinChiThem, hocKy.getTinChiToiDa());
         }
     }
 
@@ -218,7 +226,7 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
 
     // =================================================================
     // RANG BUOC #2 (chinh) + #7
-    // Optimistic Locking: kiem tra si so + luu DangKy + cap nhat si_so
+    // Optimistic Locking: kiem tra si so + luu/cap nhat DangKy + cap nhat si_so
     // Tat ca trong cung @Transactional -> commit hoac rollback toan bo
     // =================================================================
 
@@ -235,13 +243,25 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
             lhp.setSiSoHienTai(lhp.getSiSoHienTai() + 1);
             lopHocPhanRepo.save(lhp); // Hibernate kiem tra version o day
 
-            // [#7] Tao ban ghi DangKyHocPhan trong cung transaction
-            DangKyHocPhan dangKy = DangKyHocPhan.builder()
-                .sinhVien(sinhVien)
-                .lopHocPhan(lhp)
-                .ngayDangKy(LocalDateTime.now())
-                .trangThai(TrangThaiDangKy.DA_DANG_KY)
-                .build();
+            // [#7] Tao moi hoac cap nhat ban ghi DangKyHocPhan (neu truoc do DA_HUY)
+            DangKyHocPhan dangKy = dangKyRepo
+                .findBySinhVienIdAndLopHocPhanId(sinhVien.getId(), lhp.getId())
+                .orElse(null);
+
+            if (dangKy != null) {
+                dangKy.setTrangThai(TrangThaiDangKy.DA_DANG_KY);
+                dangKy.setNgayDangKy(LocalDateTime.now());
+                dangKy.setDiemGiuaKy(null);
+                dangKy.setDiemCuoiKy(null);
+                dangKy.setDiemTongKet(null);
+            } else {
+                dangKy = DangKyHocPhan.builder()
+                    .sinhVien(sinhVien)
+                    .lopHocPhan(lhp)
+                    .ngayDangKy(LocalDateTime.now())
+                    .trangThai(TrangThaiDangKy.DA_DANG_KY)
+                    .build();
+            }
 
             DangKyHocPhan saved = dangKyRepo.save(dangKy);
             log.info("Dang ky thanh cong: SV [{}] - LHP [{}]",
