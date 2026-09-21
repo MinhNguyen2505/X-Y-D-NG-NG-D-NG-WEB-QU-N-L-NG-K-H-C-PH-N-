@@ -351,8 +351,7 @@
       </div>
 
       <!-- Form -->
-      <form action="/login" method="post" id="loginForm" autocomplete="off">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <form th:action="@{/login}" method="post" id="loginForm" autocomplete="off">
 
         <div class="lf-group">
           <label class="lf-label" for="username">Email</label>
