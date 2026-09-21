@@ -74,8 +74,8 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
         // [#2-part1] Kiem tra trang thai lop con mo
         kiemTraTrangThaiLop(lhp);
 
-        // [Mục 1] Kiem tra doi tuong sinh vien (mon hoc thuoc CTDT nganh)
-        kiemTraDoiTuongDangKy(sinhVien, lhp.getMonHoc());
+        // [Mục 1 + Mục 2] Kiem tra doi tuong sinh vien (mon thuoc CTDT va doi tuong rieng cua lop)
+        kiemTraDoiTuongDangKy(sinhVien, lhp);
 
         // [Mục 6] Kiem tra hoc cai thien / mon da dat (diem >= 8.0 thi khong cho hoc cai thien)
         kiemTraDaDatMon(sinhVienId, lhp.getMonHoc());
@@ -120,10 +120,13 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
     }
 
     // =================================================================
-    // MỤC 1 — Kiem tra doi tuong duoc phep dang ky (thuoc CTDT nganh)
+    // MỤC 1 — Kiem tra doi tuong duoc phep dang ky (thuoc CTDT nganh & doi tuong LHP)
     // =================================================================
 
-    private void kiemTraDoiTuongDangKy(SinhVien sinhVien, MonHoc monHoc) {
+    private void kiemTraDoiTuongDangKy(SinhVien sinhVien, LopHocPhan lhp) {
+        MonHoc monHoc = lhp.getMonHoc();
+
+        // 1. Kiem tra mon hoc thuoc CTDT nganh cua sinh vien
         if (sinhVien.getNganh() != null) {
             boolean thuocCTDT = chuongTrinhDaoTaoRepo.existsByNganhIdAndMonHocId(sinhVien.getNganh().getId(), monHoc.getId());
             if (!thuocCTDT) {
@@ -132,6 +135,26 @@ public class DangKyHocPhanServiceImpl implements DangKyHocPhanService {
                 throw new NghiepVuException(
                     "Môn học [" + monHoc.getTenMon() + "] không thuộc Chương trình đào tạo ngành "
                     + sinhVien.getNganh().getTenNganh() + ".");
+            }
+        }
+
+        // 2. Kiem tra doi tuong cu the cua lop hoc phan (neu co gioi han)
+        if (lhp.getDoiTuong() != null && !lhp.getDoiTuong().isBlank() && !"TAT_CA".equalsIgnoreCase(lhp.getDoiTuong())) {
+            String doiTuongLop = lhp.getDoiTuong().trim().toUpperCase();
+            String svKhoa = sinhVien.getKhoaHoc() != null ? sinhVien.getKhoaHoc().trim().toUpperCase() : "";
+            String svNganh = (sinhVien.getNganh() != null && sinhVien.getNganh().getMaNganh() != null)
+                             ? sinhVien.getNganh().getMaNganh().trim().toUpperCase() : "";
+            String svLopSh = sinhVien.getLopSinhHoat() != null ? sinhVien.getLopSinhHoat().trim().toUpperCase() : "";
+
+            boolean hopLe = (!svKhoa.isEmpty() && doiTuongLop.contains(svKhoa))
+                         || (!svNganh.isEmpty() && doiTuongLop.contains(svNganh))
+                         || (!svLopSh.isEmpty() && doiTuongLop.contains(svLopSh));
+
+            if (!hopLe) {
+                log.warn("SV [{}] (khoa={}, nganh={}) khong thuoc doi tuong [{}] cua LHP [{}]",
+                    sinhVien.getMssv(), svKhoa, svNganh, lhp.getDoiTuong(), lhp.getMaLopHp());
+                throw new NghiepVuException(
+                    "Lớp học phần [" + lhp.getMaLopHp() + "] chỉ mở cho đối tượng [" + lhp.getDoiTuong() + "]. Bạn không thuộc đối tượng đăng ký lớp này.");
             }
         }
     }

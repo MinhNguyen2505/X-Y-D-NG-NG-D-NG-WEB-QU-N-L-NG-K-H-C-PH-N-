@@ -16,6 +16,8 @@ import java.util.List;
 public class HocKyServiceImpl implements HocKyService {
 
     private final HocKyRepository hocKyRepo;
+    private final vn.edu.quanlyhocphan.repository.LopHocPhanRepository lopHocPhanRepo;
+    private final vn.edu.quanlyhocphan.repository.DangKyHocPhanRepository dangKyHocPhanRepo;
 
     @Override @Transactional(readOnly = true)
     public HocKy findById(Long id) {
@@ -47,6 +49,27 @@ public class HocKyServiceImpl implements HocKyService {
         HocKy hk = findById(hocKyId);
         hk.setDaChotDangKy(true);
         hocKyRepo.save(hk);
+
+        // Tu dong huy cac lop khong dat si so toi thieu, chot cac lop dat si so
+        List<vn.edu.quanlyhocphan.entity.LopHocPhan> dsLop = lopHocPhanRepo.findByHocKyId(hocKyId, null);
+        for (vn.edu.quanlyhocphan.entity.LopHocPhan lhp : dsLop) {
+            int min = lhp.getSiSoToiThieu() != null ? lhp.getSiSoToiThieu() : 15;
+            if (lhp.getSiSoHienTai() < min) {
+                lhp.setTrangThai(vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.HUY);
+                lopHocPhanRepo.save(lhp);
+
+                // Cap nhat ban ghi dang ky cua SV trong lop bi huy ve DA_HUY
+                List<vn.edu.quanlyhocphan.entity.DangKyHocPhan> dsDk =
+                    dangKyHocPhanRepo.findDanhSachSinhVienTrongLop(lhp.getId());
+                for (vn.edu.quanlyhocphan.entity.DangKyHocPhan dk : dsDk) {
+                    dk.setTrangThai(vn.edu.quanlyhocphan.enums.TrangThaiDangKy.DA_HUY);
+                    dangKyHocPhanRepo.save(dk);
+                }
+            } else if (lhp.getTrangThai() == vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.MO) {
+                lhp.setTrangThai(vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.DONG);
+                lopHocPhanRepo.save(lhp);
+            }
+        }
     }
 
     @Override @Transactional
@@ -54,5 +77,14 @@ public class HocKyServiceImpl implements HocKyService {
         HocKy hk = findById(hocKyId);
         hk.setDaChotDangKy(false);
         hocKyRepo.save(hk);
+
+        // Mo lai cac lop sang trang thai MO neu truoc do bi DONG
+        List<vn.edu.quanlyhocphan.entity.LopHocPhan> dsLop = lopHocPhanRepo.findByHocKyId(hocKyId, null);
+        for (vn.edu.quanlyhocphan.entity.LopHocPhan lhp : dsLop) {
+            if (lhp.getTrangThai() == vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.DONG) {
+                lhp.setTrangThai(vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.MO);
+                lopHocPhanRepo.save(lhp);
+            }
+        }
     }
 }

@@ -73,6 +73,10 @@ public class LopHocPhan {
     )
     private GiangVien giangVien;
 
+    @Column(name = "si_so_toi_thieu")
+    @Builder.Default
+    private Integer siSoToiThieu = 15;
+
     @Column(name = "si_so_toi_da", nullable = false)
     @Builder.Default
     private Integer siSoToiDa = 50;
@@ -81,6 +85,10 @@ public class LopHocPhan {
     @Column(name = "si_so_hien_tai", nullable = false)
     @Builder.Default
     private Integer siSoHienTai = 0;
+
+    /** Doi tuong mo lop: VD "K21", "CNTT", "K21_CNTT" hoac null/"TAT_CA" */
+    @Column(name = "doi_tuong", length = 100)
+    private String doiTuong;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "trang_thai", nullable = false, length = 30)

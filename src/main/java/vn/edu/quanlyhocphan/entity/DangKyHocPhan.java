@@ -18,9 +18,10 @@ import java.time.LocalDateTime;
  *    - Khi can query theo hoc ky: JOIN sang lop_hoc_phan.hoc_ky_id.
  *
  * 2. @UniqueConstraint(sinh_vien_id, lop_hoc_phan_id):
- *    - 1 SV chi duoc dang ky 1 lop hoc phan dung 1 lan.
- *    - Khi SV huy (trang_thai = DA_HUY), ban ghi van con -> khong the
- *      dang ky lai cung lop (Service can check & xu ly nghiep vu nay).
+ *    - 1 SV chi co 1 ban ghi cho 1 lop hoc phan.
+ *    - Khi SV huy (trang_thai = DA_HUY), ban ghi van duoc giu lai de luu vet lich su.
+ *    - Neu SV dang ky lai cung lop khi con han va con cho, Service se cap nhat
+ *      lai ban ghi cu ve trang thai DA_DANG_KY va tang si so lop an toan.
  *
  * 3. Diem: DECIMAL(4,2) de luu chinh xac VD: 8.50, 10.00.
  *    - nullable = true vi diem chi co sau khi hoc xong.
