@@ -6,6 +6,12 @@
 
 USE quan_ly_hoc_phan;
 
+-- 0. HỌC KỲ
+INSERT IGNORE INTO hoc_ky (id, ten_hoc_ky, nam_hoc, hoc_ky_thu, ngay_bat_dau_dk, ngay_ket_thuc_dk, ngay_bat_dau_hoc, ngay_ket_thuc_hoc, tin_chi_toi_thieu, tin_chi_toi_da, da_chot_dang_ky) VALUES
+(1, 'Hoc ky 1 nam hoc 2026-2027', '2026-2027', 1, '2026-08-01', '2026-08-15', '2026-09-01', '2027-01-15', 14, 25, 0),
+(2, 'Hoc ky 2 nam hoc 2026-2027', '2026-2027', 2, '2027-01-01', '2027-01-15', '2027-02-01', '2027-06-15', 14, 25, 0),
+(3, 'Hoc ky He nam hoc 2026-2027', '2026-2027', 3, '2027-06-01', '2027-06-10', '2027-07-01', '2027-08-15', 0, 10, 0);
+
 -- 1. BỔ SUNG ĐỊNH HƯỚNG CHO TẤT CẢ CÁC NGÀNH CÒN THIẾU
 INSERT IGNORE INTO dinh_huong (id, ten_dinh_huong, mo_ta, nganh_id, ngay_bat_dau, ngay_ket_thuc, che_do_dang_ky, trang_thai) VALUES
 (11, 'He thong Thong tin Doanh nghiep (ERP)', 'Chuyen sau ve he thong ERP va phan tich quy trinh kinh doanh', 43, '2026-01-01', '2027-12-31', 'TU_CHON', 'DANG_MO'),
