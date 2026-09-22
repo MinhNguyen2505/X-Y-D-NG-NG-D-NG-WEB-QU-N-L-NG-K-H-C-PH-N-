@@ -70,10 +70,10 @@
   <div class="sb-footer">
     <div class="sb-user">
       <div class="sb-avatar"
-           th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</div>
+           th:text="${sinhVien != null and sinhVien.hoTen != null and #strings.length(sinhVien.hoTen) > 0 ? #strings.substring(sinhVien.hoTen,0,1).toUpperCase() : (#authentication != null and #authentication.name != null and #strings.length(#authentication.name) > 0 ? #strings.substring(#authentication.name,0,1).toUpperCase() : 'U')}">U</div>
       <div>
         <div class="sb-name"
-             th:text="${sinhVien?.hoTen ?: #authentication.name}">Sinh viên</div>
+             th:text="${sinhVien?.hoTen ?: (#authentication != null ? #authentication.name : 'Sinh viên')}">Sinh viên</div>
         <div class="sb-role">Sinh viên</div>
       </div>
     </div>
@@ -115,10 +115,10 @@
   <div class="sb-footer">
     <div class="sb-user">
       <div class="sb-avatar"
-           th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">G</div>
+           th:text="${giangVien != null and giangVien.hoTen != null and #strings.length(giangVien.hoTen) > 0 ? #strings.substring(giangVien.hoTen,0,1).toUpperCase() : (#authentication != null and #authentication.name != null and #strings.length(#authentication.name) > 0 ? #strings.substring(#authentication.name,0,1).toUpperCase() : 'G')}">G</div>
       <div>
         <div class="sb-name"
-             th:text="${giangVien?.hoTen ?: #authentication.name}">Giảng viên</div>
+             th:text="${giangVien?.hoTen ?: (#authentication != null ? #authentication.name : 'Giảng viên')}">Giảng viên</div>
         <div class="sb-role">Giảng viên</div>
       </div>
     </div>
@@ -184,9 +184,9 @@
   <div class="sb-footer">
     <div class="sb-user">
       <div class="sb-avatar"
-           th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">A</div>
+           th:text="${#authentication != null and #authentication.name != null and #strings.length(#authentication.name) > 0 ? #strings.substring(#authentication.name,0,1).toUpperCase() : 'A'}">A</div>
       <div>
-        <div class="sb-name" th:text="${#authentication.name}">Admin</div>
+        <div class="sb-name" th:text="${#authentication != null ? #authentication.name : 'Admin'}">Admin</div>
         <div class="sb-role">Quản trị viên</div>
       </div>
     </div>
@@ -256,10 +256,10 @@
   <div class="sb-footer">
     <div class="sb-user">
       <div class="sb-avatar"
-           th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">Q</div>
+           th:text="${quanLy != null and quanLy.hoTen != null and #strings.length(quanLy.hoTen) > 0 ? #strings.substring(quanLy.hoTen,0,1).toUpperCase() : (#authentication != null and #authentication.name != null and #strings.length(#authentication.name) > 0 ? #strings.substring(#authentication.name,0,1).toUpperCase() : 'Q')}">Q</div>
       <div>
         <div class="sb-name"
-             th:text="${quanLy?.hoTen ?: #authentication.name}">Cán bộ QL</div>
+             th:text="${quanLy?.hoTen ?: (#authentication != null ? #authentication.name : 'Cán bộ QL')}">Cán bộ QL</div>
         <div class="sb-role">Phòng Đào Tạo</div>
       </div>
     </div>
@@ -275,7 +275,7 @@
     <i class="fa-solid fa-key"></i> Đổi mật khẩu
   </a>
   <form th:action="@{/logout}" method="post">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
     <button type="submit" class="btn-logout">
       <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
     </button>
