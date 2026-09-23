@@ -35,6 +35,7 @@ public interface DangKyThiLaiRepository extends JpaRepository<DangKyThiLai, Long
         JOIN FETCH d.dangKyHocPhan dk
         JOIN FETCH dk.lopHocPhan lhp
         JOIN FETCH lhp.monHoc
+        JOIN FETCH lhp.hocKy
         ORDER BY d.ngayDangKy DESC
         """)
     List<DangKyThiLai> findAllWithDetails();
@@ -46,6 +47,7 @@ public interface DangKyThiLaiRepository extends JpaRepository<DangKyThiLai, Long
         JOIN FETCH d.dangKyHocPhan dk
         JOIN FETCH dk.lopHocPhan lhp
         JOIN FETCH lhp.monHoc
+        JOIN FETCH lhp.hocKy
         WHERE d.trangThai = :trangThai
         ORDER BY d.ngayDangKy DESC
         """)

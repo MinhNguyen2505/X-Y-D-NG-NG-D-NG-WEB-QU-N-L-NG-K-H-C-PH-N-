@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -226,7 +226,7 @@
         </div>
 
         <form th:action="@{/sinh-vien/dang-ky-nguyen-vong}" method="post" id="formDangKy">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
           <input type="hidden" name="keHoachId" th:value="${keHoachChon.id}"/>
           <!-- Danh sách môn CHƯA đăng ký -->
           <div class="card" style="margin-bottom:16px;">
@@ -339,7 +339,7 @@
                     <form th:if="${dk.trangThai == 'CHO_DUYET' and keHoachChon.dangMo}"
                           th:action="@{/sinh-vien/huy-nguyen-vong}" method="post"
                           onsubmit="return confirm('Hủy nguyện vọng này?')">
-                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                       <input type="hidden" name="nguyenVongMonHocId"
                              th:value="${dk.nguyenVongMonHoc.id}"/>
                       <input type="hidden" name="keHoachId" th:value="${keHoachChon.id}"/>

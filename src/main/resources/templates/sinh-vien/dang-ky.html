@@ -176,7 +176,7 @@
                   <!-- Đang học lớp này → Hủy -->
                   <form th:if="${daDK}" th:action="@{/sinh-vien/huy-dang-ky}" method="post"
                         onsubmit="return confirm('Xác nhận hủy đăng ký lớp này?')">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <input type="hidden" name="lopHocPhanId" th:value="${lhp.id}"/>
                     <input type="hidden" name="hocKyId"      th:value="${hocKyChon.id}"/>
                     <button type="submit" class="btn btn-danger btn-sm">
@@ -186,7 +186,7 @@
 
                   <!-- Chưa đăng ký lớp này → Đăng ký / Cải thiện -->
                   <form th:if="${!daDK}" th:action="@{/sinh-vien/dang-ky}" method="post">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <input type="hidden" name="lopHocPhanId" th:value="${lhp.id}"/>
                     <input type="hidden" name="hocKyId"      th:value="${hocKyChon.id}"/>
                     <button type="submit" class="btn btn-sm"

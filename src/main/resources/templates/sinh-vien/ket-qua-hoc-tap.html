@@ -146,7 +146,7 @@
                     <!-- Chưa đăng ký hoặc đã hủy: nút đăng ký -->
                     <form th:if="${tl == null or tl.trangThai == 'DA_HUY'}"
                           th:action="@{/sinh-vien/dang-ky-thi-lai}" method="post">
-                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                       <input type="hidden" name="dangKyHocPhanId" th:value="${dk.id}"/>
                       <button type="submit" class="btn btn-danger btn-sm"
                               style="font-size:11px;padding:3px 8px;">

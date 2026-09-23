@@ -208,7 +208,7 @@
             <div class="card-body" style="padding:0;">
 
               <form th:action="@{/giang-vien/diem-danh/{id}(id=${lopHocPhan.id})}" method="post">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <input type="hidden" name="ngayHoc"     th:value="${ngayChon}"/>
                 <input type="hidden" name="tietBatDau"  th:value="${lichKhop.tietBatDau}"/>
                 <input type="hidden" name="tietKetThuc" th:value="${lichKhop.tietKetThuc}"/>

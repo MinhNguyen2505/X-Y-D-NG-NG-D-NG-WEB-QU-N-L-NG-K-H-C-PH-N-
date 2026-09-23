@@ -1,9 +1,8 @@
 -- =============================================================
--- schema.sql — Tạo toàn bộ cấu trúc CSDL (DDL)
--- Chạy file này MỘT LẦN đầu tiên để tạo bảng
--- Database: MySQL >= 8.0.16
+-- Schema: Quan ly dang ky hoc phan theo tin chi
+-- Database: MySQL >= 8.0.16 (de dung CHECK constraint)
+-- Thu tu tao bang: cha truoc, con sau (tranh loi FK)
 -- =============================================================
-
 
 CREATE DATABASE IF NOT EXISTS quan_ly_hoc_phan
     CHARACTER SET utf8mb4
@@ -111,7 +110,6 @@ CREATE TABLE IF NOT EXISTS hoc_ky (
     ngay_ket_thuc_hoc   DATE         NOT NULL,
     tin_chi_toi_thieu   INT          NOT NULL DEFAULT 0,
     tin_chi_toi_da      INT          NOT NULL DEFAULT 25,
-    da_chot_dang_ky     BOOLEAN      NOT NULL DEFAULT FALSE,
     CONSTRAINT uq_hk UNIQUE (nam_hoc, hoc_ky_thu),
     CONSTRAINT chk_hk_dk  CHECK (ngay_ket_thuc_dk  >= ngay_bat_dau_dk),
     CONSTRAINT chk_hk_hoc CHECK (ngay_ket_thuc_hoc >= ngay_bat_dau_hoc),
@@ -129,10 +127,8 @@ CREATE TABLE IF NOT EXISTS lop_hoc_phan (
     mon_hoc_id       BIGINT       NOT NULL,
     hoc_ky_id        BIGINT       NOT NULL,
     giang_vien_id    BIGINT,
-    si_so_toi_thieu  INT          NOT NULL DEFAULT 15,
     si_so_toi_da     INT          NOT NULL DEFAULT 50,
     si_so_hien_tai   INT          NOT NULL DEFAULT 0,
-    doi_tuong        VARCHAR(100) NULL,
     trang_thai       VARCHAR(30)  NOT NULL DEFAULT 'MO',
     version          BIGINT       NOT NULL DEFAULT 0,
     CONSTRAINT uq_lhp_ma_lop_hp UNIQUE (ma_lop_hp),
@@ -187,16 +183,16 @@ CREATE TABLE IF NOT EXISTS dang_ky_hoc_phan (
 -- =============================================================
 
 -- Tim lich hoc theo lop (check trung lich)
-CREATE INDEX idx_lh_thu_tiet ON lich_hoc (lop_hoc_phan_id, thu, tiet_bat_dau, tiet_ket_thuc);
+CREATE INDEX IF NOT EXISTS idx_lh_thu_tiet ON lich_hoc (lop_hoc_phan_id, thu, tiet_bat_dau, tiet_ket_thuc);
 
 -- Tim dang ky cua SV (xem thoi khoa bieu, kiem tra trung lop)
-CREATE INDEX idx_dkhp_sv ON dang_ky_hoc_phan (sinh_vien_id, trang_thai);
+CREATE INDEX IF NOT EXISTS idx_dkhp_sv ON dang_ky_hoc_phan (sinh_vien_id, trang_thai);
 
 -- Tim dang ky theo lop (dem si so, nhap diem GV)
-CREATE INDEX idx_dkhp_lhp ON dang_ky_hoc_phan (lop_hoc_phan_id, trang_thai);
+CREATE INDEX IF NOT EXISTS idx_dkhp_lhp ON dang_ky_hoc_phan (lop_hoc_phan_id, trang_thai);
 
 -- Tim lop hoc phan theo hoc ky
-CREATE INDEX idx_lhp_hk ON lop_hoc_phan (hoc_ky_id, trang_thai);
+CREATE INDEX IF NOT EXISTS idx_lhp_hk ON lop_hoc_phan (hoc_ky_id, trang_thai);
 
 -- =============================================================
 -- 11. KE_HOACH_NGUYEN_VONG
@@ -297,7 +293,12 @@ CREATE TABLE IF NOT EXISTS khoi_kien_thuc (
 -- =============================================================
 ALTER TABLE chuong_trinh_dao_tao
     ADD COLUMN IF NOT EXISTS khoi_id BIGINT NULL,
-    ADD COLUMN IF NOT EXISTS diem_dat DECIMAL(4,2) NULL DEFAULT 5.00,
+    ADD COLUMN IF NOT EXISTS diem_dat DECIMAL(4,2) NULL DEFAULT 5.00;
+
+-- Drop FK truoc neu da ton tai, roi moi ADD lai (tranh loi errno 121)
+ALTER TABLE chuong_trinh_dao_tao
+    DROP FOREIGN KEY IF EXISTS fk_ctdt_khoi;
+ALTER TABLE chuong_trinh_dao_tao
     ADD CONSTRAINT fk_ctdt_khoi FOREIGN KEY (khoi_id) REFERENCES khoi_kien_thuc(id);
 
 -- =============================================================
@@ -347,6 +348,19 @@ CREATE TABLE IF NOT EXISTS admin (
 );
 
 -- =============================================================
+-- 20b. QUAN_LY (Can bo phong dao tao)
+-- =============================================================
+CREATE TABLE IF NOT EXISTS quan_ly (
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email         VARCHAR(255) NOT NULL,
+    mat_khau      VARCHAR(255) NOT NULL,
+    ho_ten        VARCHAR(255) NOT NULL,
+    don_vi        VARCHAR(255),
+    so_dien_thoai VARCHAR(50),
+    CONSTRAINT uq_ql_email UNIQUE (email)
+);
+
+-- =============================================================
 -- 21. DANG_KY_THI_LAI
 -- SV dang ky thi lai mon chua dat (diem_tong_ket < 5)
 -- trang_thai: CHO_DUYET / DA_DUYET / DA_HUY
@@ -384,3 +398,5 @@ CREATE TABLE IF NOT EXISTS diem_danh (
 
 CREATE INDEX IF NOT EXISTS idx_dd_dkhp ON diem_danh (dang_ky_id);
 CREATE INDEX IF NOT EXISTS idx_dd_ngay ON diem_danh (ngay_hoc);
+
+

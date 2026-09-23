@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/><title>Lớp học phần</title>
@@ -89,7 +89,7 @@
                           th:action="@{/quan-ly/lop-hoc-phan/{id}/dong(id=${lhp.id})}" method="post"
                           onsubmit="return confirm('Đóng lớp ' + this.dataset.ten + '?')"
                           th:data-ten="${lhp.maLopHp}">
-                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                       <input type="hidden" name="hocKyId" th:value="${hocKyChon.id}"/>
                       <button type="submit" class="btn btn-danger btn-sm" title="Đóng lớp">
                         <i class="fa-solid fa-lock"></i>
@@ -98,7 +98,7 @@
                     <!-- Nút Mở lại (khi DONG) -->
                     <form th:if="${lhp.trangThai.name() == 'DONG'}"
                           th:action="@{/quan-ly/lop-hoc-phan/{id}/mo(id=${lhp.id})}" method="post">
-                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                       <input type="hidden" name="hocKyId" th:value="${hocKyChon.id}"/>
                       <button type="submit" class="btn btn-success btn-sm" title="Mở lại lớp">
                         <i class="fa-solid fa-lock-open"></i>

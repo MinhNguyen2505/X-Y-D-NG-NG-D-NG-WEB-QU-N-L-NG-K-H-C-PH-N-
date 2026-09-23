@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head><meta charset="UTF-8"/><title>Đăng ký thi lại</title>
 <link rel="stylesheet" th:href="@{/css/app.css}"/>
@@ -27,7 +27,7 @@
         </div>
         <form th:action="@{/quan-ly/thi-lai/duyet-tat-ca}" method="post"
               onsubmit="return confirm('Duyệt tất cả đăng ký đang CHỜ DUYỆT?')">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
           <button type="submit" class="btn btn-success">
             <i class="fa-solid fa-check-double"></i> Duyệt tất cả
           </button>
@@ -49,17 +49,16 @@
           <tbody>
             <tr th:each="dk, i : ${danhSach}">
               <td th:text="${i.count}"></td>
-              <td th:text="${dk.sinhVien.mssv}"></td>
-              <td th:text="${dk.sinhVien.hoTen}"></td>
+              <td th:text="${dk.sinhVien != null ? dk.sinhVien.mssv : ''}"></td>
+              <td th:text="${dk.sinhVien != null ? dk.sinhVien.hoTen : ''}"></td>
               <td>
-                <b th:text="${dk.dangKyHocPhan.lopHocPhan.monHoc.tenMon}"></b><br/>
+                <b th:text="${dk.dangKyHocPhan != null and dk.dangKyHocPhan.lopHocPhan != null and dk.dangKyHocPhan.lopHocPhan.monHoc != null ? dk.dangKyHocPhan.lopHocPhan.monHoc.tenMon : ''}"></b><br/>
                 <small class="text-muted"
-                       th:text="${dk.dangKyHocPhan.lopHocPhan.monHoc.maMon}
-                                + ' — ' + ${dk.dangKyHocPhan.lopHocPhan.hocKy.tenHocKy}"></small>
+                       th:text="${(dk.dangKyHocPhan != null and dk.dangKyHocPhan.lopHocPhan != null and dk.dangKyHocPhan.lopHocPhan.monHoc != null ? dk.dangKyHocPhan.lopHocPhan.monHoc.maMon : '') + ' - ' + (dk.dangKyHocPhan != null and dk.dangKyHocPhan.lopHocPhan != null and dk.dangKyHocPhan.lopHocPhan.hocKy != null ? dk.dangKyHocPhan.lopHocPhan.hocKy.tenHocKy : '')}"></small>
               </td>
               <td style="text-align:center;font-weight:700;color:var(--danger);"
-                  th:text="${dk.dangKyHocPhan.diemTongKet}"></td>
-              <td th:text="${#temporals.format(dk.ngayDangKy,'dd/MM/yyyy HH:mm')}"></td>
+                  th:text="${dk.dangKyHocPhan != null ? dk.dangKyHocPhan.diemTongKet : ''}"></td>
+              <td th:text="${dk.ngayDangKy != null ? #temporals.format(dk.ngayDangKy,'dd/MM/yyyy HH:mm') : ''}"></td>
               <td>
                 <span th:if="${dk.trangThai == 'CHO_DUYET'}" class="badge badge-warning">Chờ duyệt</span>
                 <span th:if="${dk.trangThai == 'DA_DUYET'}"  class="badge badge-success">Đã duyệt</span>
@@ -68,7 +67,7 @@
               <td class="flex">
                 <form th:if="${dk.trangThai == 'CHO_DUYET'}"
                       th:action="@{/quan-ly/thi-lai/{id}/duyet(id=${dk.id})}" method="post">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <button type="submit" class="btn btn-success btn-sm" title="Duyệt">
                     <i class="fa-solid fa-check"></i>
                   </button>
@@ -76,7 +75,7 @@
                 <form th:if="${dk.trangThai != 'DA_HUY'}"
                       th:action="@{/quan-ly/thi-lai/{id}/tu-choi(id=${dk.id})}" method="post"
                       onsubmit="return confirm('Từ chối đăng ký thi lại này?')">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <button type="submit" class="btn btn-danger btn-sm" title="Từ chối">
                     <i class="fa-solid fa-xmark"></i>
                   </button>

@@ -184,7 +184,7 @@ public class QuanLyController {
     public String dongLop(@PathVariable Long id, @RequestParam(required = false) Long hocKyId, RedirectAttributes ra) {
         try {
             LopHocPhan lhp = lopHocPhanService.findById(id);
-            lhp.setTrangThai(TrangThaiLopHocPhan.DONG);
+            lhp.setTrangThai(TrangThaiLopHocPhan.DA_DONG);
             lopHocPhanService.save(lhp);
             ra.addFlashAttribute("successMsg", "Đã đóng lớp " + lhp.getMaLopHp() + ".");
         } catch (Exception e) {

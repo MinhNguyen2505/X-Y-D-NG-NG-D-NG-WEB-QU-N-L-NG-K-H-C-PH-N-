@@ -86,7 +86,7 @@
                   th:with="tl=${thiLaiMap != null ? thiLaiMap[dk.id] : null}"
                   th:classappend="${dk.diemTongKet != null and dk.diemTongKet < 5} ? ' row-khong-dat'">
                 <form th:action="@{/giang-vien/nhap-diem/{id}(id=${lopHocPhan.id})}" method="post">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <input type="hidden" name="dangKyId" th:value="${dk.id}"/>
 
                   <td style="text-align:center;color:var(--gray-400);" th:text="${i.count}"></td>

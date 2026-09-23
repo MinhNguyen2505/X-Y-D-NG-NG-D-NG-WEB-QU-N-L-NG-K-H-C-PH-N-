@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head><meta charset="UTF-8"/><title>Form Định hướng</title>
 <link rel="stylesheet" th:href="@{/css/app.css}"/>
@@ -22,7 +22,7 @@
         <div class="card"><div class="card-body">
           <form th:action="${dinhHuong.id == null} ? @{/quan-ly/dinh-huong/them} : @{/quan-ly/dinh-huong/sua/{id}(id=${dinhHuong.id})}"
                 method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <div class="form-group">
               <label class="form-label">Tên định hướng *</label>
               <input type="text" name="tenDinhHuong" class="form-control"

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head><meta charset="UTF-8"/><title>Định hướng học tập</title>
 <link rel="stylesheet" th:href="@{/css/app.css}"/>
@@ -49,14 +49,14 @@
                 </a>
                 <form th:if="${dh.trangThai == 'DANG_MO'}"
                       th:action="@{/quan-ly/dinh-huong/{id}/dong(id=${dh.id})}" method="post">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <button type="submit" class="btn btn-danger btn-sm" title="Đóng">
                     <i class="fa-solid fa-lock"></i>
                   </button>
                 </form>
                 <form th:if="${dh.trangThai == 'DA_DONG'}"
                       th:action="@{/quan-ly/dinh-huong/{id}/mo(id=${dh.id})}" method="post">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <button type="submit" class="btn btn-success btn-sm" title="Mở lại">
                     <i class="fa-solid fa-lock-open"></i>
                   </button>

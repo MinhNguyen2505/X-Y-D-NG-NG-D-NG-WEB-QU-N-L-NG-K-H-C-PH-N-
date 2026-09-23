@@ -82,7 +82,7 @@
                     <!-- Nút Reset Mật Khẩu -->
                     <form th:action="@{/admin/quan-ly/reset-mat-khau/{id}(id=${ql.id})}" method="post" style="margin:0"
                           onsubmit="return confirm('Đặt lại mật khẩu về mặc định [123456]?')">
-                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                       <button type="submit" class="btn btn-outline btn-sm" title="Reset mật khẩu về 123456" style="color:#d97706;border-color:#fed7aa;">
                         <i class="fa-solid fa-rotate-left"></i> Reset MK
                       </button>
@@ -92,7 +92,7 @@
                     <!-- Nút Xóa -->
                     <form th:action="@{/admin/quan-ly/xoa/{id}(id=${ql.id})}" method="post" style="margin:0"
                           onsubmit="return confirm('Bạn có chắc chắn muốn xóa cán bộ này?')">
-                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                       <button type="submit" class="btn btn-danger btn-sm" title="Xóa"><i class="fa-solid fa-trash"></i></button>
                     </form>
                   </div>

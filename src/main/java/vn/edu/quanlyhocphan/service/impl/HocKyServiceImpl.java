@@ -67,7 +67,7 @@ public class HocKyServiceImpl implements HocKyService {
                     dangKyHocPhanRepo.save(dk);
                 }
             } else if (lhp.getTrangThai() == vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.MO) {
-                lhp.setTrangThai(vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.DONG);
+                lhp.setTrangThai(vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.DA_DONG);
                 lopHocPhanRepo.save(lhp);
             }
         }
@@ -79,10 +79,10 @@ public class HocKyServiceImpl implements HocKyService {
         hk.setDaChotDangKy(false);
         hocKyRepo.save(hk);
 
-        // Mo lai cac lop sang trang thai MO neu truoc do bi DONG
+        // Mo lai cac lop sang trang thai MO neu truoc do bi DA_DONG
         List<vn.edu.quanlyhocphan.entity.LopHocPhan> dsLop = lopHocPhanRepo.findByHocKyIdAndTrangThai(hocKyId, null);
         for (vn.edu.quanlyhocphan.entity.LopHocPhan lhp : dsLop) {
-            if (lhp.getTrangThai() == vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.DONG) {
+            if (lhp.getTrangThai() == vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.DA_DONG) {
                 lhp.setTrangThai(vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan.MO);
                 lopHocPhanRepo.save(lhp);
             }

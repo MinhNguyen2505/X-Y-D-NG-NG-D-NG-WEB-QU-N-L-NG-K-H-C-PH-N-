@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/><title>Form Lớp học phần</title>
@@ -42,7 +42,7 @@
                               ? @{/quan-ly/lop-hoc-phan/them}
                               : @{/quan-ly/lop-hoc-phan/sua/{id}(id=${lopHocPhan.id})}"
                   method="post">
-              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
               <input type="hidden" name="version"      th:value="${lopHocPhan.version ?: 0}"/>
               <input type="hidden" name="siSoHienTai"  th:value="${lopHocPhan.siSoHienTai ?: 0}"/>
 

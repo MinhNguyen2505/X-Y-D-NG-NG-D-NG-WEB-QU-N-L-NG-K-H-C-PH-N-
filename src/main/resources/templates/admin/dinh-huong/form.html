@@ -22,7 +22,7 @@
         <div class="card"><div class="card-body">
           <form th:action="${dinhHuong.id == null} ? @{/admin/dinh-huong/them} : @{/admin/dinh-huong/sua/{id}(id=${dinhHuong.id})}"
                 method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <div class="form-group">
               <label class="form-label">Tên định hướng *</label>
               <input type="text" name="tenDinhHuong" class="form-control"

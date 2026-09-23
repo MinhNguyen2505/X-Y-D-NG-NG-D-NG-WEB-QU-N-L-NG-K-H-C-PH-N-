@@ -27,7 +27,7 @@
         </div>
         <form th:action="@{/admin/thi-lai/duyet-tat-ca}" method="post"
               onsubmit="return confirm('Duyệt tất cả đăng ký đang CHỜ DUYỆT?')">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
           <button type="submit" class="btn btn-success">
             <i class="fa-solid fa-check-double"></i> Duyệt tất cả
           </button>
@@ -68,7 +68,7 @@
               <td class="flex">
                 <form th:if="${dk.trangThai == 'CHO_DUYET'}"
                       th:action="@{/admin/thi-lai/{id}/duyet(id=${dk.id})}" method="post">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <button type="submit" class="btn btn-success btn-sm" title="Duyệt">
                     <i class="fa-solid fa-check"></i>
                   </button>
@@ -76,7 +76,7 @@
                 <form th:if="${dk.trangThai != 'DA_HUY'}"
                       th:action="@{/admin/thi-lai/{id}/tu-choi(id=${dk.id})}" method="post"
                       onsubmit="return confirm('Từ chối đăng ký thi lại này?')">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <button type="submit" class="btn btn-danger btn-sm" title="Từ chối">
                     <i class="fa-solid fa-xmark"></i>
                   </button>

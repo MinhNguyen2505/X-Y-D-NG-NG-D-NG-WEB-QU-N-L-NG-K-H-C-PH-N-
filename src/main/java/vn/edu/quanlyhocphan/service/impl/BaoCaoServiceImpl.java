@@ -58,7 +58,7 @@ public class BaoCaoServiceImpl implements BaoCaoService {
         long lopMo   = lopHocPhanRepo.findAll().stream()
                 .filter(l -> TrangThaiLopHocPhan.MO.equals(l.getTrangThai())).count();
         long lopDong = lopHocPhanRepo.findAll().stream()
-                .filter(l -> TrangThaiLopHocPhan.DONG.equals(l.getTrangThai())).count();
+                .filter(l -> TrangThaiLopHocPhan.DA_DONG.equals(l.getTrangThai())).count();
 
         return BaoCaoThongKeDTO.builder()
                 .tongSinhVien((int) tongSV)
@@ -98,7 +98,7 @@ public class BaoCaoServiceImpl implements BaoCaoService {
         long lopMo   = lopHocPhanRepo.findAll().stream()
                 .filter(l -> TrangThaiLopHocPhan.MO.equals(l.getTrangThai())).count();
         long lopDong = lopHocPhanRepo.findAll().stream()
-                .filter(l -> TrangThaiLopHocPhan.DONG.equals(l.getTrangThai())).count();
+                .filter(l -> TrangThaiLopHocPhan.DA_DONG.equals(l.getTrangThai())).count();
 
         return BaoCaoThongKeDTO.builder()
                 .tongSinhVien((int) tongSV)

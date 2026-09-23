@@ -6,9 +6,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import vn.edu.quanlyhocphan.entity.*;
 import vn.edu.quanlyhocphan.enums.TrangThaiLopHocPhan;
 import vn.edu.quanlyhocphan.repository.NganhRepository;
+import vn.edu.quanlyhocphan.repository.QuanLyRepository;
 import vn.edu.quanlyhocphan.service.*;
 import vn.edu.quanlyhocphan.service.NguyenVongService;
 import vn.edu.quanlyhocphan.service.DinhHuongService;
@@ -38,9 +40,9 @@ public class AdminController {
     private final DinhHuongService dinhHuongService;
     private final vn.edu.quanlyhocphan.service.ThiLaiService thiLaiService;
     private final vn.edu.quanlyhocphan.service.DangKyHocPhanService dangKyHocPhanService;
-    private final vn.edu.quanlyhocphan.service.BaoCaoService baoCaoService;
-    private final vn.edu.quanlyhocphan.repository.QuanLyRepository quanLyRepo;
-    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final QuanLyRepository quanLyRepo;
+    private final BaoCaoService baoCaoService;
+    private final PasswordEncoder passwordEncoder;
 
     // =================================================================
     // DASHBOARD
@@ -50,8 +52,8 @@ public class AdminController {
     public String dashboard(Model model) {
         model.addAttribute("tongSinhVien",  sinhVienService.findAll().size());
         model.addAttribute("tongGiangVien", giangVienService.findAll().size());
-        model.addAttribute("tongQuanLy",    quanLyRepo.count());
         model.addAttribute("tongMonHoc",    monHocService.findAll().size());
+        model.addAttribute("tongQuanLy",    quanLyRepo.count());
         model.addAttribute("danhSachHocKy", hocKyService.findAll());
 
         // Stat lien ket thuc te
@@ -108,9 +110,7 @@ public class AdminController {
 
     @GetMapping("/sinh-vien/sua/{id}")
     public String formSuaSinhVien(@PathVariable Long id, Model model) {
-        SinhVien sv = sinhVienService.findById(id);
-        sv.setMatKhau(""); // Bao mat: xoa hash mat khau de khong bao gio bi lo ra view
-        model.addAttribute("sinhVien", sv);
+        model.addAttribute("sinhVien", sinhVienService.findById(id));
         model.addAttribute("danhSachNganh", nganhRepo.findAll());
         return "admin/sinh-vien/form";
     }
@@ -171,9 +171,7 @@ public class AdminController {
 
     @GetMapping("/giang-vien/sua/{id}")
     public String formSuaGiangVien(@PathVariable Long id, Model model) {
-        GiangVien gv = giangVienService.findById(id);
-        gv.setMatKhau(""); // Bao mat: xoa hash mat khau de khong bao gio bi lo ra view
-        model.addAttribute("giangVien", gv);
+        model.addAttribute("giangVien", giangVienService.findById(id));
         return "admin/giang-vien/form";
     }
 
@@ -326,28 +324,6 @@ public class AdminController {
         return "redirect:/admin/hoc-ky";
     }
 
-    @PostMapping("/hoc-ky/{id}/chot-dang-ky")
-    public String chotDangKyHocKy(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            hocKyService.chotDangKy(id);
-            redirectAttributes.addFlashAttribute("successMsg", "Đã chốt đợt đăng ký cho học kỳ.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", "Có lỗi: " + e.getMessage());
-        }
-        return "redirect:/admin/hoc-ky";
-    }
-
-    @PostMapping("/hoc-ky/{id}/mo-lai-dang-ky")
-    public String moLaiDangKyHocKy(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            hocKyService.moLaiDangKy(id);
-            redirectAttributes.addFlashAttribute("successMsg", "Đã mở lại đợt đăng ký cho học kỳ.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", "Có lỗi: " + e.getMessage());
-        }
-        return "redirect:/admin/hoc-ky";
-    }
-
     // =================================================================
     // MO LOP HOC PHAN
     // =================================================================
@@ -432,7 +408,7 @@ public class AdminController {
                           RedirectAttributes redirectAttributes) {
         try {
             LopHocPhan lhp = lopHocPhanService.findById(id);
-            lhp.setTrangThai(TrangThaiLopHocPhan.DONG);
+            lhp.setTrangThai(TrangThaiLopHocPhan.DA_DONG);
             lopHocPhanService.save(lhp);
             redirectAttributes.addFlashAttribute("successMsg", "Đã đóng lớp " + lhp.getMaLopHp() + ".");
         } catch (Exception e) {
@@ -488,22 +464,17 @@ public class AdminController {
     }
 
     @GetMapping("/nguyen-vong/{id}")
-    public String chiTietKeHoach(@PathVariable Long id, Model model, RedirectAttributes ra) {
-        try {
-            var keHoach = nguyenVongService.findKeHoachById(id);
-            // Lay id cac mon da co trong ke hoach de loc khoi dropdown
-            java.util.Set<Long> monDaTrongKeHoach = keHoach.getDanhSachMon().stream()
-                .map(m -> m.getMonHoc().getId())
-                .collect(java.util.stream.Collectors.toSet());
-            model.addAttribute("keHoach", keHoach);
-            model.addAttribute("tatCaMonHoc", monHocService.findAll());
-            model.addAttribute("monDaTrongKeHoach", monDaTrongKeHoach);
-            model.addAttribute("danhSachDangKy", nguyenVongService.findDangKyByKeHoach(id));
-            return "admin/nguyen-vong/chi-tiet";
-        } catch (vn.edu.quanlyhocphan.exception.ResourceNotFoundException e) {
-            ra.addFlashAttribute("errorMsg", "Kế hoạch nguyện vọng #" + id + " không tồn tại.");
-            return "redirect:/admin/nguyen-vong";
-        }
+    public String chiTietKeHoach(@PathVariable Long id, Model model) {
+        var keHoach = nguyenVongService.findKeHoachById(id);
+        // Lay id cac mon da co trong ke hoach de loc khoi dropdown
+        java.util.Set<Long> monDaTrongKeHoach = keHoach.getDanhSachMon().stream()
+            .map(m -> m.getMonHoc().getId())
+            .collect(java.util.stream.Collectors.toSet());
+        model.addAttribute("keHoach", keHoach);
+        model.addAttribute("tatCaMonHoc", monHocService.findAll());
+        model.addAttribute("monDaTrongKeHoach", monDaTrongKeHoach);
+        model.addAttribute("danhSachDangKy", nguyenVongService.findDangKyByKeHoach(id));
+        return "admin/nguyen-vong/chi-tiet";
     }
 
     @PostMapping("/nguyen-vong/{id}/dong")
@@ -703,7 +674,23 @@ public class AdminController {
     }
 
     // =================================================================
-    // QUAN LY CAN BO PHONG DAO TAO (ROLE_QUAN_LY)
+    // BAO CAO THONG KE
+    // =================================================================
+
+    @GetMapping("/bao-cao")
+    public String baoCao(@RequestParam(required = false) Long hocKyId, Model model) {
+        model.addAttribute("danhSachHocKy", hocKyService.findAll());
+        if (hocKyId != null) {
+            model.addAttribute("hocKyChon", hocKyService.findById(hocKyId));
+            model.addAttribute("baoCao", baoCaoService.thongKeTheoHocKy(hocKyId));
+        } else {
+            model.addAttribute("baoCao", baoCaoService.thongKeTongQuan());
+        }
+        return "admin/bao-cao";
+    }
+
+    // =================================================================
+    // QUAN LY CAN BO QUAN LY
     // =================================================================
 
     @GetMapping("/quan-ly")
@@ -721,41 +708,52 @@ public class AdminController {
     @PostMapping("/quan-ly/them")
     public String themQuanLy(@ModelAttribute QuanLy quanLy, RedirectAttributes ra) {
         try {
-            if (quanLyRepo.existsByEmail(quanLy.getEmail())) {
-                ra.addFlashAttribute("errorMsg", "Email [" + quanLy.getEmail() + "] đã tồn tại.");
+            if (quanLyRepo.findByEmail(quanLy.getEmail()).isPresent()) {
+                ra.addFlashAttribute("errorMsg", "Email " + quanLy.getEmail() + " đã tồn tại.");
                 return "redirect:/admin/quan-ly/them";
             }
             if (quanLy.getMatKhau() != null && !quanLy.getMatKhau().isBlank()) {
                 quanLy.setMatKhau(passwordEncoder.encode(quanLy.getMatKhau()));
+            } else {
+                quanLy.setMatKhau(passwordEncoder.encode("123456"));
             }
             quanLyRepo.save(quanLy);
             ra.addFlashAttribute("successMsg", "Thêm cán bộ quản lý thành công.");
+            return "redirect:/admin/quan-ly";
         } catch (Exception e) {
             ra.addFlashAttribute("errorMsg", "Lỗi: " + e.getMessage());
+            return "redirect:/admin/quan-ly/them";
         }
-        return "redirect:/admin/quan-ly";
     }
 
     @GetMapping("/quan-ly/sua/{id}")
-    public String formSuaQuanLy(@PathVariable Long id, Model model) {
-        QuanLy ql = quanLyRepo.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy Quản lý"));
-        ql.setMatKhau(""); // Bao mat: xoa hash mat khau de khong bao gio bi lo ra view
-        model.addAttribute("quanLy", ql);
+    public String formSuaQuanLy(@PathVariable Long id, Model model, RedirectAttributes ra) {
+        var opt = quanLyRepo.findById(id);
+        if (opt.isEmpty()) {
+            ra.addFlashAttribute("errorMsg", "Không tìm thấy cán bộ quản lý.");
+            return "redirect:/admin/quan-ly";
+        }
+        model.addAttribute("quanLy", opt.get());
         return "admin/quan-ly/form";
     }
 
     @PostMapping("/quan-ly/sua/{id}")
-    public String suaQuanLy(@PathVariable Long id, @ModelAttribute QuanLy quanLy, RedirectAttributes ra) {
+    public String suaQuanLy(@PathVariable Long id, @ModelAttribute QuanLy form, RedirectAttributes ra) {
         try {
-            QuanLy old = quanLyRepo.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy Quản lý"));
-            old.setHoTen(quanLy.getHoTen());
-            old.setEmail(quanLy.getEmail());
-            old.setSoDienThoai(quanLy.getSoDienThoai());
-            old.setDonVi(quanLy.getDonVi());
-            if (quanLy.getMatKhau() != null && !quanLy.getMatKhau().isBlank()) {
-                old.setMatKhau(passwordEncoder.encode(quanLy.getMatKhau()));
+            var opt = quanLyRepo.findById(id);
+            if (opt.isEmpty()) {
+                ra.addFlashAttribute("errorMsg", "Không tìm thấy cán bộ quản lý.");
+                return "redirect:/admin/quan-ly";
             }
-            quanLyRepo.save(old);
+            QuanLy ql = opt.get();
+            ql.setHoTen(form.getHoTen());
+            ql.setEmail(form.getEmail());
+            ql.setDonVi(form.getDonVi());
+            ql.setSoDienThoai(form.getSoDienThoai());
+            if (form.getMatKhau() != null && !form.getMatKhau().isBlank()) {
+                ql.setMatKhau(passwordEncoder.encode(form.getMatKhau()));
+            }
+            quanLyRepo.save(ql);
             ra.addFlashAttribute("successMsg", "Cập nhật cán bộ quản lý thành công.");
         } catch (Exception e) {
             ra.addFlashAttribute("errorMsg", "Lỗi: " + e.getMessage());
@@ -769,24 +767,8 @@ public class AdminController {
             quanLyRepo.deleteById(id);
             ra.addFlashAttribute("successMsg", "Đã xóa cán bộ quản lý.");
         } catch (Exception e) {
-            ra.addFlashAttribute("errorMsg", "Lỗi: " + e.getMessage());
+            ra.addFlashAttribute("errorMsg", "Lỗi xóa: " + e.getMessage());
         }
         return "redirect:/admin/quan-ly";
-    }
-
-    // =================================================================
-    // BAO CAO THONG KE
-    // =================================================================
-
-    @GetMapping("/bao-cao")
-    public String baoCao(@RequestParam(required = false) Long hocKyId, Model model) {
-        model.addAttribute("danhSachHocKy", hocKyService.findAll());
-        if (hocKyId != null) {
-            model.addAttribute("hocKyChon", hocKyService.findById(hocKyId));
-            model.addAttribute("baoCao", baoCaoService.thongKeTheoHocKy(hocKyId));
-        } else {
-            model.addAttribute("baoCao", baoCaoService.thongKeTongQuan());
-        }
-        return "admin/bao-cao";
     }
 }

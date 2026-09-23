@@ -104,7 +104,7 @@
                     <!-- CHƯA ĐĂNG KÝ hoặc ĐÃ HỦY: cho phép đăng ký lại -->
                     <form th:if="${tl == null or tl.trangThai == 'DA_HUY'}"
                           th:action="@{/sinh-vien/dang-ky-thi-lai}" method="post">
-                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                       <input type="hidden" name="dangKyHocPhanId" th:value="${dk.id}"/>
                       <button type="submit" class="btn btn-primary btn-sm">
                         <i class="fa-solid fa-rotate-right"></i> Đăng ký thi lại
@@ -169,7 +169,7 @@
                   <form th:if="${tl.trangThai == 'CHO_DUYET'}"
                         th:action="@{/sinh-vien/huy-thi-lai}" method="post"
                         onsubmit="return confirm('Hủy đăng ký thi lại này?')">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <input type="hidden" name="dangKyHocPhanId"
                            th:value="${tl.dangKyHocPhan.id}"/>
                     <button type="submit" class="btn btn-outline btn-sm">
